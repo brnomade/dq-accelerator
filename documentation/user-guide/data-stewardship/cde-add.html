@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How to add a Critical Data Element &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+.steps{list-style:none;padding:0;display:flex;flex-direction:column}
+.steps li{display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
+.steps li:last-child{border-bottom:none}
+.snum{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:var(--mono);font-weight:600;color:var(--text2)}
+.sbody{flex:1;font-size:14px;color:var(--text);line-height:1.6;padding-top:2px}
+.sbody .sub{font-size:12px;color:var(--text3);margin-top:3px}
+.f{font-weight:600;color:var(--blue)}
+.mono{font-family:var(--mono);font-size:12px;color:var(--text2)}
+.field-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.field-table th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)}
+.field-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top}
+.field-table tr:last-child td{border-bottom:none}
+.field-table td:first-child{font-weight:600;color:var(--text);white-space:nowrap}
+.req{font-size:10px;color:var(--amber);font-family:var(--mono);margin-left:6px}
+.opt{font-size:10px;color:var(--text3);font-family:var(--mono);margin-left:6px}
+.warn{margin-bottom:28px;padding:12px 16px;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.3);border-radius:var(--radius);font-size:13px;color:var(--amber);line-height:1.6}
+.note{margin-top:20px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; Data and Stewardship</div>
+  <h1>How to add a Critical Data Element</h1>
+  <p class="lead">A Critical Data Element (CDE) identifies a single source field that the organisation has committed to monitoring for data quality. Each CDE must belong to a Critical Data Set.</p>
+
+  <div class="warn">A Critical Data Set must exist before you can add a CDE. If no CDS exists yet, <a href="cds-add.html" style="color:var(--amber)">add a CDS first</a>.</div>
+
+  <h2>Opening the form</h2>
+
+  <p style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:12px">There are three ways to open the Add CDE form. Each pre-fills some fields to save time:</p>
+
+  <ul style="font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:24px;padding-left:18px">
+    <li><span style="font-weight:600;color:var(--text)">+ CDE</span> in the page header &mdash; opens a blank form. You select the CDS manually using cascading agency and directorate dropdowns.</li>
+    <li><span style="font-weight:600;color:var(--text)">+ CDE</span> on a CDS row &mdash; pre-fills the Critical Data Set. The CDS field is fixed to that data set.</li>
+    <li><span style="font-weight:600;color:var(--text)">+ CDE</span> on a Table row &mdash; pre-fills the CDS, database name, table name, platform, system, and snapshot filter from existing CDEs in that table.</li>
+  </ul>
+
+  <h2>Steps</h2>
+
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody">Click the <span class="f">+ CDE</span> button using whichever entry point suits your context (see above).</div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody">If you used the header button, select the <span class="f">Critical Data Set</span> using the cascading dropdowns: first choose the agency, then the directorate, then the data set.
+        <div class="sub">If a directorate or data set does not appear, it may not yet exist. Add it first before returning here.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">3</div>
+      <div class="sbody">Select the source table. If the table has been added to the Table Library, choose it from the <span class="f">Select from Table Library</span> dropdown. This automatically fills the database and table name and offers a field picker from the known columns.
+        <div class="sub">If the table is not in the Table Library, choose <span class="mono">Enter manually</span> from the dropdown and type the database name, table name, and field name directly.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">4</div>
+      <div class="sbody">Select or type the <span class="f">Source Field</span>. If you selected from the Table Library, a dropdown lists the known columns.</div>
+    </li>
+    <li>
+      <div class="snum">5</div>
+      <div class="sbody">Enter the <span class="f">Snapshot Filter</span>. This is required and is used to construct the SQL queries run against this field.
+        <div class="sub">Use the same SQL <span class="mono">WHERE</span> clause fragment that isolates the relevant snapshot of this table, for example <span class="mono">snapshot_date = '&#123;snapshot&#125;'</span>.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">6</div>
+      <div class="sbody">Optionally add a <span class="f">Definition</span> and <span class="f">Explanation</span> describing the business meaning of this field.</div>
+    </li>
+    <li>
+      <div class="snum">7</div>
+      <div class="sbody">Optionally set <span class="f">Criticality</span> ratings. Each criticality group (if any are configured) shows a dropdown to assign a level to this CDE. You can leave these blank and update them later.</div>
+    </li>
+    <li>
+      <div class="snum">8</div>
+      <div class="sbody">Click <span class="f">Add</span>. The CDE appears immediately under its table in the hierarchy.</div>
+    </li>
+  </ol>
+
+  <h2>Required fields</h2>
+
+  <table class="field-table">
+    <thead><tr><th>Field</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Critical Data Set <span class="req">required</span></td><td>The data set this CDE belongs to. Fixed after saving.</td></tr>
+      <tr><td>Database Name <span class="req">required</span></td><td>The source database where this field lives.</td></tr>
+      <tr><td>Table Name <span class="req">required</span></td><td>The source table containing this field.</td></tr>
+      <tr><td>Field Name <span class="req">required</span></td><td>The exact column name in the source table.</td></tr>
+      <tr><td>Snapshot Filter <span class="req">required</span></td><td>A SQL filter fragment used when composing data quality queries. Missing this causes a warning indicator on the CDE and prevents SQL from being generated.</td></tr>
+      <tr><td>Platform <span class="opt">optional</span></td><td>Source platform name (e.g. AWS, Azure).</td></tr>
+      <tr><td>System <span class="opt">optional</span></td><td>Source system name (e.g. the application that owns the data).</td></tr>
+      <tr><td>Definition <span class="opt">optional</span></td><td>Business definition of the field.</td></tr>
+      <tr><td>Explanation <span class="opt">optional</span></td><td>Additional context about the field or its usage.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">A CDE with a missing snapshot filter shows a red warning indicator in the hierarchy. Rules assigned to that CDE will also show a warning and the SQL viewer will be disabled until the filter is added. Edit the CDE to fix this.</div>
+
+  <div class="related">
+    <div class="rtitle">Related guides</div>
+    <ul class="rlist">
+      <li><a href="cds-add.html">How to add a Critical Data Set &rsaquo;</a></li>
+      <li><a href="cde-edit-retire.html">How to edit or retire a Critical Data Element &rsaquo;</a></li>
+      <li><a href="rule-allocate.html">How to assign a rule to a CDE &rsaquo;</a></li>
+      <li><a href="../profiling/table-add.html">How to add a table to the Table Library &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>

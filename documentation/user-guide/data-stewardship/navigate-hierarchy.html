@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How to navigate the Data and Stewardship page &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+p{font-size:14px;color:var(--text2);margin-bottom:14px;line-height:1.6}
+.f{font-weight:600;color:var(--blue)}
+.mono{font-family:var(--mono);font-size:12px;color:var(--text2)}
+.level-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.level-table th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)}
+.level-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top}
+.level-table tr:last-child td{border-bottom:none}
+.level-table td:first-child{font-weight:600;color:var(--text);white-space:nowrap}
+.note{margin-top:20px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; Data and Stewardship</div>
+  <h1>How to navigate the Data and Stewardship page</h1>
+  <p class="lead">The Data and Stewardship page organises all Critical Data Elements (CDEs) in a collapsible four-level hierarchy. Understanding the layout helps you find, add, and manage records efficiently.</p>
+
+  <h2>The four levels</h2>
+
+  <p>Every CDE sits inside a table, which belongs to a Critical Data Set (CDS), which belongs to an Executive Agency. The page displays these four levels as nested expandable rows.</p>
+
+  <table class="level-table">
+    <thead><tr><th>Level</th><th>What it shows</th></tr></thead>
+    <tbody>
+      <tr><td>Executive Agency</td><td>The top-level organisational owner. Displays the agency acronym and name. Summary counts show the number of CDSs, tables, fields, CDEs, rules, and metrics beneath it.</td></tr>
+      <tr><td>Critical Data Set</td><td>A named group of related data fields owned by the agency. Summary counts show tables, fields, CDEs, rules, and metrics within the set.</td></tr>
+      <tr><td>Table</td><td>A source database table. Shows the table and database name, a <span class="mono">profiled / not profiled</span> badge, and field, CDE, rule, and metric counts.</td></tr>
+      <tr><td>CDE (field)</td><td>An individual source field tracked as a Critical Data Element. Shows the field name, any criticality ratings, profiling badge, and rule and metric counts.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Expanding and collapsing rows</h2>
+
+  <p>Click any Agency, CDS, or Table row to expand or collapse it. Only expanded rows reveal the level below. All levels start collapsed when you open the page.</p>
+
+  <p>To expand a CDE row and see its rule allocations, click the chevron button that appears on the right side of the CDE row when it has at least one rule assigned.</p>
+
+  <h2>Searching</h2>
+
+  <p>Type in the search box at the top of the page to filter by agency acronym or name, data set name, table name, field name, or database name. The hierarchy collapses to show only matching entries. Clear the search to restore the full view.</p>
+
+  <h2>Toolbar options</h2>
+
+  <p><span class="f">My data</span> &mdash; visible only when your steward identity is set and you have CDS assignments. Scopes the view to data sets assigned to you. See <a href="my-data.html" style="color:var(--blue)">How to scope the view to your data sets</a>.</p>
+
+  <p><span class="f">Show retired</span> &mdash; a toggle that appears when retired CDEs exist. Enable it to show retired records alongside live ones. Retired records appear faded.</p>
+
+  <div class="note">The summary counts at each level update immediately when you add or retire a record. If a level appears empty, it means no records exist yet at that level, or the search filter has hidden them.</div>
+
+  <div class="related">
+    <div class="rtitle">Related guides</div>
+    <ul class="rlist">
+      <li><a href="cds-add.html">How to add a Critical Data Set &rsaquo;</a></li>
+      <li><a href="cde-add.html">How to add a Critical Data Element &rsaquo;</a></li>
+      <li><a href="my-data.html">How to scope the view to your data sets &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Modify a Data Owner &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:28px}
+.prereq{padding:12px 16px;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.3);border-radius:var(--radius);font-size:13px;color:var(--amber);margin-bottom:28px;line-height:1.6}
+.steps{list-style:none;padding:0;display:flex;flex-direction:column}
+.steps li{display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
+.steps li:last-child{border-bottom:none}
+.snum{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:var(--mono);font-weight:600;color:var(--text2)}
+.sbody{flex:1;font-size:14px;color:var(--text);line-height:1.6;padding-top:2px}
+.f{font-weight:600;color:var(--blue)}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; Ownership Hierarchy &rsaquo; Data Owner</div>
+  <h1>How to modify a Data Owner</h1>
+
+  <div class="prereq">Your steward identity must be set before making changes. Go to Settings (top-right cog icon) and select your name under Steward Identity.</div>
+
+  <ol class="steps">
+    <li><div class="snum">1</div><div class="sbody">Click <span class="f">Data Owner</span> in the left sidebar.</div></li>
+    <li><div class="snum">2</div><div class="sbody">Find the record in the list. Use the search box to filter by name if needed.</div></li>
+    <li><div class="snum">3</div><div class="sbody">Click the <span class="f">pencil icon</span> on the right of the row.</div></li>
+    <li><div class="snum">4</div><div class="sbody">Update any of the fields: <span class="f">Agency</span> (filter), <span class="f">Directorate</span>, <span class="f">Name</span>, <span class="f">Title</span>, <span class="f">Email</span>, or <span class="f">Start date</span>.</div></li>
+    <li><div class="snum">5</div><div class="sbody">Click <span class="f">Save</span>. The changes take effect immediately.</div></li>
+  </ol>
+
+  <div class="related">
+    <div class="rtitle">Related guides</div>
+    <ul class="rlist">
+      <li><a href="data-owner-add.html">How to add a Data Owner</a></li>
+      <li><a href="data-owner-remove.html">How to remove a Data Owner</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>

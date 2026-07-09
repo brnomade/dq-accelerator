@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How to add a Critical Data Set &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+.steps{list-style:none;padding:0;display:flex;flex-direction:column}
+.steps li{display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
+.steps li:last-child{border-bottom:none}
+.snum{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:var(--mono);font-weight:600;color:var(--text2)}
+.sbody{flex:1;font-size:14px;color:var(--text);line-height:1.6;padding-top:2px}
+.sbody .sub{font-size:12px;color:var(--text3);margin-top:3px}
+.f{font-weight:600;color:var(--blue)}
+.field-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.field-table th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)}
+.field-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top}
+.field-table tr:last-child td{border-bottom:none}
+.field-table td:first-child{font-weight:600;color:var(--text);white-space:nowrap}
+.req{font-size:10px;color:var(--amber);font-family:var(--mono);margin-left:6px}
+.opt{font-size:10px;color:var(--text3);font-family:var(--mono);margin-left:6px}
+.note{margin-top:20px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; Data and Stewardship</div>
+  <h1>How to add a Critical Data Set</h1>
+  <p class="lead">A Critical Data Set (CDS) is a named group of related data fields under a single directorate. CDEs can only be assigned to an existing CDS, so create the CDS first before adding CDEs to it.</p>
+
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody">Click <span class="f">Data and Stewardship</span> in the left sidebar.
+        <div class="sub">If your steward identity is not yet set, you can view records but not make changes. See <a href="../getting-started/set-steward-identity.html" style="color:var(--blue)">How to set your steward identity</a>.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody">Click the <span class="f">+ CDS</span> button in the top-right of the page header.
+        <div class="sub">Alternatively, expand an Agency row and click the <span class="f">+ CDS</span> button on the right of that agency's header row. Using the per-agency button pre-fills the agency if that agency has only one directorate.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">3</div>
+      <div class="sbody">Fill in the form panel that slides open. Required fields are marked with a red asterisk.
+        <div class="sub">See the field reference below.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">4</div>
+      <div class="sbody">Click <span class="f">Add</span> to save. The new CDS appears immediately under its agency in the hierarchy.</div>
+    </li>
+  </ol>
+
+  <h2>Field reference</h2>
+
+  <table class="field-table">
+    <thead><tr><th>Field</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Data Set Name <span class="req">required</span></td>
+        <td>A short descriptive name for the data set. This name appears throughout the hierarchy and in exports.</td>
+      </tr>
+      <tr>
+        <td>Directorate <span class="req">required</span></td>
+        <td>The directorate that owns this data set. Select from the dropdown. The owning agency is derived automatically from the directorate you choose.</td>
+      </tr>
+      <tr>
+        <td>Description <span class="opt">optional</span></td>
+        <td>A brief explanation of what the data set covers. Displayed under the CDS name in the hierarchy view.</td>
+      </tr>
+      <tr>
+        <td>Subdivision <span class="opt">optional</span></td>
+        <td>A secondary grouping or sub-division label within the data set, if applicable.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note">A CDS must belong to a directorate. If no directorates exist yet, add them first under <strong>Ownership Hierarchy</strong> in the sidebar before creating a CDS.</div>
+
+  <div class="related">
+    <div class="rtitle">Next steps</div>
+    <ul class="rlist">
+      <li><a href="cde-add.html">How to add a Critical Data Element &rsaquo;</a></li>
+      <li><a href="navigate-hierarchy.html">How to navigate the Data and Stewardship page &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>

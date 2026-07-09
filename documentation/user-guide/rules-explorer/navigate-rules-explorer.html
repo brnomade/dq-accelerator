@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How to navigate the Rules Explorer &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+p{font-size:14px;color:var(--text2);margin-bottom:14px;line-height:1.6}
+.f{font-weight:600;color:var(--blue)}
+.mono{font-family:var(--mono);font-size:12px;color:var(--text2)}
+.level-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.level-table th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)}
+.level-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top;line-height:1.55}
+.level-table tr:last-child td{border-bottom:none}
+.level-table td:first-child{font-weight:600;color:var(--text);white-space:nowrap;padding-right:16px}
+.note{margin-top:20px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; Rules Explorer</div>
+  <h1>How to navigate the Rules Explorer</h1>
+  <p class="lead">The Rules Explorer shows the same allocation data as the Data and Stewardship page, but traversed from the rule outward. Each rule expands to show which agencies, data sets, tables, and fields it is applied to.</p>
+
+  <h2>The hierarchy</h2>
+
+  <p>Rules are listed alphabetically. Expanding a rule reveals the agencies whose CDEs it covers, then the data sets, tables, and finally the individual CDE (field) rows with their allocation details.</p>
+
+  <table class="level-table">
+    <thead><tr><th>Level</th><th>What it shows</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Rule</td>
+        <td>The rule name and optional explanation. An <strong style="color:var(--amber)">AUTOMATED</strong> badge appears for automated rules. Summary counts show how many agencies, CDEs, and allocations this rule covers. The pencil and retire/restore buttons appear on every rule row regardless of whether it is expanded.</td>
+      </tr>
+      <tr>
+        <td>Agency</td>
+        <td>An executive agency that has at least one CDE covered by this rule. Shows CDS, CDE, and allocation counts.</td>
+      </tr>
+      <tr>
+        <td>Critical Data Set</td>
+        <td>A data set within the agency containing CDEs covered by this rule. Shows table, CDE, and allocation counts.</td>
+      </tr>
+      <tr>
+        <td>Table</td>
+        <td>A source database table. Shows the table name, database, a profiled / not profiled badge, and CDE and allocation counts.</td>
+      </tr>
+      <tr>
+        <td>CDE</td>
+        <td>An individual field. Shows the field name, profiling badge, and any criticality ratings. Click to expand and see the allocation detail: quality dimension, frequency, bumper value, and SQL viewer buttons.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Rules with no allocations</h2>
+
+  <p>If a rule has not yet been assigned to any CDE, it shows a message instead of a hierarchy: <em>No allocations &mdash; use the Data and Stewardship page to assign this rule to a CDE.</em> Rules can only be assigned from the Data and Stewardship page; the Rules Explorer is a read and manage view, not the place to create new assignments.</p>
+
+  <h2>Expanding and collapsing</h2>
+
+  <p>Click a rule row to expand it (only possible when the rule has at least one allocation). Click again to collapse. The same applies to each nested level. All rows start collapsed.</p>
+
+  <h2>Searching</h2>
+
+  <p>The search box filters by rule name, rule explanation, agency acronym or name, data set name, table name, database name, and field name. The list narrows as you type. Clear the search to restore the full list.</p>
+
+  <h2>Toolbar options</h2>
+
+  <p><span class="f">My data</span> &mdash; visible only when your steward identity is set and you have CDS assignments. Scopes the hierarchy to show only rules that have allocations on your assigned data sets. See <a href="../data-stewardship/my-data.html" style="color:var(--blue)">How to scope the view to your data sets</a>. The preference is saved between sessions.</p>
+
+  <p><span class="f">Show retired</span> &mdash; appears when retired rules exist. Enables retired rules and retired allocations to appear alongside live ones. Retired rules appear faded.</p>
+
+  <div class="note">The counter below the toolbar shows "Showing X of Y rules" and updates when search or filters are active. A rule counts toward the total even if all its allocations are retired, so the visible count can differ from the allocated-CDE count.</div>
+
+  <div class="related">
+    <div class="rtitle">Related guides</div>
+    <ul class="rlist">
+      <li><a href="rule-add-edit.html">How to add or edit a rule &rsaquo;</a></li>
+      <li><a href="allocation-manage.html">How to manage allocations from the Rules Explorer &rsaquo;</a></li>
+      <li><a href="view-sql.html">How to view rule SQL &rsaquo;</a></li>
+      <li><a href="../data-stewardship/rule-allocate.html">How to assign a rule to a CDE &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>

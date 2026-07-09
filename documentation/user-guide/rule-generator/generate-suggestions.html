@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How to generate rule suggestions for a field &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+.steps{list-style:none;padding:0;display:flex;flex-direction:column}
+.steps li{display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
+.steps li:last-child{border-bottom:none}
+.snum{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:var(--mono);font-weight:600;color:var(--text2)}
+.sbody{flex:1;font-size:14px;color:var(--text);line-height:1.6;padding-top:2px}
+.sbody .sub{font-size:12px;color:var(--text3);margin-top:3px}
+.f{font-weight:600;color:var(--blue)}
+.warn{margin-bottom:28px;padding:12px 16px;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.3);border-radius:var(--radius);font-size:13px;color:var(--amber);line-height:1.6}
+.note{margin-top:20px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; Rule Generator</div>
+  <h1>How to generate rule suggestions for a field</h1>
+  <p class="lead">The Rule Generator uses AI to suggest data quality rules for a specific field. It builds a detailed prompt from the field's profiling data and existing rules, which you send to an AI assistant. The AI responds with a list of rule suggestions that you can review and add directly to the application.</p>
+
+  <div class="warn">The field must have profiling data before you can generate suggestions. If the field is not yet profiled, go to <strong>Profiling</strong> in the sidebar and complete the field profiling steps first. See <a href="../profiling/field-profile.html" style="color:var(--amber)">How to profile a field</a>.</div>
+
+  <h2>Step 1 &mdash; Select the field</h2>
+
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody">Click <span class="f">Rule Generator</span> in the left sidebar.</div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody">Use the four cascading dropdowns to locate the field:
+        <div class="sub">Select an <strong>Agency</strong>, then a <strong>Directorate</strong>, then a <strong>Data Set</strong>, then the <strong>Field</strong>. Each dropdown activates only after the previous one has a value.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">3</div>
+      <div class="sbody">Check the summary bar that appears below the dropdowns. It shows the field name, source table, data set, profiling status, and how many rules are already allocated to this field.
+        <div class="sub">The profiling status must show <strong>Available</strong> (green) before you can proceed. If it shows <strong>Not profiled</strong> (amber), stop here and profile the field first.</div>
+      </div>
+    </li>
+  </ol>
+
+  <h2>Step 2 &mdash; Build and send the prompt</h2>
+
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody">Click <span class="f">Build suggestion prompt</span>. The application assembles a prompt that includes the field's physical and semantic type, profiling results, and a list of rules already in the catalogue &mdash; so the AI avoids suggesting duplicates.</div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody">The left panel shows the constructed prompt. Send it to an AI assistant using one of the buttons below the prompt:
+        <div class="sub"><strong>Open in Claude</strong> &mdash; opens Claude with the prompt pre-filled. Submit it directly.<br/><strong>Open in Copilot</strong> &mdash; opens Microsoft Copilot. Use <strong>Copy prompt</strong> first, then paste it into the Copilot chat.<br/><strong>Copy prompt</strong> &mdash; copies the full prompt to the clipboard so you can paste it into any AI tool.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">3</div>
+      <div class="sbody">Wait for the AI to respond. It will return a JSON list of rule suggestions. Copy the entire response &mdash; including the opening <span style="font-family:var(--mono);font-size:12px;color:var(--text2)">[</span> and closing <span style="font-family:var(--mono);font-size:12px;color:var(--text2)">]</span>.</div>
+    </li>
+    <li>
+      <div class="snum">4</div>
+      <div class="sbody">Paste the AI response into the <span class="f">AI response</span> panel on the right side of the screen.</div>
+    </li>
+    <li>
+      <div class="snum">5</div>
+      <div class="sbody">Click <span class="f">Parse response</span>. If the response is valid, a count such as <em>3 suggestions ready</em> appears and Step 3 opens below.
+        <div class="sub">If a red error message appears, the AI response may have been truncated or formatted incorrectly. Try copying the response again from the AI tool and ensure you have captured the complete JSON array.</div>
+      </div>
+    </li>
+  </ol>
+
+  <div class="note">
+    <strong>What goes into the prompt:</strong> The prompt includes the field name, database, table, physical data type, semantic type (if profiled), snapshot filter, all profiling measurements (summary statistics, type patterns, top values, length distribution, notes), and a catalogue of existing rules. The existing rules section instructs the AI not to create duplicates and to suggest reusing an existing rule where one already fits.<br/><br/>
+    <strong>Changing the CDE:</strong> Selecting a different field at any point resets Steps 2 and 3. Use the <strong>Start over</strong> button in the page header to also clear the field selection and start fresh.
+  </div>
+
+  <div class="related">
+    <div class="rtitle">Next step</div>
+    <ul class="rlist">
+      <li><a href="review-add-rules.html">How to review and add AI-suggested rules &rsaquo;</a></li>
+    </ul>
+    <div class="rtitle" style="margin-top:20px">Related guides</div>
+    <ul class="rlist">
+      <li><a href="../profiling/field-profile.html">How to profile a field &rsaquo;</a></li>
+      <li><a href="../rules-explorer/rule-add-edit.html">How to add or edit a rule &rsaquo;</a></li>
+      <li><a href="../data-stewardship/rule-allocate.html">How to assign a rule to a CDE &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>

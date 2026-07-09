@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How to use the steward dashboard &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+p{font-size:14px;color:var(--text2);margin-bottom:14px;line-height:1.6}
+ol,ul{padding-left:20px;margin-bottom:14px}
+li{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:4px}
+.f{font-weight:600;color:var(--text)}
+.note{margin-top:20px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--amber);border-radius:var(--radius);font-size:13px;color:var(--text3);line-height:1.6}
+.note strong{color:var(--amber)}
+.level-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.level-table th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)}
+.level-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top;line-height:1.55}
+.level-table tr:last-child td{border-bottom:none}
+.level-table td:first-child{font-weight:600;color:var(--text);white-space:nowrap;padding-right:16px}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; Dashboard</div>
+
+  <h1>How to use the steward dashboard</h1>
+  <p class="lead">The Dashboard is your personal action centre. It surfaces the gaps and outstanding tasks specific to the Critical Data Sets assigned to you, so you can focus effort where it is needed most.</p>
+
+  <h2>Before you begin</h2>
+  <p>The dashboard is personalised. It only works after you have identified yourself as a data steward. If no identity is set, the dashboard shows a prompt rather than any gap data.</p>
+  <ol>
+    <li>Open Settings (top-right of the application).</li>
+    <li>Select your name from the Data Steward dropdown and save.</li>
+    <li>Return to the Dashboard &mdash; it will now show your personal view.</li>
+  </ol>
+  <p>See <a href="../getting-started/set-steward-identity.html" style="color:var(--blue)">How to set your steward identity</a> for full steps.</p>
+
+  <h2>The identity bar</h2>
+  <p>A green-bordered bar across the top of the dashboard shows your name, the number of Critical Data Sets assigned to you, and the acronym(s) of the Executive Agencies those sets belong to. A <span class="f">MASTER</span> badge appears in amber if your steward record carries the Master Steward flag.</p>
+  <p>If you have no CDS assignments the identity bar still appears but the rest of the page shows an empty-state message. For Master Stewards this message points to the upcoming Quality Reporting page; for regular stewards it advises contacting the master steward.</p>
+
+  <h2>Action cards</h2>
+  <p>The nine action cards summarise the gaps in your portfolio. Cards with a non-zero count have an amber left border; cards with zero have a green border.</p>
+  <p>Most cards navigate directly to the relevant screen when clicked. The <span class="f">Undocumented CDS</span> card works differently: clicking it expands an inline list of the specific CDS records that are missing a description. Click any name in that list to go directly to the Data and Stewardship page with the search box pre-filled for that set, so you can open and complete it immediately.</p>
+
+  <table class="level-table">
+    <thead>
+      <tr><th>Card</th><th>What it flags</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Unowned CDS</td>
+        <td>CDS records in your agency&rsquo;s directorates that have no steward assigned.</td>
+        <td>Navigates to Data and Stewardship.</td>
+      </tr>
+      <tr>
+        <td>Empty CDS</td>
+        <td>Your CDS with no Critical Data Elements defined yet.</td>
+        <td>Navigates to Data and Stewardship.</td>
+      </tr>
+      <tr>
+        <td>Unprotected CDS</td>
+        <td>Your CDS that have CDEs but none of those CDEs have any rule allocated.</td>
+        <td>Navigates to Rules Explorer.</td>
+      </tr>
+      <tr>
+        <td>Unprotected CDEs</td>
+        <td>Individual CDEs with no rule allocations &mdash; not validated by any rule.</td>
+        <td>Navigates to Rules Explorer.</td>
+      </tr>
+      <tr>
+        <td>Unprofiled CDEs</td>
+        <td>CDEs with no matching field profiling record (matched by database, table, and field name).</td>
+        <td>Navigates to Profiling.</td>
+      </tr>
+      <tr>
+        <td>Unrated CDEs</td>
+        <td>CDEs with no criticality assessment. These are invisible to the RAG Simulator.</td>
+        <td>Navigates to Data and Stewardship.</td>
+      </tr>
+      <tr>
+        <td>Incomplete Definitions</td>
+        <td>CDEs missing either a data element definition or a data element explanation.</td>
+        <td>Navigates to Data and Stewardship.</td>
+      </tr>
+      <tr>
+        <td>Uncovered Dimensions</td>
+        <td>Quality dimensions that have zero rule coverage across all your CDEs.</td>
+        <td>Navigates to Rules Explorer.</td>
+      </tr>
+      <tr>
+        <td>Undocumented CDS</td>
+        <td>Your CDS records missing a description field. A description is recommended for every set.</td>
+        <td>Expands an inline list. Click a CDS name to open Data and Stewardship filtered to that set.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>All clear:</strong> When all nine counts are zero and no data integrity issues exist, the cards are replaced by a green &ldquo;All clear&rdquo; banner.
+  </div>
+
+  <h2>Rule coverage by quality dimension</h2>
+  <p>Below the action cards, a set of progress bars shows how many of your CDEs are covered by rules for each quality dimension. Bars are sorted with the lowest coverage first.</p>
+  <ul>
+    <li>An amber bar with amber label indicates zero CDEs covered for that dimension.</li>
+    <li>A green bar indicates all CDEs are covered.</li>
+    <li>A blue bar indicates partial coverage, which is often expected &mdash; not every CDE requires every dimension.</li>
+  </ul>
+  <p>This section is hidden if you have no CDEs or if the Quality Dimension reference table is empty.</p>
+
+  <h2>My CDS summary table</h2>
+  <p>A table lists each CDS you own with four coverage columns:</p>
+  <ul>
+    <li><span class="f">CDEs</span> &mdash; total Critical Data Elements in the set.</li>
+    <li><span class="f">Rules</span> &mdash; total rule allocations across all CDEs in the set.</li>
+    <li><span class="f">Rated</span> &mdash; how many CDEs have a criticality assessment (shown as n / total).</li>
+    <li><span class="f">Profiled</span> &mdash; how many CDEs have a field profiling record (shown as n / total).</li>
+  </ul>
+  <p>Amber values flag gaps within that column. Click any row to navigate to the Data and Stewardship screen.</p>
+
+  <h2>Data integrity</h2>
+  <p>A collapsible section at the bottom of the page shows referential integrity issues scoped to your CDEs and CDS. It is collapsed by default.</p>
+  <ol>
+    <li>Click the <span class="f">Data integrity</span> header to expand or collapse.</li>
+    <li>The pill badge shows the issue count. Amber means issues are present.</li>
+    <li>When expanded, each issue shows the affected table and a description of the problem.</li>
+    <li>A maximum of 30 issues are shown; a footer note appears if there are more.</li>
+  </ol>
+  <p>Data integrity issues represent broken references in your data (for example, a CDE pointing to a CDS that no longer exists). Resolve them by editing or retiring the affected records.</p>
+
+  <div class="related">
+    <div class="rtitle">Related guides</div>
+    <ul class="rlist">
+      <li><a href="../getting-started/set-steward-identity.html">How to set your steward identity</a></li>
+      <li><a href="../data-stewardship/cds-add.html">How to add a Critical Data Set</a></li>
+      <li><a href="../rules-explorer/navigate-rules-explorer.html">How to navigate the Rules Explorer</a></li>
+    </ul>
+  </div>
+</main>
+
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+
+</body>
+</html>

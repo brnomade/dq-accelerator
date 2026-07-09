@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How to read the Organisation page &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.steps{list-style:none;padding:0;display:flex;flex-direction:column}
+.steps li{display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
+.steps li:last-child{border-bottom:none}
+.snum{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:var(--mono);font-weight:600;color:var(--text2)}
+.sbody{flex:1;font-size:14px;color:var(--text);line-height:1.6;padding-top:2px}
+.sbody .sub{font-size:12px;color:var(--text3);margin-top:3px}
+.f{font-weight:600;color:var(--blue)}
+.mono{font-family:var(--mono);font-size:12px;color:var(--text2)}
+.stat-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.stat-table th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)}
+.stat-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top}
+.stat-table tr:last-child td{border-bottom:none}
+.stat-table td:first-child{font-weight:600;color:var(--text);white-space:nowrap;font-family:var(--mono);font-size:12px}
+.note{margin-top:16px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; Ownership Hierarchy</div>
+  <h1>How to read the Organisation page</h1>
+  <p class="lead">The Organisation page shows the full accountability hierarchy as a list of agency rows. Each row summarises the patron, ownership, stewardship, data scope, and profiling coverage for that agency at a glance. Click a row to expand it and see the breakdown by directorate.</p>
+
+  <h2>The agency row</h2>
+  <p class="lead">Each agency card has two lines.</p>
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody"><strong>Line 1</strong> &mdash; the agency acronym and full name. A <span class="f">retired</span> badge appears here if the agency has been retired.</div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody"><strong>Line 2</strong> &mdash; the patron name followed by a summary stat line. The <span class="f">Patron</span> label comes first, then the patron&rsquo;s name (or <em>none assigned</em> if no patron is set), followed by counts for every key dimension of the agency.</div>
+    </li>
+  </ol>
+
+  <h2>Stat line explained</h2>
+  <p class="lead">The values in the stat line are separated by dots and read left to right in order of hierarchy depth.</p>
+  <table class="stat-table">
+    <thead><tr><th>Stat</th><th>What it counts</th></tr></thead>
+    <tbody>
+      <tr><td>N directorate(s)</td><td>Number of active directorates within the agency.</td></tr>
+      <tr><td>N owners</td><td>Total data owners assigned across all directorates. Each directorate has at most one owner, so this equals the number of directorates that have an owner assigned.</td></tr>
+      <tr><td>N stewards</td><td>Unique data stewards working under this agency, counted by individual regardless of how many Critical Data Sets they are assigned to.</td></tr>
+      <tr><td>N CDS</td><td>Total Critical Data Sets across all directorates.</td></tr>
+      <tr><td>N CDE</td><td>Total active Critical Data Elements across all directorates.</td></tr>
+      <tr><td>N rules</td><td>Total rule allocations across all CDEs.</td></tr>
+      <tr><td>Profiling</td><td>Percentage of CDEs that have a field profile recorded. Shows <em>no CDEs defined</em> when there are no CDEs, <em>no CDEs profiled</em> when CDEs exist but none are profiled, and a percentage otherwise. 100% is highlighted in green.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Expanding an agency</h2>
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody">Click anywhere on the agency row to expand it. The chevron on the left rotates to indicate the open state.</div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody">The expanded view shows each directorate as a branch. Each directorate row shows two lines: the directorate name on the first line, and on the second line the <span class="f">Owner</span> label with the owner&rsquo;s name (or <em>none assigned</em>), followed by counts for stewards, CDS, CDE, rules, and profiling scoped to that directorate only.</div>
+    </li>
+    <li>
+      <div class="snum">3</div>
+      <div class="sbody">Click the row again to collapse the agency.</div>
+    </li>
+  </ol>
+
+  <h2>Expanding a directorate</h2>
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody">Within an expanded agency, click any directorate row to expand it. Each directorate has its own independent chevron that rotates to show the open state.</div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody">The expanded directorate shows a read-only list of Critical Data Sets sorted alphabetically. Each CDS entry is prefixed by a <span class="f">CDS</span> type badge and shows three lines of detail to its right: the CDS name in bold with its stat line (CDE count &middot; rule count &middot; profiling coverage) on the first line; the stewards assigned to that CDS on the second line, each as a role pill followed by the steward&rsquo;s name; and the CDS description on the third line.</div>
+    </li>
+    <li>
+      <div class="snum">3</div>
+      <div class="sbody">If a CDS has no stewards assigned, <em>none assigned</em> is shown in place of the steward list. If a CDS has no CDEs defined, the profiling stat reads <em>no CDEs profiled</em>.</div>
+    </li>
+    <li>
+      <div class="snum">4</div>
+      <div class="sbody">The CDS list is read-only. To add, edit, or retire a Critical Data Set or its stewardship assignments, use the <strong>Data and Stewardship</strong> page.</div>
+    </li>
+    <li>
+      <div class="snum">5</div>
+      <div class="sbody">Click the directorate row again to collapse it. Multiple directorates can be open at the same time.</div>
+    </li>
+  </ol>
+
+  <div class="note">The stat line counts reflect only active (non-retired) records. Toggle <strong>Show retired</strong> at the top of the page to include retired agencies and directorates in the view.</div>
+
+  <div class="related">
+    <div class="rtitle">Related guides</div>
+    <ul class="rlist">
+      <li><a href="executive-agency-add.html">How to add an Executive Agency &rsaquo;</a></li>
+      <li><a href="directorate-add.html">How to add a Directorate &rsaquo;</a></li>
+      <li><a href="data-patron-add.html">How to add a Data Patron &rsaquo;</a></li>
+      <li><a href="data-owner-add.html">How to add a Data Owner &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>

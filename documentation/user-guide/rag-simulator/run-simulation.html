@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How to run a RAG simulation &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+.steps{list-style:none;padding:0;display:flex;flex-direction:column}
+.steps li{display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
+.steps li:last-child{border-bottom:none}
+.snum{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:var(--mono);font-weight:600;color:var(--text2)}
+.sbody{flex:1;font-size:14px;color:var(--text);line-height:1.6;padding-top:2px}
+.sbody .sub{font-size:12px;color:var(--text3);margin-top:3px}
+.f{font-weight:600;color:var(--blue)}
+.mono{font-family:var(--mono);font-size:12px;color:var(--text2)}
+.col-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.col-table th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)}
+.col-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top;line-height:1.55}
+.col-table tr:last-child td{border-bottom:none}
+.col-table td:first-child{font-weight:600;color:var(--text);white-space:nowrap;padding-right:16px}
+.note{margin-top:20px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; RAG Simulator</div>
+  <h1>How to run a RAG simulation</h1>
+  <p class="lead">The RAG Simulator lets you enter measurement results for a specific field and instantly see whether each assigned data quality rule would rate RED, AMBER, or GREEN. You can also adjust criticality ratings and bumper values to explore how the thresholds change before committing anything to the data.</p>
+
+  <h2>Step 1 &mdash; Select a Critical Data Element</h2>
+
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody">Click <span class="f">RAG Simulator</span> in the left sidebar.</div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody">Use the four cascading dropdowns to locate the field you want to simulate:
+        <div class="sub">Select an <strong>Agency</strong>, then a <strong>Directorate</strong>, then a <strong>Data Set</strong>, then the <strong>Field</strong> (CDE). Each dropdown only becomes active once the previous one has a value.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">3</div>
+      <div class="sbody">Once a field is selected, the panel below the dropdowns shows the CDE identity and its criticality ratings.
+        <div class="sub">The CDE identity shows the field name, source table, data set, and agency. The criticality panel shows one tile per criticality group (for example OPS, POL, REP, STRAT), each with its current level and score.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">4</div>
+      <div class="sbody">To the right of the criticality tiles, the <span class="f">Overall score</span>, <span class="f">Relative score</span>, and <span class="f">RAG thresholds</span> are calculated automatically from the current criticality levels.
+        <div class="sub">See <a href="rag-calculation.html" style="color:var(--blue)">How the RAG rating is calculated</a> for a full explanation of how these numbers are derived.</div>
+      </div>
+    </li>
+  </ol>
+
+  <h2>Adjusting criticality for simulation</h2>
+
+  <p style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:16px">You can change any criticality level directly in the simulator to explore how the RAG thresholds would shift. The dropdown in each criticality tile lets you select a different level. Changed tiles are highlighted.</p>
+
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody">Change one or more criticality level dropdowns in the tiles. The Overall score, Relative score, and RAG thresholds update immediately.</div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody">If you want to keep the changes, click <span class="f">Apply</span> (shown below the tiles when values differ from the stored ones). This saves the new levels back to the data permanently.
+        <div class="sub">If you want to discard the changes and return to the stored values, click <span class="f">Reset</span>.</div>
+      </div>
+    </li>
+  </ol>
+
+  <div class="note">Applying criticality changes from the simulator has the same effect as editing the CDE from the Data and Stewardship page. The changes are saved to your working data and will be included in your next delta export.</div>
+
+  <h2>Step 2 &mdash; Enter rule measurements</h2>
+
+  <p style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:16px">Once a CDE is selected, a measurement table appears showing all rules allocated to that field. Each row represents one rule allocation.</p>
+
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody">For each rule row, enter the <span class="f">Sample size</span> &mdash; the total number of records the rule checked (default 1,000).</div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody">Enter the <span class="f">Failing records</span> &mdash; the number of records that failed the check (default 1).</div>
+    </li>
+    <li>
+      <div class="snum">3</div>
+      <div class="sbody">The <span class="f">Pass rate</span> and <span class="f">RAG</span> columns update immediately. The row background tints green, amber, or red to match.</div>
+    </li>
+    <li>
+      <div class="snum">4</div>
+      <div class="sbody">A summary bar at the top of the table shows the total count of GREEN, AMBER, and RED rules across the simulation.</div>
+    </li>
+  </ol>
+
+  <h2>Understanding the measurement table columns</h2>
+
+  <table class="col-table">
+    <thead><tr><th>Column</th><th>What it shows</th></tr></thead>
+    <tbody>
+      <tr><td>Rule</td><td>The name of the data quality rule.</td></tr>
+      <tr><td>Dimension</td><td>The quality dimension measured by this allocation (for example, Completeness).</td></tr>
+      <tr><td>Bumper</td><td>A value from 1 to 5 that raises the GREEN threshold. Use the &minus; and + buttons to adjust it. Bumper 1 means no adjustment; bumper 5 sets the GREEN threshold to 100%. See <a href="rag-calculation.html" style="color:var(--blue)">How the RAG rating is calculated</a>.</td></tr>
+      <tr><td>Thresholds</td><td>The calculated GREEN, AMBER, and RED pass-rate thresholds for this rule, taking the bumper into account.</td></tr>
+      <tr><td>Sample size</td><td>Editable. The number of records checked by the rule run.</td></tr>
+      <tr><td>Failing records</td><td>Editable. The number of records that did not pass the rule check.</td></tr>
+      <tr><td>Pass rate</td><td>Calculated as (sample &minus; failing) &divide; sample.</td></tr>
+      <tr><td>RAG</td><td>GREEN if pass rate &ge; GREEN threshold; AMBER if &ge; AMBER threshold; RED otherwise.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Saving an adjusted bumper value</h2>
+
+  <p style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:16px">If you change a bumper value during the simulation and want to keep it, you can save it back to the rule allocation without leaving the simulator.</p>
+
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody">Adjust the bumper using the &minus; and + buttons on a rule row. When the value differs from the stored value, <span class="f">Apply</span> and <span class="f">Reset</span> buttons appear.</div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody">Click <span class="f">Apply</span> to save the new bumper to that rule allocation. A brief <em>Saved</em> confirmation appears. Click <span class="f">Reset</span> to revert to the stored value without saving.</div>
+    </li>
+  </ol>
+
+  <div class="note">The simulator does not retain your measurement inputs between sessions. Sample size and failing count values reset when you navigate away or reload the page. Only criticality levels and bumper values saved with the Apply button are persisted.</div>
+
+  <div class="related">
+    <div class="rtitle">Related guides</div>
+    <ul class="rlist">
+      <li><a href="rag-calculation.html">How the RAG rating is calculated &rsaquo;</a></li>
+      <li><a href="../data-stewardship/cde-edit-retire.html">How to edit or retire a Critical Data Element &rsaquo;</a></li>
+      <li><a href="../data-stewardship/rule-allocate.html">How to assign a rule to a CDE &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>

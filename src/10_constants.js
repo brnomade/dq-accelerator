@@ -1,0 +1,375 @@
+const SCHEMA = {
+  executive_agency_type: {
+    pk: 'executive_agency_type_id',
+    cols: [
+      { name: 'executive_agency_type_id',          type: 'int',      label: 'ID' },
+      { name: 'executive_agency_type_description', type: 'str',      label: 'Description' },
+      { name: 'retiring_timestamp',                type: 'datetime', label: 'Retired' },
+    ],
+    readOnly: true,
+    label: 'Executive Agency Type',
+  },
+  executive_agency: {
+    pk: 'executive_agency_id',
+    cols: [
+      { name: 'executive_agency_id',      type: 'int',      label: 'ID' },
+      { name: 'executive_agency_type_id', type: 'int',      label: 'Type', required: true, fk: { table: 'executive_agency_type', field: 'executive_agency_type_id', display: 'executive_agency_type_description' } },
+      { name: 'agency_acronymn',          type: 'str',      label: 'Acronym' },
+      { name: 'agency_name',              type: 'str',      label: 'Name' },
+      { name: 'retiring_timestamp',       type: 'datetime', label: 'Retired' },
+    ],
+    label: 'Agency',
+  },
+  directorate: {
+    pk: 'directorate_id',
+    cols: [
+      { name: 'directorate_id',       type: 'int',      label: 'ID' },
+      { name: 'executive_agency_id',  type: 'int',      label: 'Agency',   required: true, fk: { table: 'executive_agency', field: 'executive_agency_id', display: 'agency_acronymn' } },
+      { name: 'directorate_acronymn', type: 'str',      label: 'Acronym' },
+      { name: 'directorate_name',     type: 'str',      label: 'Name' },
+      { name: 'directorate_level',    type: 'str',      label: 'Level',    optional: true },
+      { name: 'retiring_timestamp',   type: 'datetime', label: 'Retired' },
+    ],
+    label: 'Directorate',
+  },
+  critical_data_set: {
+    pk: 'critical_data_set_id',
+    cols: [
+      { name: 'critical_data_set_id',  type: 'int',      label: 'ID' },
+      { name: 'directorate_id',        type: 'int',      label: 'Directorate', required: true, fk: { table: 'directorate', field: 'directorate_id', display: 'directorate_name' } },
+      { name: 'data_set_name',         type: 'str',      label: 'Name' },
+      { name: 'data_set_description',  type: 'text',     label: 'Description', optional: true },
+      { name: 'data_set_subdivision',  type: 'str',      label: 'Subdivision', optional: true },
+      { name: 'retiring_timestamp',    type: 'datetime', label: 'Retired' },
+    ],
+    label: 'Critical Data Set',
+  },
+  critical_data_element: {
+    pk: 'critical_data_element_id',
+    cols: [
+      { name: 'critical_data_element_id', type: 'int',      label: 'ID' },
+      { name: 'critical_data_set_id',     type: 'int',      label: 'Data Set', fk: { table: 'critical_data_set', field: 'critical_data_set_id', display: 'data_set_name' } },
+      { name: 'source_platform_name',     type: 'str',      label: 'Platform' },
+      { name: 'source_system_name',       type: 'str',      label: 'System' },
+      { name: 'source_database_name',     type: 'str',      label: 'Database' },
+      { name: 'source_table_name',        type: 'str',      label: 'Table' },
+      { name: 'source_field_name',        type: 'str',      label: 'Field' },
+      { name: 'source_snapshot_filter',   type: 'text',     label: 'Snapshot filter' },
+      { name: 'data_element_definition',  type: 'text',     label: 'Definition' },
+      { name: 'data_element_explanation', type: 'text',     label: 'Explanation' },
+      { name: 'retiring_timestamp',       type: 'datetime', label: 'Retired' },
+    ],
+    label: 'Critical Data Element',
+  },
+  data_quality_rule: {
+    pk: 'data_quality_rule_id',
+    cols: [
+      { name: 'data_quality_rule_id', type: 'int',      label: 'ID' },
+      { name: 'rule_name',            type: 'str',      label: 'Name' },
+      { name: 'rule_explanation',     type: 'text',     label: 'Explanation',  optional: true },
+      { name: 'sql_code',             type: 'text',     label: 'SQL code',     required: true, tall: true },
+      { name: 'sql_code_sample',      type: 'text',     label: 'SQL sample',   optional: true },
+      { name: 'source_code_link',     type: 'str',      label: 'Source link',  optional: true },
+      { name: 'automated',            type: 'bool',     label: 'Automated' },
+      { name: 'retiring_timestamp',   type: 'datetime', label: 'Retired' },
+    ],
+    label: 'Data Quality Rule',
+  },
+  data_quality_rule_allocation: {
+    pk: 'data_quality_rule_allocation_id',
+    cols: [
+      { name: 'data_quality_rule_allocation_id', type: 'int',      label: 'ID' },
+      { name: 'quality_dimension_id',            type: 'int',      label: 'Quality Dimension', fk: { table: 'quality_dimension', field: 'quality_dimension_id', display: 'dimension_name' } },
+      { name: 'critical_data_element_id',        type: 'int',      label: 'CDE', fk: { table: 'critical_data_element', field: 'critical_data_element_id', display: 'source_field_name' } },
+      { name: 'data_quality_rule_id',            type: 'int',      label: 'Rule', fk: { table: 'data_quality_rule', field: 'data_quality_rule_id', display: 'rule_name' } },
+      { name: 'bumper_value',                    type: 'float',    label: 'Bumper value' },
+      { name: 'frequency',                       type: 'str',      label: 'Frequency' },
+      { name: 'retiring_timestamp',              type: 'datetime', label: 'Retired' },
+    ],
+    label: 'Rule Allocation',
+  },
+  cde_criticality: {
+    pk: 'cde_criticality_id',
+    cols: [
+      { name: 'cde_criticality_id',         type: 'int',      label: 'ID' },
+      { name: 'critical_data_element_id',   type: 'int',      label: 'CDE', fk: { table: 'critical_data_element', field: 'critical_data_element_id', display: 'source_field_name' } },
+      { name: 'criticality_group_id',       type: 'int',      label: 'Group', fk: { table: 'criticality_group', field: 'criticality_group_id', display: 'criticality_group_description' } },
+      { name: 'criticality_level_id',       type: 'int',      label: 'Level', fk: { table: 'criticality_level', field: 'criticality_level_id', display: 'criticality_description' } },
+      { name: 'retiring_timestamp',         type: 'datetime', label: 'Retired' },
+    ],
+    label: 'CDE Criticality',
+  },
+  stewardship: {
+    pk: 'stewardship_id',
+    cols: [
+      { name: 'stewardship_id',        type: 'int',      label: 'ID' },
+      { name: 'critical_data_set_id',  type: 'int',      label: 'Data Set', required: true, fk: { table: 'critical_data_set', field: 'critical_data_set_id', display: 'data_set_name' } },
+      { name: 'data_steward_id',       type: 'int',      label: 'Steward',  required: true, fk: { table: 'data_steward', field: 'data_steward_id', display: 'data_steward_name' } },
+      { name: 'retiring_timestamp',    type: 'datetime', label: 'Retired' },
+    ],
+    label: 'Stewardship',
+  },
+  data_patron: {
+    pk: 'data_patron_id',
+    cols: [
+      { name: 'data_patron_id',        type: 'int',      label: 'ID' },
+      { name: 'executive_agency_id',   type: 'int',      label: 'Agency',      required: true, fk: { table: 'executive_agency', field: 'executive_agency_id', display: 'agency_acronymn' } },
+      { name: 'data_patron_name',      type: 'str',      label: 'Name' },
+      { name: 'data_patron_title',     type: 'str',      label: 'Title' },
+      { name: 'data_patron_email',     type: 'str',      label: 'Email',       optional: true },
+      { name: 'assignment_start_date', type: 'datetime', label: 'Start date',  required: true },
+      { name: 'retiring_timestamp',    type: 'datetime', label: 'Retired' },
+    ],
+    label: 'Data Patron',
+  },
+  data_owner: {
+    pk: 'data_owner_id',
+    cols: [
+      { name: 'data_owner_id',         type: 'int',      label: 'ID' },
+      { name: 'directorate_id',        type: 'int',      label: 'Directorate', required: true, fk: { table: 'directorate', field: 'directorate_id', display: 'directorate_name' } },
+      { name: 'data_owner_name',       type: 'str',      label: 'Name' },
+      { name: 'data_owner_title',      type: 'str',      label: 'Title' },
+      { name: 'data_owner_email',      type: 'str',      label: 'Email',       optional: true },
+      { name: 'assignment_start_date', type: 'datetime', label: 'Start date',  required: true },
+      { name: 'retiring_timestamp',    type: 'datetime', label: 'Retired' },
+    ],
+    label: 'Data Owner',
+  },
+  data_steward: {
+    pk: 'data_steward_id',
+    cols: [
+      { name: 'data_steward_id',       type: 'int',      label: 'ID' },
+      { name: 'data_steward_name',     type: 'str',      label: 'Name' },
+      { name: 'data_steward_title',    type: 'str',      label: 'Title',      optional: true },
+      { name: 'data_steward_email',    type: 'str',      label: 'Email',      optional: true },
+      { name: 'assignment_start_date', type: 'datetime', label: 'Start date', required: true },
+      { name: 'steward_role_type_id',  type: 'int',      label: 'Role', fk: { table: 'steward_role_type', field: 'steward_role_type_id', display: 'role_description' }, required: true },
+      { name: 'retiring_timestamp',    type: 'datetime', label: 'Retired' },
+    ],
+    label: 'Data Steward',
+  },
+  quality_dimension: {
+    pk: 'quality_dimension_id',
+    cols: [
+      { name: 'quality_dimension_id',  type: 'int',      label: 'ID' },
+      { name: 'dimension_name',        type: 'str',      label: 'Name' },
+      { name: 'dimension_acronymn',    type: 'str',      label: 'Acronym' },
+      { name: 'retiring_timestamp',    type: 'datetime', label: 'Retired' },
+    ],
+    readOnly: true,
+    label: 'Quality Dimension',
+  },
+  criticality_group: {
+    pk: 'criticality_group_id',
+    cols: [
+      { name: 'criticality_group_id',          type: 'int',      label: 'ID' },
+      { name: 'criticality_group_description', type: 'str',      label: 'Description' },
+      { name: 'criticality_group_acronymn',    type: 'str',      label: 'Acronym' },
+      { name: 'retiring_timestamp',            type: 'datetime', label: 'Retired' },
+    ],
+    readOnly: true,
+    label: 'Criticality Group',
+  },
+  criticality_level: {
+    pk: 'criticality_level_id',
+    cols: [
+      { name: 'criticality_level_id',       type: 'int',      label: 'ID' },
+      { name: 'criticality_description',    type: 'str',      label: 'Description' },
+      { name: 'criticality_score',          type: 'int',      label: 'Score' },
+      { name: 'overall_criticality_score',  type: 'int',      label: 'Overall score' },
+      { name: 'retiring_timestamp',         type: 'datetime', label: 'Retired' },
+    ],
+    readOnly: true,
+    label: 'Criticality Level',
+  },
+  criticality_group_weight: {
+    pk: 'criticality_group_weight_id',
+    cols: [
+      { name: 'criticality_group_weight_id', type: 'int',      label: 'ID' },
+      { name: 'executive_agency_id',         type: 'int',      label: 'Agency',  required: true, fk: { table: 'executive_agency', field: 'executive_agency_id', display: 'agency_acronymn' } },
+      { name: 'criticality_group_id',        type: 'int',      label: 'Group',   required: true, fk: { table: 'criticality_group', field: 'criticality_group_id', display: 'criticality_group_description' } },
+      { name: 'weight_value',                type: 'float',    label: 'Weight',  required: true },
+      { name: 'retiring_timestamp',          type: 'datetime', label: 'Retired' },
+    ],
+    label: 'Criticality Group Weight',
+  },
+  quality_dimension_weight: {
+    pk: 'quality_dimension_weight_id',
+    cols: [
+      { name: 'quality_dimension_weight_id', type: 'int',      label: 'ID' },
+      { name: 'executive_agency_id',         type: 'int',      label: 'Agency',    required: true, fk: { table: 'executive_agency', field: 'executive_agency_id', display: 'agency_acronymn' } },
+      { name: 'quality_dimension_id',        type: 'int',      label: 'Dimension', required: true, fk: { table: 'quality_dimension', field: 'quality_dimension_id', display: 'dimension_name' } },
+      { name: 'weight_value',                type: 'float',    label: 'Weight',    required: true },
+      { name: 'retiring_timestamp',          type: 'datetime', label: 'Retired' },
+    ],
+    label: 'Quality Dimension Weight',
+  },
+  steward_role_type: {
+    pk: 'steward_role_type_id',
+    cols: [
+      { name: 'steward_role_type_id', type: 'int',      label: 'ID' },
+      { name: 'role_description',     type: 'str',      label: 'Description' },
+      { name: 'retiring_timestamp',   type: 'datetime', label: 'Retired' },
+    ],
+    readOnly: true,
+    label: 'Steward Role Type',
+  },
+  source_table_ddl: {
+    pk: 'source_table_ddl_id',
+    cols: [
+      { name: 'source_table_ddl_id',   type: 'int',      label: 'ID' },
+      { name: 'source_database_name',  type: 'str',      label: 'Database',  required: true },
+      { name: 'source_table_name',     type: 'str',      label: 'Table',     required: true },
+      { name: 'ddl_text',              type: 'text',     label: 'DDL',       required: true, tall: true },
+      { name: 'parsed_columns',        type: 'text',     label: 'Parsed columns' },
+      { name: 'parsed_at',             type: 'str',      label: 'Parsed at' },
+      { name: 'parsed_by',             type: 'str',      label: 'Parsed by' },
+      { name: 'retiring_timestamp',    type: 'datetime', label: 'Retired' },
+    ],
+    label: 'Profiling',
+  },
+  field_profiling: {
+    pk: 'field_profiling_id',
+    cols: [
+      { name: 'field_profiling_id',     type: 'int',      label: 'ID' },
+      { name: 'source_database_name',   type: 'str',      label: 'Database',     required: true },
+      { name: 'source_table_name',      type: 'str',      label: 'Table',        required: true },
+      { name: 'source_field_name',      type: 'str',      label: 'Field',        required: true },
+      { name: 'physical_data_type',     type: 'str',      label: 'Physical type' },
+      { name: 'semantic_type',          type: 'str',      label: 'Semantic type', optional: true },
+      { name: 'profiled_at',            type: 'str',      label: 'Profiled at' },
+      { name: 'summary_raw',            type: 'text',     label: 'Column profiling' },
+      { name: 'type_patterns_raw',      type: 'text',     label: 'Pattern analysis',   optional: true },
+      { name: 'top_values_raw',         type: 'text',     label: 'Frequency analysis', optional: true },
+      { name: 'length_distribution_raw',type: 'text',     label: 'Length profile',     optional: true },
+      { name: 'duplicate_analysis_raw', type: 'text',     label: 'Duplicate analysis', optional: true },
+      { name: 'outlier_analysis_raw',   type: 'text',     label: 'Outlier analysis',   optional: true },
+      { name: 'profiling_notes',        type: 'text',     label: 'Notes',            optional: true },
+      { name: 'profiled_by',            type: 'str',      label: 'Profiled By',      optional: true },
+      { name: 'retiring_timestamp',     type: 'datetime', label: 'Retired' },
+    ],
+    label: 'Field Profiling',
+  },
+  shortlist_group: {
+    pk: 'shortlist_group_id',
+    cols: [
+      { name: 'shortlist_group_id',    type: 'int',      label: 'ID' },
+      { name: 'directorate_id',        type: 'int',      label: 'Directorate', required: true, fk: { table: 'directorate', field: 'directorate_id', display: 'directorate_name' } },
+      { name: 'shortlist_group_label', type: 'str',      label: 'Label' },
+      { name: 'shortlist_colour_hex',  type: 'str',      label: 'Colour (hex)' },
+      { name: 'retiring_timestamp',    type: 'datetime', label: 'Retired' },
+    ],
+    label: 'Shortlist Group',
+  },
+  cde_shortlist_tag: {
+    pk: 'cde_shortlist_tag_id',
+    cols: [
+      { name: 'cde_shortlist_tag_id',       type: 'int',      label: 'ID' },
+      { name: 'critical_data_element_id',   type: 'int',      label: 'CDE', required: true, fk: { table: 'critical_data_element', field: 'critical_data_element_id', display: 'source_field_name' } },
+      { name: 'shortlist_group_id',         type: 'int',      label: 'Shortlist Group', required: true, fk: { table: 'shortlist_group', field: 'shortlist_group_id', display: 'shortlist_group_label' } },
+      { name: 'retiring_timestamp',         type: 'datetime', label: 'Retired' },
+    ],
+    label: 'CDE Shortlist Tag',
+  },
+};
+
+// Excel sheet name -> internal table name mapping
+const SHEET_MAP = {
+  'Critical Data Set':            'critical_data_set',
+  'Critical Data Element':        'critical_data_element',
+  'Data Quality Rule':            'data_quality_rule',
+  'Data Quality Rule Allocation': 'data_quality_rule_allocation',
+  'CDE Criticality':              'cde_criticality',
+  'Stewardship':                  'stewardship',
+  'Data Patron':                  'data_patron',
+  'Data Owner':                   'data_owner',
+  'Data Steward':                 'data_steward',
+  'Executive Agency':             'executive_agency',
+  'Directorate':                  'directorate',
+  'Criticality Group Weight':     'criticality_group_weight',
+  'Quality Dimension Weight':     'quality_dimension_weight',
+  'Quality Dimension':            'quality_dimension',
+  'Criticality Group':            'criticality_group',
+  'Criticality Level':            'criticality_level',
+  'Steward Role Type':            'steward_role_type',
+  'Executive Agency Type':        'executive_agency_type',
+  'Shortlist Group':              'shortlist_group',
+  'CDE Shortlist Tag':            'cde_shortlist_tag',
+};
+
+// ===============================================================================
+// TABLE GROUPS -- logical groupings for display in Health and Export views
+// ===============================================================================
+const TABLE_GROUPS = [
+  {
+    id: 'dq',
+    label: 'Data Quality Elements',
+    description: 'The core data quality model -- sets, elements, rules, allocations and stewardship',
+    color: '--green',
+    accent: 'var(--green)',
+    tables: [
+      'critical_data_element',
+      'source_table_ddl',
+      'field_profiling',
+      'shortlist_group',
+      'cde_shortlist_tag',
+    ],
+  },
+  {
+    id: 'ownership',
+    label: 'Ownership Hierarchy',
+    description: 'Agencies, directorates, and the people accountable for data',
+    color: '--accent',
+    accent: '#18b4d4',
+    tables: [
+      'executive_agency',
+      'directorate',
+      'data_patron',
+      'data_owner',
+      'data_steward',
+    ],
+  },
+  {
+    id: 'weights',
+    label: 'Weights & Thresholds',
+    description: 'Per-agency scoring weights for criticality groups and quality dimensions',
+    color: '--amber',
+    accent: 'var(--amber)',
+    tables: [
+      'criticality_group_weight',
+      'quality_dimension_weight',
+    ],
+  },
+  {
+    id: 'settings',
+    label: 'Core Settings',
+    description: 'Reference lookup tables -- read-only, used to populate dropdowns',
+    color: '--text3',
+    accent: '#5f7294',
+    tables: [
+      'executive_agency_type',
+      'steward_role_type',
+      'quality_dimension',
+      'criticality_group',
+      'criticality_level',
+    ],
+  },
+];
+
+// ===============================================================================
+// TASK 2 -- EXCEL IMPORTER
+// Reads xlsx, strips helper columns, coerces types per schema.
+// ===============================================================================
+
+// Columns to always strip (Excel helpers, not part of DB schema)
+const STRIP_COLS = new Set([
+  'Unnamed: 6','Unnamed: 11','Unnamed: 7','Unnamed: 5','Unnamed: 4',
+  'Column1','SQL CODE: DATABASE - TABLE - FIELD PLACEHOLDERS',
+  'SQL SAMPLE: DATABASE - TABLE - FIELD PLACEHOLDERS',
+  'Composed Rule','Composed Sample',
+  // display-only helper cols
+  'directorate_name','agency_acronymn','data_set_name','directorate_name',
+  'dimension_name','source_field_name','source_table_name','source_database_name',
+  'rule_name','data_steward_name','role_description','criticality_group_description',
+  'criticality_description','executive_agency_type_description','agency_acronymn',
+]);

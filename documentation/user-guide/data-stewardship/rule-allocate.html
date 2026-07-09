@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How to assign a rule to a CDE &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+.steps{list-style:none;padding:0;display:flex;flex-direction:column}
+.steps li{display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
+.steps li:last-child{border-bottom:none}
+.snum{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:var(--mono);font-weight:600;color:var(--text2)}
+.sbody{flex:1;font-size:14px;color:var(--text);line-height:1.6;padding-top:2px}
+.sbody .sub{font-size:12px;color:var(--text3);margin-top:3px}
+.f{font-weight:600;color:var(--blue)}
+.field-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.field-table th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)}
+.field-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top}
+.field-table tr:last-child td{border-bottom:none}
+.field-table td:first-child{font-weight:600;color:var(--text);white-space:nowrap}
+.req{font-size:10px;color:var(--amber);font-family:var(--mono);margin-left:6px}
+.opt{font-size:10px;color:var(--text3);font-family:var(--mono);margin-left:6px}
+.note{margin-top:20px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; Data and Stewardship</div>
+  <h1>How to assign a rule to a CDE</h1>
+  <p class="lead">Assigning a data quality rule to a CDE creates a rule allocation record. Each allocation links one rule to one CDE and specifies how frequently the check runs and what the acceptable threshold (bumper value) is.</p>
+
+  <h2>Add an allocation</h2>
+
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody">Expand the hierarchy until the target CDE row is visible.</div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody">Click the <span class="f">+ icon</span> on the right side of the CDE row. The allocation panel slides open.
+        <div class="sub">This button is only visible when your steward identity is set.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">3</div>
+      <div class="sbody">Select a <span class="f">Rule</span> from the dropdown. All active data quality rules are listed.</div>
+    </li>
+    <li>
+      <div class="snum">4</div>
+      <div class="sbody">Select the <span class="f">Quality Dimension</span> this allocation measures (for example, Completeness, Accuracy, Timeliness).</div>
+    </li>
+    <li>
+      <div class="snum">5</div>
+      <div class="sbody">Set the <span class="f">Frequency</span> and, if applicable, the <span class="f">Bumper Value</span>.
+        <div class="sub">The bumper value is the threshold used by the rule (for example, a maximum acceptable null rate). Leave it blank if no threshold applies.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">6</div>
+      <div class="sbody">Click <span class="f">Add</span>. The allocation is saved and the CDE row updates to show the new rule and metric counts. The CDE row now shows a chevron button to expand and view all allocations.</div>
+    </li>
+  </ol>
+
+  <h2>View allocations on a CDE</h2>
+
+  <p style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:16px">When a CDE has at least one rule allocated, a chevron button appears on the right of the CDE row. Click it to expand the allocations list. Each allocation shows:</p>
+
+  <table class="field-table">
+    <thead><tr><th>Column</th><th>What it shows</th></tr></thead>
+    <tbody>
+      <tr><td>Rule name</td><td>The name of the data quality rule.</td></tr>
+      <tr><td>Dimension</td><td>The quality dimension measured by this allocation.</td></tr>
+      <tr><td>Frequency</td><td>How often the check is run.</td></tr>
+      <tr><td>Bumper value</td><td>The threshold. Shown in amber if set; -- if not.</td></tr>
+      <tr><td>SQL</td><td>Buttons to open the full SQL and the sample SQL for this allocation in the SQL viewer.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Edit or remove an allocation</h2>
+
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody">Expand the CDE row to show the allocations list.</div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody">Click the <span class="f">pencil icon</span> on the allocation row to edit it, or the <span class="f">eye-off icon</span> to retire it.
+        <div class="sub">Retiring an allocation removes it from active counts but does not delete the record. Retired allocations appear faded in the expanded list.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">3</div>
+      <div class="sbody">If editing: update the fields in the panel and click <span class="f">Save</span>.</div>
+    </li>
+  </ol>
+
+  <div class="note">If the CDE is missing a snapshot filter, its allocation rows show a red border and the SQL viewer buttons are disabled. Edit the CDE and add a snapshot filter to enable SQL generation.</div>
+
+  <div class="related">
+    <div class="rtitle">Related guides</div>
+    <ul class="rlist">
+      <li><a href="cde-add.html">How to add a Critical Data Element &rsaquo;</a></li>
+      <li><a href="cde-edit-retire.html">How to edit or retire a Critical Data Element &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>

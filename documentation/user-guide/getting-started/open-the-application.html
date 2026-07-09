@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How to open the application &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.steps{list-style:none;padding:0;display:flex;flex-direction:column}
+.steps li{display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
+.steps li:last-child{border-bottom:none}
+.snum{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:var(--mono);font-weight:600;color:var(--text2)}
+.sbody{flex:1;font-size:14px;color:var(--text);line-height:1.6;padding-top:2px}
+.sbody .sub{font-size:12px;color:var(--text3);margin-top:3px}
+.f{font-weight:600;color:var(--blue)}
+.mono{font-family:var(--mono);font-size:12px;color:var(--text2)}
+.warn{margin-top:8px;padding:10px 14px;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.3);border-radius:var(--radius);font-size:12px;color:var(--amber);line-height:1.6}
+.info{margin-top:8px;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.bp{display:flex;flex-direction:column;gap:8px}
+.bp-item{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--green);border-radius:var(--radius);font-size:13px;color:var(--text2);line-height:1.5}
+.bp-num{flex-shrink:0;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--green);padding-top:1px}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; Getting Started</div>
+  <h1>How to open the application</h1>
+  <p class="lead">The application runs as a local HTML file. It does not connect to the internet or save data automatically between sessions. You must reload master data at the start of every session.</p>
+
+  <h2>Step 1 &mdash; Check you have the latest build</h2>
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody">If the application is already open, look at the build number shown below the application name in the top-left of the header. It reads <span class="mono">build-YYYYMMDD-HHMM</span>.</div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody">Compare it against the filename of the latest zip file you have received from your master steward. The zip filename contains the same build number.<div class="sub">If your open build is older, close the application and use the latest zip.</div></div>
+    </li>
+  </ol>
+
+  <h2>Step 2 &mdash; Extract and open</h2>
+  <ol class="steps">
+    <li>
+      <div class="snum">3</div>
+      <div class="sbody">Extract the zip file to a folder on your computer. Do not open the HTML file from inside the zip &mdash; it must be extracted first so the <span class="mono">user-guide/</span> folder is present alongside it.</div>
+    </li>
+    <li>
+      <div class="snum">4</div>
+      <div class="sbody">Open <span class="f">dq-accelerator.html</span> in your browser by double-clicking it or dragging it into a browser window.</div>
+    </li>
+    <li>
+      <div class="snum">5</div>
+      <div class="sbody">The application opens on the Import screen. This is normal &mdash; no data is loaded yet.</div>
+    </li>
+  </ol>
+
+  <h2>Session best practice &mdash; follow this order every time</h2>
+  <div class="bp">
+    <div class="bp-item"><div class="bp-num">1</div><div>If you have unsaved changes from a previous session still in the browser, <strong>export your delta first</strong> before doing anything else.</div></div>
+    <div class="bp-item"><div class="bp-num">2</div><div><strong>Reset your data</strong> to clear the previous session from the browser.</div></div>
+    <div class="bp-item"><div class="bp-num">3</div><div><strong>Load the latest master data file</strong> from your master steward.</div></div>
+    <div class="bp-item"><div class="bp-num">4</div><div>Do your work. When done, <strong>export your delta and reset</strong> before closing.</div></div>
+  </div>
+
+  <div class="warn" style="margin-top:24px">Data stored in the browser is not permanent. Clearing browser history, cookies, or site data will erase it. Always export before closing your session.</div>
+
+  <div class="related">
+    <div class="rtitle">Next steps</div>
+    <ul class="rlist">
+      <li><a href="set-steward-identity.html">How to set your steward identity &rsaquo;</a></li>
+      <li><a href="load-master-data.html">How to load the master data &rsaquo;</a></li>
+      <li><a href="export-and-reset.html">How to export your changes and reset &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How to filter fields by profiling status &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+.steps{list-style:none;padding:0;display:flex;flex-direction:column}
+.steps li{display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
+.steps li:last-child{border-bottom:none}
+.snum{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:var(--mono);font-weight:600;color:var(--text2)}
+.sbody{flex:1;font-size:14px;color:var(--text);line-height:1.6;padding-top:2px}
+.sbody .sub{font-size:12px;color:var(--text3);margin-top:3px}
+.f{font-weight:600;color:var(--blue)}
+.mono{font-family:var(--mono);font-size:12px;color:var(--text2)}
+.defs{margin:20px 0;display:flex;flex-direction:column;gap:1px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.def{display:flex;align-items:flex-start;gap:14px;padding:11px 14px;background:var(--bg2)}
+.def:nth-child(even){background:var(--bg)}
+.def-term{font-size:12px;font-weight:600;font-family:var(--mono);color:var(--blue);flex-shrink:0;width:140px;padding-top:1px}
+.def-desc{font-size:13px;color:var(--text2);line-height:1.55}
+.note{margin-top:16px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; Table &amp; Field Profiling</div>
+  <h1>How to filter fields by profiling status</h1>
+  <p class="lead">The status filter narrows the Profiling view to show only the tables and fields that match a specific state. Use it to focus your work during a profiling session.</p>
+
+  <ol class="steps">
+    <li><div class="snum">1</div><div class="sbody">Click <span class="f">Profiling</span> in the left sidebar, under Data Quality Elements.</div></li>
+    <li><div class="snum">2</div><div class="sbody">Find the <span class="f">Filter</span> dropdown in the filter bar at the top of the page, to the right of the search box.</div></li>
+    <li><div class="snum">3</div><div class="sbody">Select the status you want to work on. The list below explains each option.</div></li>
+  </ol>
+
+  <div class="defs">
+    <div class="def">
+      <div class="def-term">All</div>
+      <div class="def-desc">Shows every table and field in scope. This is the default view.</div>
+    </div>
+    <div class="def">
+      <div class="def-term">Tables Pending</div>
+      <div class="def-desc">Shows only tables that have not yet been added to the Table Library. These need a DDL profile before field profiling can begin.</div>
+    </div>
+    <div class="def">
+      <div class="def-term">Fields Pending</div>
+      <div class="def-desc">Shows only fields that have not yet been profiled. Tables without any pending fields are hidden.</div>
+    </div>
+    <div class="def">
+      <div class="def-term">Blind Rules</div>
+      <div class="def-desc">Shows only fields that have quality rules allocated but no field profile. These rules are running without profiling data &mdash; address these first to ensure rules have full context.</div>
+    </div>
+    <div class="def">
+      <div class="def-term">Profiled</div>
+      <div class="def-desc">Shows only fields that have a completed profile. Use this to review or update existing profiles.</div>
+    </div>
+  </div>
+
+  <div class="note">The search box and the status filter work together. You can type a table or field name in the search box and select a status at the same time to narrow the view further. Set the filter back to All to return to the full view.</div>
+
+  <div class="related">
+    <div class="rtitle">Related guides</div>
+    <ul class="rlist">
+      <li><a href="field-profile.html">How to profile a field &rsaquo;</a></li>
+      <li><a href="field-my-data.html">How to scope the view to your own data &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How to view rule SQL &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+.steps{list-style:none;padding:0;display:flex;flex-direction:column}
+.steps li{display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
+.steps li:last-child{border-bottom:none}
+.snum{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:var(--mono);font-weight:600;color:var(--text2)}
+.sbody{flex:1;font-size:14px;color:var(--text);line-height:1.6;padding-top:2px}
+.sbody .sub{font-size:12px;color:var(--text3);margin-top:3px}
+.f{font-weight:600;color:var(--blue)}
+.mono{font-family:var(--mono);font-size:12px;color:var(--text2)}
+.badge-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.badge-table th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)}
+.badge-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top;line-height:1.55}
+.badge-table tr:last-child td{border-bottom:none}
+.badge-table td:first-child{font-family:var(--mono);font-size:11px;font-weight:700;white-space:nowrap;padding-right:16px}
+.note{margin-top:20px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.warn{margin-bottom:28px;padding:12px 16px;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.3);border-radius:var(--radius);font-size:13px;color:var(--amber);line-height:1.6}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; Rules Explorer</div>
+  <h1>How to view rule SQL</h1>
+  <p class="lead">For each allocation in the Rules Explorer, you can view the SQL query that will be run against the target field. The application composes the SQL by substituting the CDE's source details into the rule's SQL template.</p>
+
+  <h2>Open the SQL viewer</h2>
+
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody">In the Rules Explorer, expand a rule that has allocations, then navigate through the Agency, CDS, and Table levels to reach the CDE row.</div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody">Click the <span class="f">CDE row</span> to expand its allocation detail panel.</div>
+    </li>
+    <li>
+      <div class="snum">3</div>
+      <div class="sbody">Click one of the two SQL buttons in the allocation detail:
+        <div class="sub">The <strong>code icon</strong> opens the full composed SQL &mdash; the main aggregate check run by the rule.<br/>The <strong>sample icon</strong> opens the sample SQL &mdash; a row-level query used to fetch example rows that failed the check.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">4</div>
+      <div class="sbody">The SQL viewer panel opens, showing the composed query, the rule name, field name, data set name, agency, and the substituted snapshot filter. Copy the SQL from the viewer to run it in Athena or another query tool.</div>
+    </li>
+  </ol>
+
+  <h2>SQL button states</h2>
+
+  <table class="badge-table">
+    <thead><tr><th>What you see</th><th>What it means</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Code icon (active)</td>
+        <td>Full SQL is available and the CDE has a snapshot filter. Click to view the composed query.</td>
+      </tr>
+      <tr>
+        <td>Sample icon (active)</td>
+        <td>Sample SQL is available (the rule has a custom sample template) and the CDE has a snapshot filter. Click to view.</td>
+      </tr>
+      <tr>
+        <td style="color:var(--amber)">DEF badge</td>
+        <td>The rule has no custom sample SQL. The execution engine will use its default sampling approach. No sample SQL is viewable here.</td>
+      </tr>
+      <tr>
+        <td>Code or sample icon (greyed out) + warning icon</td>
+        <td>The CDE is missing its snapshot filter. SQL cannot be composed until the filter is added. Edit the CDE to fix this.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>How the SQL is composed</h2>
+
+  <p style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:14px">The rule SQL template contains tokens that the application replaces with the CDE's actual source details at view time. Common tokens include:</p>
+
+  <table class="badge-table">
+    <thead><tr><th>Token</th><th>Replaced with</th></tr></thead>
+    <tbody>
+      <tr><td>&#123;table&#125;</td><td>The CDE's source table name</td></tr>
+      <tr><td>&#123;field&#125;</td><td>The CDE's source field name</td></tr>
+      <tr><td>&#123;database&#125;</td><td>The CDE's source database name</td></tr>
+      <tr><td>&#123;snapshot&#125;</td><td>The CDE's snapshot filter expression</td></tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:14px;color:var(--text2);line-height:1.6;margin-top:14px;margin-bottom:0">The composed SQL shown in the viewer is exactly what would be submitted to the query engine. If the composed SQL looks wrong, check the rule's SQL template (editable via the pencil icon on the rule row) or the CDE's snapshot filter (editable from Data and Stewardship).</p>
+
+  <div class="note">The SQL viewer is read-only. To change the SQL, edit the rule itself using the pencil icon on the rule row. Changes to the rule template apply immediately to all CDEs it is allocated to.</div>
+
+  <div class="related">
+    <div class="rtitle">Related guides</div>
+    <ul class="rlist">
+      <li><a href="navigate-rules-explorer.html">How to navigate the Rules Explorer &rsaquo;</a></li>
+      <li><a href="rule-add-edit.html">How to add or edit a rule &rsaquo;</a></li>
+      <li><a href="allocation-manage.html">How to manage allocations from the Rules Explorer &rsaquo;</a></li>
+      <li><a href="../data-stewardship/cde-edit-retire.html">How to edit or retire a Critical Data Element &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>

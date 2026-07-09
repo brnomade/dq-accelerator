@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How to review and add AI-suggested rules &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+p{font-size:14px;color:var(--text2);margin-bottom:14px;line-height:1.6}
+.steps{list-style:none;padding:0;display:flex;flex-direction:column}
+.steps li{display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
+.steps li:last-child{border-bottom:none}
+.snum{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:var(--mono);font-weight:600;color:var(--text2)}
+.sbody{flex:1;font-size:14px;color:var(--text);line-height:1.6;padding-top:2px}
+.sbody .sub{font-size:12px;color:var(--text3);margin-top:3px}
+.f{font-weight:600;color:var(--blue)}
+.mono{font-family:var(--mono);font-size:12px;color:var(--text2)}
+.card-type-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.card-type-table th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)}
+.card-type-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top;line-height:1.55}
+.card-type-table tr:last-child td{border-bottom:none}
+.card-type-table td:first-child{font-weight:600;color:var(--text);white-space:nowrap;padding-right:16px}
+.note{margin-top:20px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; Rule Generator</div>
+  <h1>How to review and add AI-suggested rules</h1>
+  <p class="lead">After parsing the AI response, Step 3 displays one card per suggestion. Review each card, adjust the settings if needed, then add individual rules or all of them at once.</p>
+
+  <h2>Two types of suggestion card</h2>
+
+  <p>The AI can suggest either a completely new rule or that an existing rule from the catalogue already fits and should simply be allocated to this field.</p>
+
+  <table class="card-type-table">
+    <thead><tr><th>Card type</th><th>What it means</th><th>What gets saved</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>New rule</td>
+        <td>The AI has written a new SQL-based rule that does not yet exist in the catalogue. The card shows the rule name, quality dimension badge, business description, the profiling observation that triggered the suggestion, and a preview of the SQL.</td>
+        <td>Clicking <strong>Add Rule and Allocate</strong> creates a new rule in the catalogue and allocates it to this field in one step.</td>
+      </tr>
+      <tr>
+        <td>Reuse Existing</td>
+        <td>The AI found an equivalent rule already in the catalogue. The card shows a blue <strong>REUSE EXISTING</strong> badge, the existing rule name, and why the AI thinks it applies.</td>
+        <td>Clicking <strong>Allocate Existing Rule</strong> creates only a new allocation linking the existing rule to this field. The rule itself is unchanged.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Conflict warnings</h2>
+
+  <p>The application checks each suggestion against rules already allocated to this field and flags potential overlaps with an amber warning on the card:</p>
+
+  <table class="card-type-table">
+    <thead><tr><th>Warning</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Dimension already covered</td>
+        <td>This field already has a rule allocated for the same quality dimension. Consider whether you need a second rule for the same dimension or whether you should skip this suggestion.</td>
+      </tr>
+      <tr>
+        <td>Duplicate rule exists</td>
+        <td>A rule with the same name is already in the catalogue. The suggestion is redundant.</td>
+      </tr>
+      <tr>
+        <td>Similar rule exists</td>
+        <td>A rule with a similar name is in the catalogue. Review whether the new rule genuinely adds something different before adding it.</td>
+      </tr>
+      <tr>
+        <td>Rule not found in catalogue</td>
+        <td>Applies to REUSE suggestions only. The AI named a rule that does not exist in the catalogue. The Allocate button will be disabled. Dismiss this card or use the rule name to create it manually.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Adjusting a suggestion before adding it</h2>
+
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody">For a <strong>New rule</strong> card, the rule name is an editable text field. Correct the name if needed before adding &mdash; once added it cannot be changed from the generator.</div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody">Use the <span class="f">Dimension</span> dropdown to change the quality dimension if the AI's choice is wrong (options: Completeness, Validity, Uniqueness, Consistency, Timeliness, Accuracy).</div>
+    </li>
+    <li>
+      <div class="snum">3</div>
+      <div class="sbody">Use the <span class="f">Frequency</span> dropdown to set how often the rule should run (DAILY, WEEKLY, MONTHLY, AD-HOC). Default is DAILY.</div>
+    </li>
+    <li>
+      <div class="snum">4</div>
+      <div class="sbody">Use the <span class="f">Bumper</span> +/&minus; buttons to set the RAG threshold sensitivity for this rule allocation (1&ndash;5). Default is 1. See <a href="../rag-simulator/rag-calculation.html" style="color:var(--blue)">How the RAG rating is calculated</a> for what the bumper value does.</div>
+    </li>
+  </ol>
+
+  <h2>Testing the SQL before adding</h2>
+
+  <p>Each card shows a preview of the SQL template. To copy the composed SQL ready for testing, use the <span class="f">Copy SQL</span> button:</p>
+
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody">Click <span class="f">Copy SQL</span> on the card. The button copies a composed version of the SQL to the clipboard &mdash; with the field's database, table, and field name substituted into the placeholders, and the snapshot filter appended.</div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody">Paste the SQL into Athena (or another query tool) and run it to verify it returns the expected count of failing records.</div>
+    </li>
+    <li>
+      <div class="snum">3</div>
+      <div class="sbody">If the SQL needs correction, do not add this suggestion. Add the rule manually from the Rules Explorer where you can edit the SQL directly. See <a href="../rules-explorer/rule-add-edit.html" style="color:var(--blue)">How to add or edit a rule</a>.</div>
+    </li>
+  </ol>
+
+  <h2>Adding rules</h2>
+
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody">Click <span class="f">Add Rule and Allocate</span> (new rule) or <span class="f">Allocate Existing Rule</span> (reuse suggestion) to add a single card. The card becomes faded and shows <em>Added</em> or <em>Allocated</em> to confirm.</div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody">To add all remaining un-added suggestions at once, click <span class="f">Add all (X remaining)</span> at the top of the Step 3 panel. This applies the current settings on each card without further prompts.</div>
+    </li>
+  </ol>
+
+  <div class="note">
+    Added rules and allocations are saved to your working data immediately and are included in your next delta export. If you add a rule by mistake, go to the Rules Explorer to retire the rule or retire the allocation. See <a href="../rules-explorer/rule-add-edit.html" style="color:var(--blue)">How to add or edit a rule</a> and <a href="../rules-explorer/allocation-manage.html" style="color:var(--blue)">How to manage allocations from the Rules Explorer</a>.<br/><br/>
+    You do not need to add every suggestion. It is normal to accept some, skip others, and run the generator again on the same field after profiling data improves.
+  </div>
+
+  <div class="related">
+    <div class="rtitle">Related guides</div>
+    <ul class="rlist">
+      <li><a href="generate-suggestions.html">How to generate rule suggestions for a field &rsaquo;</a></li>
+      <li><a href="../rag-simulator/rag-calculation.html">How the RAG rating is calculated &rsaquo;</a></li>
+      <li><a href="../rules-explorer/rule-add-edit.html">How to add or edit a rule &rsaquo;</a></li>
+      <li><a href="../rules-explorer/allocation-manage.html">How to manage allocations from the Rules Explorer &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>

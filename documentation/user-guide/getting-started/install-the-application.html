@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How to install the application &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.steps{list-style:none;padding:0;display:flex;flex-direction:column}
+.steps li{display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
+.steps li:last-child{border-bottom:none}
+.snum{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:var(--mono);font-weight:600;color:var(--text2)}
+.sbody{flex:1;font-size:14px;color:var(--text);line-height:1.6;padding-top:2px}
+.sbody .sub{font-size:12px;color:var(--text3);margin-top:3px}
+.f{font-weight:600;color:var(--blue)}
+.mono{font-family:var(--mono);font-size:12px;color:var(--text2)}
+.warn{margin-top:8px;padding:10px 14px;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.3);border-radius:var(--radius);font-size:12px;color:var(--amber);line-height:1.6}
+.info{margin-top:8px;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.rec-box{padding:16px 20px;background:rgba(34,201,142,0.06);border:1px solid rgba(34,201,142,0.25);border-left:4px solid var(--green);border-radius:var(--radius);margin-bottom:32px}
+.rec-box .rec-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--green);margin-bottom:6px;font-family:var(--mono)}
+.rec-box p{font-size:13px;color:var(--text2);line-height:1.6}
+.alt-box{padding:16px 20px;background:var(--bg2);border:1px solid var(--border);border-left:4px solid var(--text3);border-radius:var(--radius);margin-bottom:32px}
+.alt-box .alt-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:6px;font-family:var(--mono)}
+.alt-box p{font-size:13px;color:var(--text2);line-height:1.6}
+.approach-heading{font-size:16px;font-weight:600;color:var(--text);margin-bottom:6px}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; Getting Started</div>
+  <h1>How to install the application</h1>
+  <p class="lead">The application is a single HTML file. There is nothing to install in the traditional sense &mdash; you locate the file and create a browser bookmark. This guide covers two approaches. Use the recommended approach wherever possible.</p>
+
+  <!-- ═══════════ APPROACH 1 ═══════════ -->
+  <div class="rec-box">
+    <div class="rec-label">Recommended approach</div>
+    <p class="approach-heading">Use the shared OneDrive location</p>
+    <p>The Steward Master publishes every new build to a fixed, shared OneDrive folder. When you sync that folder and bookmark the file from it, your bookmark always points to the latest version &mdash; no manual updates needed. This is the preferred approach for all users.</p>
+  </div>
+
+  <h2>Step 1 &mdash; Sync the shared folder</h2>
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody">Contact your Steward Master and ask for access to the shared OneDrive application folder if you have not already received an invitation.
+        <div class="sub">The Steward Master controls the shared location where all builds are published.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody">Open the shared folder link in your browser. In the OneDrive toolbar, click <span class="f">Sync</span>.
+        <div class="sub">This adds the folder to your local OneDrive sync and makes it visible in Windows Explorer.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">3</div>
+      <div class="sbody">Wait for the sync to complete. Open Windows Explorer and navigate to the synced folder, which will appear under <span class="mono">OneDrive &mdash; [Your Organisation]</span> in the left panel.</div>
+    </li>
+    <li>
+      <div class="snum">4</div>
+      <div class="sbody">Confirm you can see <span class="f">dq-accelerator.html</span> inside the folder.
+        <div class="sub">If you also see a <span class="mono">documentation/</span> subfolder alongside it, the folder structure is correct.</div>
+      </div>
+    </li>
+  </ol>
+
+  <h2>Step 2 &mdash; Create a browser bookmark</h2>
+  <ol class="steps">
+    <li>
+      <div class="snum">5</div>
+      <div class="sbody">Double-click <span class="f">dq-accelerator.html</span> to open it in your default browser, or drag the file into an open browser window.</div>
+    </li>
+    <li>
+      <div class="snum">6</div>
+      <div class="sbody">Once the application loads, bookmark the page in your browser.
+        <div class="sub">In Chrome or Edge: press <span class="mono">Ctrl + D</span>. Name the bookmark something clear, such as <em>DQ Accelerator</em>.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">7</div>
+      <div class="sbody">Close the tab. From now on, open the application using this bookmark.
+        <div class="info">Each time the Steward Master publishes a new build, the file in the shared folder is overwritten. Your bookmark points to that same file path, so you will always open the latest version automatically &mdash; no action required on your part.</div>
+      </div>
+    </li>
+  </ol>
+
+  <!-- ═══════════ APPROACH 2 ═══════════ -->
+  <div class="alt-box" style="margin-top:48px">
+    <div class="alt-label">Alternative approach</div>
+    <p class="approach-heading" style="color:var(--text2)">Copy the build to your local drive</p>
+    <p>Use this approach only if you cannot sync the shared OneDrive folder &mdash; for example, if you are working offline or do not have OneDrive access. With this approach you must repeat the process each time a new build is released.</p>
+  </div>
+
+  <h2>Step 1 &mdash; Obtain and extract the build</h2>
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody">Receive the ZIP file from your Steward Master (via email or shared link). The filename contains the build number, for example <span class="mono">dq-accelerator-build-20260701-1430.zip</span>.</div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody">Choose a permanent location on your local drive to keep the application, for example <span class="mono">Documents\DQ Accelerator\</span>. Create the folder if it does not exist.
+        <div class="sub">Choose a location you will remember and keep consistent across upgrades.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">3</div>
+      <div class="sbody">Extract the ZIP into that folder. Do not open the HTML file from inside the ZIP &mdash; it must be extracted first so the <span class="mono">documentation/</span> subfolder is present alongside it.</div>
+    </li>
+    <li>
+      <div class="snum">4</div>
+      <div class="sbody">Confirm you can see <span class="f">dq-accelerator.html</span> and the <span class="mono">documentation/</span> folder in your chosen location.</div>
+    </li>
+  </ol>
+
+  <h2>Step 2 &mdash; Create a browser bookmark</h2>
+  <ol class="steps">
+    <li>
+      <div class="snum">5</div>
+      <div class="sbody">Double-click <span class="f">dq-accelerator.html</span> to open it in your browser, or drag the file into an open browser window.</div>
+    </li>
+    <li>
+      <div class="snum">6</div>
+      <div class="sbody">Bookmark the page. Press <span class="mono">Ctrl + D</span> in Chrome or Edge. Name it <em>DQ Accelerator</em>.</div>
+    </li>
+  </ol>
+
+  <h2>Upgrading when a new build is released</h2>
+  <ol class="steps">
+    <li>
+      <div class="snum">7</div>
+      <div class="sbody">When your Steward Master distributes a new build, extract the new ZIP into the <strong>same folder</strong>, overwriting the existing files.</div>
+    </li>
+    <li>
+      <div class="snum">8</div>
+      <div class="sbody">Your existing bookmark will continue to work because the filename does not change between builds.
+        <div class="warn">If you extract to a <em>different</em> folder, your existing bookmark will still open the old version. Always extract to the same location, or update the bookmark to point to the new file.</div>
+      </div>
+    </li>
+  </ol>
+
+  <div class="related">
+    <div class="rtitle">Next steps</div>
+    <ul class="rlist">
+      <li><a href="open-the-application.html">How to open the application &rsaquo;</a></li>
+      <li><a href="set-steward-identity.html">How to set your steward identity &rsaquo;</a></li>
+      <li><a href="load-master-data.html">How to load the master data &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>
