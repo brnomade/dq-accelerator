@@ -400,7 +400,7 @@ function DQSimulatorScreen() {
                   borderRadius:'var(--radius)', overflow:'hidden', flexShrink:0 }}>
                   {/* Overall score */}
                   <div style={{ padding:'10px 18px', display:'flex', flexDirection:'column',
-                    justifyContent:'center', borderRight:'1px solid var(--border)' }}>
+                    justifyContent:'center', alignItems:'center', borderRight:'1px solid var(--border)' }}>
                     <div style={{ fontSize:10, color:'var(--text3)', marginBottom:4 }}>
                       Overall score
                     </div>
@@ -408,7 +408,7 @@ function DQSimulatorScreen() {
                       color:accent, lineHeight:1 }}>
                       {overallCritScore.toFixed(1)}
                     </div>
-                    <div style={{ fontSize:10, color:accent, marginTop:2, fontWeight:600 }}>
+                    <div style={{ fontSize:11, color:accent, marginTop:2, fontWeight:600 }}>
                       {scoreToLabel(overallCritScore)}
                     </div>
                   </div>
