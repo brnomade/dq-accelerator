@@ -4,6 +4,18 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260709-1906 — RAG Simulator: My Data filter and score display improvements
+
+### What's new
+- **My Data toggle** added to the RAG Simulator Step 1 panel. When active, the Agency, Directorate, and CDS cascading dropdowns are restricted to the scope assigned to the current steward via the stewardship table. Default is ON for regular stewards, OFF for master stewards. Toggle is hidden when no steward identity is configured.
+
+### Fixed
+- **Weighted criticality score** — the overall score now uses per-agency group weights from the `criticality_group_weight` table. Previously a plain average was used, ignoring configured weights. Falls back to equal weighting when no weight rows exist for the agency.
+- **Score label** — the Overall score box now shows the human-readable criticality level (Very Low / Low / Medium / High / Very High) instead of `/ 25`.
+- **Score box alignment** — both the Overall score and Relative score boxes are now horizontally centred with consistent font sizes and accent colours.
+
+---
+
 ## build-20260701-2151 — Documentation: dashboard guide updated and style fixed
 
 ### Fixed

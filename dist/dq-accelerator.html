@@ -1844,7 +1844,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260709-1852</div>
+              <div className="header-app-sub">build-20260709-1906</div>
             </div>
           </div>
         </div>
@@ -9484,7 +9484,7 @@ function RagBadge({ label, size }) {
 }
 
 function DQSimulatorScreen() {
-  const { data, upsertRecord } = useApp();
+  const { data, upsertRecord, stewardIdentity, isMaster } = useApp();
   const [savedBumpers,    setSavedBumpers]    = useState({});
   const [critOverrides,   setCritOverrides]   = useState({}); // { [cde_criticality_id]: criticality_level_id }
   const [savedCrit,       setSavedCrit]       = useState(false);
@@ -9497,6 +9497,11 @@ function DQSimulatorScreen() {
 
   // Per-rule sample inputs: { [allocationId]: { sampleSize, failingCount } }
   const [inputs, setInputs] = useState({});
+
+  const [myDataOnly, setMyDataOnly] = useState(
+    () => loadMyDataPref('moj_dq_simulator_mydata_v1', isMaster)
+  );
+  useEffect(() => { saveMyDataPref('moj_dq_simulator_mydata_v1', myDataOnly); }, [myDataOnly]);
 
   const cdes        = data?.critical_data_element || [];
   const cdSets      = data?.critical_data_set     || [];
@@ -9529,16 +9534,45 @@ function DQSimulatorScreen() {
     );
   }, [groupWeights, filterAgencyId]);
 
+  // My Data scope sets (null = no filter)
+  const myStewardCdsIds = useMemo(
+    () => getMyStewardCdsIds(data, stewardIdentity),
+    [data, stewardIdentity]
+  );
+  const scopeCdsIds = (myDataOnly && myStewardCdsIds) ? myStewardCdsIds : null;
+  const scopeDirIds = useMemo(() => {
+    if (!scopeCdsIds) return null;
+    return new Set(
+      cdSets.filter(d => !d.retiring_timestamp && scopeCdsIds.has(d.critical_data_set_id))
+            .map(d => d.directorate_id)
+    );
+  }, [cdSets, scopeCdsIds]);
+  const scopeAgencyIds = useMemo(() => {
+    if (!scopeDirIds) return null;
+    return new Set(
+      dirs.filter(d => !d.retiring_timestamp && scopeDirIds.has(d.directorate_id))
+          .map(d => d.executive_agency_id)
+    );
+  }, [dirs, scopeDirIds]);
+
   // Cascading options
   const agencyOpts = useMemo(() =>
-    [...agencies].filter(a => !a.retiring_timestamp)
-      .sort((a,b) => (a.agency_acronymn||'').localeCompare(b.agency_acronymn||'')), [agencies]);
+    [...agencies]
+      .filter(a => !a.retiring_timestamp && (!scopeAgencyIds || scopeAgencyIds.has(a.executive_agency_id)))
+      .sort((a,b) => (a.agency_acronymn||'').localeCompare(b.agency_acronymn||'')),
+    [agencies, scopeAgencyIds]);
   const dirOpts = useMemo(() =>
-    [...dirs].filter(d => !d.retiring_timestamp && d.executive_agency_id === filterAgencyId)
-      .sort((a,b) => (a.directorate_name||'').localeCompare(b.directorate_name||'')), [dirs, filterAgencyId]);
+    [...dirs]
+      .filter(d => !d.retiring_timestamp && d.executive_agency_id === filterAgencyId &&
+                   (!scopeDirIds || scopeDirIds.has(d.directorate_id)))
+      .sort((a,b) => (a.directorate_name||'').localeCompare(b.directorate_name||'')),
+    [dirs, filterAgencyId, scopeDirIds]);
   const cdsOpts = useMemo(() =>
-    [...cdSets].filter(d => !d.retiring_timestamp && d.directorate_id === filterDirId)
-      .sort((a,b) => (a.data_set_name||'').localeCompare(b.data_set_name||'')), [cdSets, filterDirId]);
+    [...cdSets]
+      .filter(d => !d.retiring_timestamp && d.directorate_id === filterDirId &&
+                   (!scopeCdsIds || scopeCdsIds.has(d.critical_data_set_id)))
+      .sort((a,b) => (a.data_set_name||'').localeCompare(b.data_set_name||'')),
+    [cdSets, filterDirId, scopeCdsIds]);
   const cdeOpts = useMemo(() =>
     [...cdes].filter(c => !c.retiring_timestamp && c.critical_data_set_id === filterCdsId)
       .sort((a,b) => (a.source_field_name||'').localeCompare(b.source_field_name||'')), [cdes, filterCdsId]);
@@ -9647,9 +9681,22 @@ function DQSimulatorScreen() {
       <div style={{ background:'var(--bg2)', border:'1px solid var(--border)',
         borderLeft:`3px solid ${accent}`, borderRadius:'var(--radius-lg)',
         padding:'16px 18px', marginBottom:16 }}>
-        <div style={{ fontSize:11, fontWeight:600, letterSpacing:'0.08em',
-          textTransform:'uppercase', color:accent, marginBottom:12 }}>
-          Step 1 - Select Critical Data Element
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
+          <div style={{ fontSize:11, fontWeight:600, letterSpacing:'0.08em',
+            textTransform:'uppercase', color:accent }}>
+            Step 1 - Select Critical Data Element
+          </div>
+          <MyDataToggle
+            active={myDataOnly}
+            onToggle={() => {
+              setMyDataOnly(function(v) { return !v; });
+              setFilterAgencyId(null); setFilterDirId(null);
+              setFilterCdsId(null);   setSelectedCdeId(null);
+              setInputs({});
+            }}
+            available={!!stewardIdentity}
+            accent={accent}
+          />
         </div>
 
         {/* Cascading dropdowns */}
