@@ -41,6 +41,25 @@ Files are prefixed `NN_name.js` to control concatenation order. The numbering zo
 
 When adding a new file, pick a number that places it after its dependencies.
 
+## Branching workflow
+
+Every change to this repository — source code, documentation, plans, and designs — must be made on a branch. Nothing is ever committed directly to `master`.
+
+**Rules:**
+- Branch prefix: `feature/` for new capabilities, `fix/` for defect corrections.
+- Before creating a branch, confirm the prefix with the user if the scenario is ambiguous. Inference is fine for obvious cases.
+- Multi-phase features: one branch per phase. Each phase branch is merged back to `master` before the next phase branch is created.
+- No branch-from-branch: all branches originate from `master`.
+- Plans and designs created during a feature/fix belong on that feature/fix branch.
+- Memory files (`~/.claude/...`) live outside the repository and may be updated directly without a branch.
+
+**Sequence for any task:**
+1. Confirm `feature/` vs `fix/` (infer if obvious, ask if dubious).
+2. `git checkout master && git pull` to ensure master is up to date.
+3. `git checkout -b <prefix>/<short-description>`.
+4. Make all changes on that branch.
+5. Commit, then await user merge/PR instruction before starting the next branch.
+
 ## Implementing explicit specifications
 
 When the user states a specific rule, algorithm, or filtering condition, implement it **literally and exactly** — do not add extra logic, intermediate lookups, or generalisations that were not requested.
