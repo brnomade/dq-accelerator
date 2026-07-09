@@ -83,10 +83,6 @@ function DQSimulatorScreen() {
   // Per-rule sample inputs: { [allocationId]: { sampleSize, failingCount } }
   const [inputs, setInputs] = useState({});
 
-  const [myDataOnly, setMyDataOnly] = useState(
-    () => loadMyDataPref('moj_dq_simulator_mydata_v1', isMaster)
-  );
-  useEffect(() => { saveMyDataPref('moj_dq_simulator_mydata_v1', myDataOnly); }, [myDataOnly]);
 
   const cdes        = data?.critical_data_element || [];
   const cdSets      = data?.critical_data_set     || [];
@@ -119,26 +115,9 @@ function DQSimulatorScreen() {
     );
   }, [groupWeights, filterAgencyId]);
 
-  // My Data scope sets (null = no filter)
-  const myStewardCdsIds = useMemo(
-    () => getMyStewardCdsIds(data, stewardIdentity),
-    [data, stewardIdentity]
-  );
-  const scopeCdsIds = (myDataOnly && myStewardCdsIds) ? myStewardCdsIds : null;
-  const scopeDirIds = useMemo(() => {
-    if (!scopeCdsIds) return null;
-    return new Set(
-      cdSets.filter(d => !d.retiring_timestamp && scopeCdsIds.has(d.critical_data_set_id))
-            .map(d => d.directorate_id)
-    );
-  }, [cdSets, scopeCdsIds]);
-  const scopeAgencyIds = useMemo(() => {
-    if (!scopeDirIds) return null;
-    return new Set(
-      dirs.filter(d => !d.retiring_timestamp && scopeDirIds.has(d.directorate_id))
-          .map(d => d.executive_agency_id)
-    );
-  }, [dirs, scopeDirIds]);
+  // My Data scope filter
+  const { myDataOnly, setMyDataOnly, scopeCdsIds, scopeDirIds, scopeAgencyIds } =
+    useMyDataScope(data, stewardIdentity, isMaster, cdSets, dirs, 'moj_dq_simulator_mydata_v1');
 
   // Cascading options
   const agencyOpts = useMemo(() =>

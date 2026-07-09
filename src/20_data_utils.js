@@ -205,6 +205,42 @@ function saveMyDataPref(key, value) {
   try { localStorage.setItem(key, value ? '1' : '0'); } catch(e) {}
 }
 
+// Shared custom hook: My Data scope filter.
+// Encapsulates myDataOnly state, localStorage persistence, and the three scope
+// sets (CDS, directorate, agency) derived from the steward's stewardship records.
+// storageKey must be unique per screen (e.g. 'moj_dq_simulator_mydata_v1').
+function useMyDataScope(data, stewardIdentity, isMaster, cdSets, dirs, storageKey) {
+  const [myDataOnly, setMyDataOnly] = useState(
+    function() { return loadMyDataPref(storageKey, isMaster); }
+  );
+  useEffect(function() { saveMyDataPref(storageKey, myDataOnly); }, [myDataOnly]);
+
+  const myStewardCdsIds = useMemo(
+    function() { return getMyStewardCdsIds(data, stewardIdentity); },
+    [data, stewardIdentity]
+  );
+
+  const scopeCdsIds = (myDataOnly && myStewardCdsIds) ? myStewardCdsIds : null;
+
+  const scopeDirIds = useMemo(function() {
+    if (!scopeCdsIds) return null;
+    return new Set(
+      cdSets.filter(function(d) { return !d.retiring_timestamp && scopeCdsIds.has(d.critical_data_set_id); })
+            .map(function(d) { return d.directorate_id; })
+    );
+  }, [cdSets, scopeCdsIds]);
+
+  const scopeAgencyIds = useMemo(function() {
+    if (!scopeDirIds) return null;
+    return new Set(
+      dirs.filter(function(d) { return !d.retiring_timestamp && scopeDirIds.has(d.directorate_id); })
+          .map(function(d) { return d.executive_agency_id; })
+    );
+  }, [dirs, scopeDirIds]);
+
+  return { myDataOnly, setMyDataOnly, scopeCdsIds, scopeDirIds, scopeAgencyIds };
+}
+
 // ===============================================================================
 // TASK 4 -- LOCALSTORAGE PERSISTENCE
 // ===============================================================================

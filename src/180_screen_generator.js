@@ -160,7 +160,7 @@ function buildSuggestionPrompt(cde, ddlCols, profRecord, cdsName, existingRulesC
 }
 
 function DataRuleGeneratorScreen() {
-  const { data, upsertRecord, nextPk, canEdit } = useApp();
+  const { data, upsertRecord, nextPk, canEdit, stewardIdentity, isMaster } = useApp();
   const dp = !canEdit ? { style:{ opacity:0.35, cursor:'not-allowed', pointerEvents:'none' }, title:'Set your steward identity in Settings to make changes' } : {};
   const accent = 'var(--green)';
 
@@ -192,6 +192,10 @@ function DataRuleGeneratorScreen() {
   const dims     = data?.quality_dimension     || [];
   const rules    = data?.data_quality_rule     || [];
   const allocs   = data?.data_quality_rule_allocation || [];
+
+  // My Data scope filter
+  const { myDataOnly, setMyDataOnly, scopeCdsIds, scopeDirIds, scopeAgencyIds } =
+    useMyDataScope(data, stewardIdentity, isMaster, cdSets, dirs, 'moj_dq_generator_mydata_v1');
 
   const cdsById    = useMemo(() => Object.fromEntries(cdSets.map(d => [d.critical_data_set_id, d])),  [cdSets]);
   const dirById    = useMemo(() => Object.fromEntries(dirs.map(d   => [d.directorate_id, d])),        [dirs]);
@@ -292,14 +296,22 @@ function DataRuleGeneratorScreen() {
   };
 
   const agencyOpts = useMemo(() =>
-    [...agencies].filter(a => !a.retiring_timestamp)
-      .sort((a,b) => (a.agency_acronymn||'').localeCompare(b.agency_acronymn||'')), [agencies]);
+    [...agencies]
+      .filter(a => !a.retiring_timestamp && (!scopeAgencyIds || scopeAgencyIds.has(a.executive_agency_id)))
+      .sort((a,b) => (a.agency_acronymn||'').localeCompare(b.agency_acronymn||'')),
+    [agencies, scopeAgencyIds]);
   const dirOpts = useMemo(() =>
-    [...dirs].filter(d => !d.retiring_timestamp && d.executive_agency_id === filterAgencyId)
-      .sort((a,b) => (a.directorate_name||'').localeCompare(b.directorate_name||'')), [dirs, filterAgencyId]);
+    [...dirs]
+      .filter(d => !d.retiring_timestamp && d.executive_agency_id === filterAgencyId &&
+                   (!scopeDirIds || scopeDirIds.has(d.directorate_id)))
+      .sort((a,b) => (a.directorate_name||'').localeCompare(b.directorate_name||'')),
+    [dirs, filterAgencyId, scopeDirIds]);
   const cdsOpts = useMemo(() =>
-    [...cdSets].filter(d => !d.retiring_timestamp && d.directorate_id === filterDirId)
-      .sort((a,b) => (a.data_set_name||'').localeCompare(b.data_set_name||'')), [cdSets, filterDirId]);
+    [...cdSets]
+      .filter(d => !d.retiring_timestamp && d.directorate_id === filterDirId &&
+                   (!scopeCdsIds || scopeCdsIds.has(d.critical_data_set_id)))
+      .sort((a,b) => (a.data_set_name||'').localeCompare(b.data_set_name||'')),
+    [cdSets, filterDirId, scopeCdsIds]);
   const cdeOpts = useMemo(() =>
     [...cdes].filter(c => !c.retiring_timestamp && c.critical_data_set_id === filterCdsId)
       .sort((a,b) => (a.source_field_name||'').localeCompare(b.source_field_name||'')), [cdes, filterCdsId]);
@@ -533,9 +545,21 @@ function DataRuleGeneratorScreen() {
       <div style={{ background:'var(--bg2)', border:'1px solid var(--border)',
         borderLeft:`3px solid ${accent}`, borderRadius:'var(--radius-lg)',
         padding:'16px 18px', marginBottom:16 }}>
-        <div style={{ fontSize:11, fontWeight:600, letterSpacing:'0.08em',
-          textTransform:'uppercase', color:accent, marginBottom:12 }}>
-          Step 1 - Select Critical Data Element
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
+          <div style={{ fontSize:11, fontWeight:600, letterSpacing:'0.08em',
+            textTransform:'uppercase', color:accent }}>
+            Step 1 - Select Critical Data Element
+          </div>
+          <MyDataToggle
+            active={myDataOnly}
+            onToggle={() => {
+              setMyDataOnly(function(v) { return !v; });
+              setFilterAgencyId(null); setFilterDirId(null);
+              setFilterCdsId(null);   setSelectedCdeId(null);
+            }}
+            available={!!stewardIdentity}
+            accent={accent}
+          />
         </div>
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:10, marginBottom:12 }}>
           <select value={filterAgencyId ?? ''} style={selectStyle}

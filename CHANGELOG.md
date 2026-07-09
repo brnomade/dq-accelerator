@@ -4,6 +4,16 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260709-1929 — Rule Generator: My Data filter; shared useMyDataScope hook
+
+### What's new
+- **My Data toggle** added to the Rule Generator Step 1 panel, identical behaviour to the RAG Simulator: restricts Agency, Directorate, and CDS dropdowns to the steward's assigned scope. Default ON for regular stewards, OFF for masters.
+
+### Refactor
+- **`useMyDataScope` custom hook** extracted to `20_data_utils.js`. Encapsulates `myDataOnly` state, localStorage persistence, and the three scope sets (`scopeCdsIds`, `scopeDirIds`, `scopeAgencyIds`). The RAG Simulator now uses this hook instead of its previous inline implementation, eliminating duplication.
+
+---
+
 ## build-20260709-1906 — RAG Simulator: My Data filter and score display improvements
 
 ### What's new
