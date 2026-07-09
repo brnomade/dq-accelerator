@@ -656,8 +656,7 @@ function DataRuleGeneratorScreen() {
           <div style={{ marginTop:10, padding:'10px 14px',
             background:'rgba(245,166,35,0.08)', border:'1px solid rgba(245,166,35,0.3)',
             borderRadius:'var(--radius)', fontSize:12, color:'var(--amber)' }}>
-            This CDE has no profiling data. Go to Physical Layer - Field Profiling to profile
-            this field before generating rules.
+            This CDE has not been profiled yet. Profile data is needed before rules can be generated.
           </div>
         )}
       </div>
