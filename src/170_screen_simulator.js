@@ -572,7 +572,7 @@ function DQSimulatorScreen() {
                         {rule?.rule_name || `Rule #${alloc.data_quality_rule_id}`}
                       </div>
                       {rule?.rule_explanation && (
-                        <div style={{ fontSize:11, color:'var(--text3)', marginTop:2,
+                        <div style={{ fontSize:12, color:'var(--text3)', marginTop:2,
                           whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
                           {rule.rule_explanation}
                         </div>
