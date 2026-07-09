@@ -414,12 +414,12 @@ function DQSimulatorScreen() {
                   </div>
                   {/* Relative score */}
                   <div style={{ padding:'10px 18px', display:'flex', flexDirection:'column',
-                    justifyContent:'center', borderRight:'1px solid var(--border)' }}>
+                    justifyContent:'center', alignItems:'center', borderRight:'1px solid var(--border)' }}>
                     <div style={{ fontSize:10, color:'var(--text3)', marginBottom:4 }}>
                       Relative score
                     </div>
                     <div style={{ fontSize:22, fontWeight:700, fontFamily:'var(--mono)',
-                      color:'var(--text)', lineHeight:1 }}>
+                      color:accent, lineHeight:1 }}>
                       {(relativeScore * 100).toFixed(0)}%
                     </div>
                   </div>
