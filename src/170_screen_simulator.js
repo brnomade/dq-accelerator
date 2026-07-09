@@ -566,9 +566,17 @@ function DQSimulatorScreen() {
                       : 'transparent',
                   }}>
                     {/* Rule */}
-                    <div style={{ fontSize:12, color:'var(--text)', fontWeight:500,
-                      whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
-                      {rule?.rule_name || `Rule #${alloc.data_quality_rule_id}`}
+                    <div style={{ overflow:'hidden' }}>
+                      <div style={{ fontSize:12, color:'var(--text)', fontWeight:500,
+                        whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                        {rule?.rule_name || `Rule #${alloc.data_quality_rule_id}`}
+                      </div>
+                      {rule?.rule_explanation && (
+                        <div style={{ fontSize:10, color:'var(--text3)', marginTop:2,
+                          whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                          {rule.rule_explanation}
+                        </div>
+                      )}
                     </div>
                     {/* Dimension */}
                     <span style={{ fontSize:11, color:accent, fontFamily:'var(--mono)' }}>
