@@ -7,6 +7,16 @@ const CRIT_LEVEL_SCORES = {
   'very low': 0, 'low': 6, 'medium': 12, 'high': 17, 'very high': 25,
 };
 
+// Overall score -> human-readable criticality label
+// Boundaries at midpoints between CRIT_LEVEL_SCORES values (0, 6, 12, 17, 25)
+function scoreToLabel(score) {
+  if (score >= 21)   return 'Very High';
+  if (score >= 14.5) return 'High';
+  if (score >= 9)    return 'Medium';
+  if (score >= 3)    return 'Low';
+  return 'Very Low';
+}
+
 // Overall score (0-25) -> relative criticality score (0.00-1.00)
 const RELATIVE_SCORE_TABLE = [
   0.00,0.04,0.08,0.12,0.16,0.20,0.24,0.28,0.32,0.36,
@@ -83,6 +93,7 @@ function DQSimulatorScreen() {
   const critGroups  = data?.criticality_group      || [];
   const critLevels  = data?.criticality_level      || [];
   const dims        = data?.quality_dimension      || [];
+  const groupWeights = data?.criticality_group_weight || [];
 
   const cdsById     = useMemo(() => Object.fromEntries(cdSets.map(d => [d.critical_data_set_id, d])),  [cdSets]);
   const dirById     = useMemo(() => Object.fromEntries(dirs.map(d   => [d.directorate_id, d])),        [dirs]);
@@ -91,6 +102,17 @@ function DQSimulatorScreen() {
   const dimById     = useMemo(() => Object.fromEntries(dims.map(d   => [d.quality_dimension_id, d])),  [dims]);
   const groupById   = useMemo(() => Object.fromEntries(critGroups.map(g => [g.criticality_group_id, g])), [critGroups]);
   const levelById   = useMemo(() => Object.fromEntries(critLevels.map(l => [l.criticality_level_id, l])), [critLevels]);
+
+  // Per-group weights for the currently selected agency (group_id -> weight_value)
+  // Falls back to weight 1 for any group not found in the table
+  const agencyGroupWeights = useMemo(() => {
+    if (!filterAgencyId) return {};
+    return Object.fromEntries(
+      groupWeights
+        .filter(w => w.executive_agency_id === filterAgencyId && !w.retiring_timestamp)
+        .map(w => [w.criticality_group_id, w.weight_value])
+    );
+  }, [groupWeights, filterAgencyId]);
 
   // Cascading options
   const agencyOpts = useMemo(() =>
@@ -128,17 +150,22 @@ function DQSimulatorScreen() {
       return ga.localeCompare(gb);
     }), [cdeCritRows, groupById]);
 
-  // Calculate overall criticality score
+  // Calculate overall criticality score using per-agency group weights
+  // Falls back to equal weighting if no weights are defined for a group
   const overallCritScore = useMemo(() => {
     if (sortedCritRows.length === 0) return null;
-    const scores = sortedCritRows.map(r => {
+    const weighted = sortedCritRows.map(r => {
       const effectiveLevelId = critOverrides[r.cde_criticality_id] ?? r.criticality_level_id;
-      const lvl  = levelById[effectiveLevelId];
-      const desc = (lvl?.criticality_description || '').toLowerCase();
-      return CRIT_LEVEL_SCORES[desc] ?? 0;
+      const lvl    = levelById[effectiveLevelId];
+      const desc   = (lvl?.criticality_description || '').toLowerCase();
+      const score  = CRIT_LEVEL_SCORES[desc] ?? 0;
+      const weight = agencyGroupWeights[r.criticality_group_id] ?? 1;
+      return { score, weight };
     });
-    return scores.reduce((s, v) => s + v, 0) / scores.length;
-  }, [sortedCritRows, levelById, critOverrides]);
+    const totalWeight = weighted.reduce((s, { weight }) => s + weight, 0);
+    if (totalWeight === 0) return 0;
+    return weighted.reduce((s, { score, weight }) => s + score * weight, 0) / totalWeight;
+  }, [sortedCritRows, levelById, critOverrides, agencyGroupWeights]);
 
   const relativeScore = overallCritScore !== null ? getRelativeScore(overallCritScore) : null;
 
@@ -381,7 +408,9 @@ function DQSimulatorScreen() {
                       color:accent, lineHeight:1 }}>
                       {overallCritScore.toFixed(1)}
                     </div>
-                    <div style={{ fontSize:10, color:'var(--text3)', marginTop:2 }}>/ 25</div>
+                    <div style={{ fontSize:10, color:accent, marginTop:2, fontWeight:600 }}>
+                      {scoreToLabel(overallCritScore)}
+                    </div>
                   </div>
                   {/* Relative score */}
                   <div style={{ padding:'10px 18px', display:'flex', flexDirection:'column',
