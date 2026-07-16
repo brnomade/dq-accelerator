@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260716-1850 — Polish: MANUAL toggle state uses amber styling
+
+**Date:** 2026-07-16
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Implementation | -- | -- | 2 min | |
+| **Total** | **0 min** | **0 min** | **2 min** | |
+
+### Changes delivered
+- `src/145_view_rules.js`: MANUAL button state colour changed from `var(--text3)` / `var(--bg3)` / `var(--border)` to `var(--amber)` / `var(--amber-bg)` / `var(--amber)`
+
+---
+
 ## build-20260716-1833 — Bug fix: rule automated flag defaults to true; toggle in Rules Explorer
 
 **Date:** 2026-07-16

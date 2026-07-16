@@ -414,9 +414,9 @@ function RulesRuleRow({ ruleEntry, critGroupsSorted, critLevelsById, dimensionsB
             disabled={!canEdit}
             title={rule.automated ? 'Automated - click to set Manual' : 'Manual - click to set Automated'}
             style={{ fontSize:9, fontFamily:'var(--mono)', fontWeight:700,
-              color: rule.automated ? 'var(--green)' : 'var(--text3)',
-              background: rule.automated ? 'rgba(34,201,142,0.12)' : 'var(--bg3)',
-              border: '1px solid ' + (rule.automated ? 'var(--green)' : 'var(--border)'),
+              color: rule.automated ? 'var(--green)' : 'var(--amber)',
+              background: rule.automated ? 'rgba(34,201,142,0.12)' : 'var(--amber-bg)',
+              border: '1px solid ' + (rule.automated ? 'var(--green)' : 'var(--amber)'),
               borderRadius:3, padding:'1px 6px', whiteSpace:'nowrap',
               cursor: canEdit ? 'pointer' : 'default' }}>
             {rule.automated ? 'AUTOMATED' : 'MANUAL'}

@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260716-1850 — Polish: MANUAL toggle state uses amber styling
+
+### Changed
+- **MANUAL button colour** — the AUTOMATED/MANUAL toggle on each rule row now uses amber (`var(--amber)`) for the MANUAL state, matching the brightness and weight of the AUTOMATED state. Previously MANUAL was rendered in faint grey.
+
+---
+
 ## build-20260716-1833 — Bug fix: rule automated flag defaults to true; toggle in Rules Explorer
 
 ### Fixed
