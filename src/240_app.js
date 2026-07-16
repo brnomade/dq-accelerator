@@ -470,6 +470,7 @@ function App() {
           onNavigate={navigate}
           data={data}
           onToggle={onSidebarToggle}
+          isMaster={isMaster}
         />
 
         {/* Right column -- header + content + footer */}

@@ -23,7 +23,9 @@ function saveGroupCollapse(state) {
   try { localStorage.setItem(GROUP_COLLAPSE_KEY, JSON.stringify(state)); } catch {}
 }
 
-function Sidebar({ route, onNavigate, data, onToggle }) {
+const MASTER_ONLY_GROUPS = new Set(['ownership', 'weights', 'settings']);
+
+function Sidebar({ route, onNavigate, data, onToggle, isMaster }) {
   const [collapsed,   setCollapsed]   = useState(() => loadSidebarPrefs().collapsed);
   const [groupClosed, setGroupClosed] = useState(() => loadGroupCollapse());
   const [logo,        setLogo]        = useState(() => loadClientLogo());
@@ -128,6 +130,7 @@ function Sidebar({ route, onNavigate, data, onToggle }) {
 
         {/* TABLE GROUPS */}
         {TABLE_GROUPS.map(group => {
+          if (MASTER_ONLY_GROUPS.has(group.id) && !isMaster) return null;
           const open = !groupClosed[group.id];
 
           if (collapsed) {
