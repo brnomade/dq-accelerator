@@ -328,13 +328,36 @@ function SettingsPanel({ onClose }) {
 const BASE_VERSION_KEY  = 'moj_dq_base_version';
 const BASE_SNAPSHOT_KEY = 'moj_dq_base_snapshot';
 
-// Tables included in delta sync (steward-editable)
+// Tables included in delta sync -- all 22 SCHEMA tables
 const DELTA_TABLES = [
+  // Reference lookups
+  'executive_agency_type',
+  'steward_role_type',
+  'quality_dimension',
+  'criticality_group',
+  'criticality_level',
+  // Organisational hierarchy
+  'executive_agency',
+  'directorate',
+  // People
+  'data_patron',
+  'data_owner',
+  'data_steward',
+  // Weights
+  'criticality_group_weight',
+  'quality_dimension_weight',
+  // Core data model
+  'critical_data_set',
   'critical_data_element',
+  'stewardship',
+  'cde_criticality',
+  // Rules
   'data_quality_rule',
   'data_quality_rule_allocation',
-  'cde_criticality',
-  'stewardship',
+  // Shortlists
+  'shortlist_group',
+  'cde_shortlist_tag',
+  // Profiling
   'source_table_ddl',
   'field_profiling',
 ];

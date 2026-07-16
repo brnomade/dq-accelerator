@@ -1587,13 +1587,36 @@ function SettingsPanel({ onClose }) {
 const BASE_VERSION_KEY  = 'moj_dq_base_version';
 const BASE_SNAPSHOT_KEY = 'moj_dq_base_snapshot';
 
-// Tables included in delta sync (steward-editable)
+// Tables included in delta sync -- all 22 SCHEMA tables
 const DELTA_TABLES = [
+  // Reference lookups
+  'executive_agency_type',
+  'steward_role_type',
+  'quality_dimension',
+  'criticality_group',
+  'criticality_level',
+  // Organisational hierarchy
+  'executive_agency',
+  'directorate',
+  // People
+  'data_patron',
+  'data_owner',
+  'data_steward',
+  // Weights
+  'criticality_group_weight',
+  'quality_dimension_weight',
+  // Core data model
+  'critical_data_set',
   'critical_data_element',
+  'stewardship',
+  'cde_criticality',
+  // Rules
   'data_quality_rule',
   'data_quality_rule_allocation',
-  'cde_criticality',
-  'stewardship',
+  // Shortlists
+  'shortlist_group',
+  'cde_shortlist_tag',
+  // Profiling
   'source_table_ddl',
   'field_profiling',
 ];
@@ -1880,7 +1903,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260709-1929</div>
+              <div className="header-app-sub">build-20260716-1801</div>
             </div>
           </div>
         </div>
@@ -10784,8 +10807,7 @@ function DataRuleGeneratorScreen() {
           <div style={{ marginTop:10, padding:'10px 14px',
             background:'rgba(245,166,35,0.08)', border:'1px solid rgba(245,166,35,0.3)',
             borderRadius:'var(--radius)', fontSize:12, color:'var(--amber)' }}>
-            This CDE has no profiling data. Go to Physical Layer - Field Profiling to profile
-            this field before generating rules.
+            This CDE has not been profiled yet. Profile data is needed before rules can be generated.
           </div>
         )}
       </div>
@@ -16656,12 +16678,12 @@ function buildSchemaSection(selectedCdeIds, extraTableIds, conversationMode, dat
       if (cols.length > 0) {
         cols.forEach(c => { lines.push(c.name + '  ' + c.type); });
       } else if (ddl.ddl_text) {
-        lines.push('[DDL text available but not yet parsed -- parse via Physical Layer screen]');
+        lines.push('[Table profiling available but not yet parsed -- parse via Physical Layer screen]');
       }
       lines.push('');
     } else {
       lines.push('### ' + tblName + ' (contains the field in scope)');
-      lines.push('No DDL registered. Add DDL via the Physical Layer screen to provide schema context.');
+      lines.push('No profiling data available. Perform table and CDE profiling  to provide schema context.');
       lines.push('');
     }
   });
@@ -17773,7 +17795,7 @@ function Stage3Panel({
             </div>
             {ddls.length === 0
               ? <div style={{ fontSize:12, color:'var(--text3)' }}>
-                  No DDL tables registered. Add DDL via Physical Layer to enable this.
+                  No Profiling data is available. Profile tables or CDEs to enable this.
                 </div>
               : ddls.map(ddl => {
                   const sel = suppSel.includes(ddl.source_table_ddl_id);

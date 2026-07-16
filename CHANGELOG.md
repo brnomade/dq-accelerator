@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260716-1800 — Bug fix: delta export now includes all 22 SCHEMA tables
+
+### Fixed
+- **Delta export missing tables** — `DELTA_TABLES` previously tracked only 7 tables (`critical_data_element`, `data_quality_rule`, `data_quality_rule_allocation`, `cde_criticality`, `stewardship`, `source_table_ddl`, `field_profiling`). New CDS records created by a steward were absent from the delta, leaving dangling FK references in CDE and stewardship rows on import to master. `DELTA_TABLES` now covers all 22 SCHEMA tables: the full 18-table standard data model plus `shortlist_group`, `cde_shortlist_tag`, `source_table_ddl`, and `field_profiling`.
+
+---
+
 ## build-20260709-1929 — Rule Generator: My Data filter; shared useMyDataScope hook
 
 ### What's new
