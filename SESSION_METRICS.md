@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260716-1825 — Bug fix: adding an agency now auto-creates weight rows
+
+**Date:** 2026-07-16
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Code review and diagnosis | 10 min | -- | -- | |
+| Implementation | -- | -- | 5 min | |
+| **Total** | **10 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/240_app.js`: `handleAgencySave` — on Add (new agency), iterates all active `quality_dimension` rows and creates `quality_dimension_weight` rows (weight 1), then iterates all active `criticality_group` rows and creates `criticality_group_weight` rows (weight 1). Added `data` to `useCallback` dependency array.
+
+---
+
 ## build-20260716-1816 — Bug fix: CDE criticality fields default to Medium on Add
 
 **Date:** 2026-07-16

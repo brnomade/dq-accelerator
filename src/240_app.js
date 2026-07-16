@@ -261,7 +261,37 @@ function App() {
     delete agencyRecord.__reassignPatron;
     delete agencyRecord.__removePatrons;
 
+    const isNew = !(data.executive_agency || []).some(
+      r => r.executive_agency_id === agencyRecord.executive_agency_id
+    );
+
     upsertRecord('executive_agency', agencyRecord);
+
+    if (isNew) {
+      const agencyId   = agencyRecord.executive_agency_id;
+      const dimensions = (data.quality_dimension  || []).filter(d => !d.retiring_timestamp);
+      const critGroups = (data.criticality_group  || []).filter(g => !g.retiring_timestamp);
+      let qdwPk = nextPk('quality_dimension_weight');
+      for (const dim of dimensions) {
+        upsertRecord('quality_dimension_weight', {
+          quality_dimension_weight_id: qdwPk++,
+          executive_agency_id:         agencyId,
+          quality_dimension_id:        dim.quality_dimension_id,
+          weight_value:                1,
+          retiring_timestamp:          null,
+        });
+      }
+      let cgwPk = nextPk('criticality_group_weight');
+      for (const grp of critGroups) {
+        upsertRecord('criticality_group_weight', {
+          criticality_group_weight_id: cgwPk++,
+          executive_agency_id:         agencyId,
+          criticality_group_id:        grp.criticality_group_id,
+          weight_value:                1,
+          retiring_timestamp:          null,
+        });
+      }
+    }
 
     if (newPatron?.name) {
       upsertRecord('data_patron', {
@@ -287,7 +317,7 @@ function App() {
     }
 
     closeForm();
-  }, [upsertRecord, nextPk, closeForm]);
+  }, [upsertRecord, nextPk, closeForm, data]);
 
   const [critFormCdeId,     setCritFormCdeId]     = useState(null);
   const [critFormRows,      setCritFormRows]      = useState(null);
