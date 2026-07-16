@@ -4,6 +4,14 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260716-1816 — Bug fix: CDE criticality fields default to Medium on Add
+
+### Fixed
+- **CDE criticality defaults** — when adding a new CDE, all criticality group dropdowns now pre-select "Medium". Previously they were blank, causing zero `cde_criticality` rows to be written if the user did not manually choose a level, which made the CDE invisible in views that require criticality data.
+- Applied consistently in both the Add CDE form (`CriticalDataElementFormPanel`) and the standalone criticality bulk-edit panel (`CdeCriticalityFormPanel`). If the Medium level is absent from reference data, both forms fall back to the previous blank behaviour.
+
+---
+
 ## build-20260716-1800 — Bug fix: delta export now includes all 22 SCHEMA tables
 
 ### Fixed
