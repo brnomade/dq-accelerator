@@ -351,7 +351,18 @@ function DashboardScreen() {
     { count: gaps.unprofiledCdes.length,  label: 'Unprofiled CDEs',        description: 'CDEs with no matching field profiling record.',                               screen: 'table',   table: 'source_table_ddl' },
     { count: gaps.unratedCdes.length,     label: 'Unrated CDEs',           description: 'CDEs with no criticality assessment. Invisible to the RAG Simulator.',        screen: 'table',   table: 'critical_data_element' },
     { count: gaps.incompleteCdes.length,  label: 'Incomplete Definitions',  description: 'CDEs missing a definition or explanation.',                                   screen: 'table',   table: 'critical_data_element' },
-    { count: gaps.uncoveredDims.length,   label: 'Uncovered Dimensions',   description: 'Quality dimensions with zero rule coverage across all your CDEs.',             screen: 'rulenav', table: null },
+    {
+      count: gaps.uncoveredDims.length,
+      label: 'Uncovered Dimensions',
+      description: 'Quality dimensions with zero rule coverage across all your CDEs.',
+      items: gaps.uncoveredDims.map(function(dim) {
+        return {
+          label:      dim.dimension_name || ('Dimension #' + dim.quality_dimension_id),
+          sublabel:   dim.dimension_acronymn || null,
+          navigateTo: { screen: 'rulenav', table: null },
+        };
+      }),
+    },
     {
       count: gaps.undocumentedCds.length,
       label: 'Undocumented CDS',
