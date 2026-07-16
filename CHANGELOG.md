@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260716-1905 — Feature: Ownership Hierarchy, Weights & Thresholds, Core Settings are Master-only
+
+### Changed
+- **Master-only sidebar sections** — the Ownership Hierarchy, Weights & Thresholds, and Core Settings navigation groups are now hidden from non-master (steward) users. They remain fully visible to master users. The Data Quality Elements group is unaffected and visible to everyone. No hard redirect is applied if a steward is already on one of those screens when this takes effect.
+
+---
+
 ## build-20260716-1852 — Fix: My Data filter in Rules Explorer hides unrelated rules
 
 ### Fixed

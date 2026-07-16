@@ -5,6 +5,22 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260716-1905 — Feature: Ownership Hierarchy, Weights & Thresholds, Core Settings are Master-only
+
+**Date:** 2026-07-16
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Design discussion | 5 min | -- | -- | |
+| Implementation | -- | -- | 5 min | |
+| **Total** | **5 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/80_sidebar.js`: added `MASTER_ONLY_GROUPS` constant (`ownership`, `weights`, `settings`); `Sidebar` now accepts `isMaster` prop; groups in `MASTER_ONLY_GROUPS` return `null` for non-master users
+- `src/240_app.js`: passes `isMaster` prop to `<Sidebar>`
+
+---
+
 ## build-20260716-1852 — Fix: My Data filter in Rules Explorer hides unrelated rules
 
 **Date:** 2026-07-16
