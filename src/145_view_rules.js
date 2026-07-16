@@ -535,7 +535,7 @@ function RuleExplorerView() {
 
   const hierarchy = useMemo(() => {
     if (!data) return [];
-    return buildRuleHierarchy({
+    const h = buildRuleHierarchy({
       rules:    data.data_quality_rule            || [],
       allocs:   data.data_quality_rule_allocation || [],
       cdes:     data.critical_data_element        || [],
@@ -544,6 +544,7 @@ function RuleExplorerView() {
       agencies: data.executive_agency             || [],
       profilingByKey, critsByCdeId, showRetired, scopeCdsIds,
     });
+    return scopeCdsIds ? h.filter(r => r.allocCount > 0) : h;
   }, [data, profilingByKey, critsByCdeId, showRetired, scopeCdsIds]);
 
   const filtered = useMemo(() => {

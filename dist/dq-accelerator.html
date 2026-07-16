@@ -1903,7 +1903,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260716-1850</div>
+              <div className="header-app-sub">build-20260716-1852</div>
             </div>
           </div>
         </div>
@@ -6908,7 +6908,7 @@ function RuleExplorerView() {
 
   const hierarchy = useMemo(() => {
     if (!data) return [];
-    return buildRuleHierarchy({
+    const h = buildRuleHierarchy({
       rules:    data.data_quality_rule            || [],
       allocs:   data.data_quality_rule_allocation || [],
       cdes:     data.critical_data_element        || [],
@@ -6917,6 +6917,7 @@ function RuleExplorerView() {
       agencies: data.executive_agency             || [],
       profilingByKey, critsByCdeId, showRetired, scopeCdsIds,
     });
+    return scopeCdsIds ? h.filter(r => r.allocCount > 0) : h;
   }, [data, profilingByKey, critsByCdeId, showRetired, scopeCdsIds]);
 
   const filtered = useMemo(() => {

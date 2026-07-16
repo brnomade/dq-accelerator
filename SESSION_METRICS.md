@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260716-1852 — Fix: My Data filter in Rules Explorer hides unrelated rules
+
+**Date:** 2026-07-16
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Diagnosis | 5 min | -- | -- | |
+| Implementation | -- | -- | 2 min | |
+| **Total** | **5 min** | **0 min** | **2 min** | |
+
+### Changes delivered
+- `src/145_view_rules.js`: `hierarchy` useMemo — when `scopeCdsIds` is set (My Data active), filters out rule entries with `allocCount === 0` after the scope filter
+
+---
+
 ## build-20260716-1850 — Polish: MANUAL toggle state uses amber styling
 
 **Date:** 2026-07-16

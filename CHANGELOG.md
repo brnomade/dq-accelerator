@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260716-1852 — Fix: My Data filter in Rules Explorer hides unrelated rules
+
+### Fixed
+- **My Data filter scope** — when My Data is active, rules with no allocations linked to the steward's CDSes are now excluded from the list entirely. Previously those rules were still shown with empty allocation counts, making the filter ineffective at narrowing the view.
+
+---
+
 ## build-20260716-1850 — Polish: MANUAL toggle state uses amber styling
 
 ### Changed
