@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260716-1911 — Feature: Uncovered Dimensions dashboard card is now expandable
+
+**Date:** 2026-07-16
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Implementation | -- | -- | 5 min | |
+| **Total** | **0 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/220_screen_dashboard.js`: Uncovered Dimensions card converted from plain navigation card to `ExpandableActionCard` — adds `items` array mapping each uncovered dimension to a labelled drillable entry pointing to Rules Explorer
+
+---
+
 ## build-20260716-1905 — Feature: Ownership Hierarchy, Weights & Thresholds, Core Settings are Master-only
 
 **Date:** 2026-07-16

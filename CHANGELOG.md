@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260716-1911 — Feature: Uncovered Dimensions dashboard card is now expandable
+
+### Changed
+- **Uncovered Dimensions card** — the Dashboard card now uses the expandable pattern (same as Undocumented CDS). The count badge can be expanded to reveal a drillable list of each uncovered quality dimension by name and acronym. Each item navigates to the Rules Explorer.
+
+---
+
 ## build-20260716-1905 — Feature: Ownership Hierarchy, Weights & Thresholds, Core Settings are Master-only
 
 ### Changed
