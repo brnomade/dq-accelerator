@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260716-1825 — Bug fix: adding an agency now auto-creates weight rows
+
+### Fixed
+- **Missing weight rows on new agency** — adding an Executive Agency now automatically creates one `quality_dimension_weight` row and one `criticality_group_weight` row for every active quality dimension and criticality group, each with `weight_value = 1`. Previously the user had to populate these manually or they remained absent, breaking RAG scoring for that agency.
+
+---
+
 ## build-20260716-1816 — Bug fix: CDE criticality fields default to Medium on Add
 
 ### Fixed
