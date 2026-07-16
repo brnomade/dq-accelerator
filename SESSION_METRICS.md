@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260716-1800 — Bug fix: delta export now includes all 22 SCHEMA tables
+
+**Date:** 2026-07-16
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Bug diagnosis and analysis | 10 min | -- | -- | |
+| Implementation | -- | -- | 5 min | |
+| **Total** | **10 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/70_header_footer.js`: expanded `DELTA_TABLES` from 7 to 22 tables — added `executive_agency_type`, `steward_role_type`, `quality_dimension`, `criticality_group`, `criticality_level`, `executive_agency`, `directorate`, `data_patron`, `data_owner`, `data_steward`, `criticality_group_weight`, `quality_dimension_weight`, `critical_data_set`, `shortlist_group`, `cde_shortlist_tag`
+
+---
+
 ## build-20260701-2151 — Documentation: dashboard guide updated and style fixed
 
 **Date:** 2026-07-01
