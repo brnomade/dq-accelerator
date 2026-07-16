@@ -1903,7 +1903,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260716-1801</div>
+              <div className="header-app-sub">build-20260716-1816</div>
             </div>
           </div>
         </div>
@@ -3194,8 +3194,15 @@ function CdeCriticalityFormPanel({ cdeId, existingRows, preAgencyId, preDirId, p
   // Level selections: { [criticality_group_id]: criticality_level_id }
   const [levelMap, setLevelMap] = useState(() => {
     const m = {};
-    if (existingRows) {
+    if (existingRows && existingRows.length > 0) {
       for (const r of existingRows) m[r.criticality_group_id] = r.criticality_level_id;
+      return m;
+    }
+    // No existing rows: default all groups to Medium
+    const medium = (data?.criticality_level || []).find(l => !l.retiring_timestamp && l.criticality_description === 'Medium');
+    if (!medium) return m;
+    for (const g of (data?.criticality_group || []).filter(g => !g.retiring_timestamp)) {
+      m[g.criticality_group_id] = medium.criticality_level_id;
     }
     return m;
   });
@@ -4712,12 +4719,21 @@ function CriticalDataElementFormPanel({ record, isEdit, preCdsId, preTableName, 
 
   // In edit mode: map of criticality_group_id -> { levelId, rowId }
   const [critLevels, setCritLevels] = useState(() => {
-    if (!isEdit) return {};
-    const m = {};
-    for (const c of (data?.cde_criticality || [])) {
-      if (!c.retiring_timestamp && c.critical_data_element_id === record?.[SCHEMA.critical_data_element.pk]) {
-        m[c.criticality_group_id] = { levelId: c.criticality_level_id, rowId: c.cde_criticality_id };
+    if (isEdit) {
+      const m = {};
+      for (const c of (data?.cde_criticality || [])) {
+        if (!c.retiring_timestamp && c.critical_data_element_id === record?.[SCHEMA.critical_data_element.pk]) {
+          m[c.criticality_group_id] = { levelId: c.criticality_level_id, rowId: c.cde_criticality_id };
+        }
       }
+      return m;
+    }
+    // Add mode: default all criticality groups to Medium
+    const medium = (data?.criticality_level || []).find(l => !l.retiring_timestamp && l.criticality_description === 'Medium');
+    if (!medium) return {};
+    const m = {};
+    for (const g of (data?.criticality_group || []).filter(g => !g.retiring_timestamp)) {
+      m[g.criticality_group_id] = { levelId: medium.criticality_level_id };
     }
     return m;
   });

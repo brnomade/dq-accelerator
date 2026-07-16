@@ -5,6 +5,22 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260716-1816 — Bug fix: CDE criticality fields default to Medium on Add
+
+**Date:** 2026-07-16
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Code review and recommendation | 10 min | -- | -- | |
+| Implementation | -- | -- | 5 min | |
+| **Total** | **10 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/140_view_cde.js`: `critLevels` useState initializer — Add mode now seeds all active criticality groups with the Medium level ID instead of returning `{}`
+- `src/120_view_cde_criticality.js`: `levelMap` useState initializer — when `existingRows` is empty/null, seeds all active criticality groups with the Medium level ID
+
+---
+
 ## build-20260716-1800 — Bug fix: delta export now includes all 22 SCHEMA tables
 
 **Date:** 2026-07-16

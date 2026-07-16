@@ -100,12 +100,21 @@ function CriticalDataElementFormPanel({ record, isEdit, preCdsId, preTableName, 
 
   // In edit mode: map of criticality_group_id -> { levelId, rowId }
   const [critLevels, setCritLevels] = useState(() => {
-    if (!isEdit) return {};
-    const m = {};
-    for (const c of (data?.cde_criticality || [])) {
-      if (!c.retiring_timestamp && c.critical_data_element_id === record?.[SCHEMA.critical_data_element.pk]) {
-        m[c.criticality_group_id] = { levelId: c.criticality_level_id, rowId: c.cde_criticality_id };
+    if (isEdit) {
+      const m = {};
+      for (const c of (data?.cde_criticality || [])) {
+        if (!c.retiring_timestamp && c.critical_data_element_id === record?.[SCHEMA.critical_data_element.pk]) {
+          m[c.criticality_group_id] = { levelId: c.criticality_level_id, rowId: c.cde_criticality_id };
+        }
       }
+      return m;
+    }
+    // Add mode: default all criticality groups to Medium
+    const medium = (data?.criticality_level || []).find(l => !l.retiring_timestamp && l.criticality_description === 'Medium');
+    if (!medium) return {};
+    const m = {};
+    for (const g of (data?.criticality_group || []).filter(g => !g.retiring_timestamp)) {
+      m[g.criticality_group_id] = { levelId: medium.criticality_level_id };
     }
     return m;
   });

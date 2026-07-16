@@ -39,8 +39,15 @@ function CdeCriticalityFormPanel({ cdeId, existingRows, preAgencyId, preDirId, p
   // Level selections: { [criticality_group_id]: criticality_level_id }
   const [levelMap, setLevelMap] = useState(() => {
     const m = {};
-    if (existingRows) {
+    if (existingRows && existingRows.length > 0) {
       for (const r of existingRows) m[r.criticality_group_id] = r.criticality_level_id;
+      return m;
+    }
+    // No existing rows: default all groups to Medium
+    const medium = (data?.criticality_level || []).find(l => !l.retiring_timestamp && l.criticality_description === 'Medium');
+    if (!medium) return m;
+    for (const g of (data?.criticality_group || []).filter(g => !g.retiring_timestamp)) {
+      m[g.criticality_group_id] = medium.criticality_level_id;
     }
     return m;
   });
