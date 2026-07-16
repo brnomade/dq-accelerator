@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260716-1934 — Feature: Incomplete Definitions dashboard card is now expandable
+
+### Changed
+- **Incomplete Definitions card** — the Dashboard card now uses the expandable pattern. The count badge can be expanded to reveal a drillable list of each CDE missing a definition or explanation, showing the CDE name and the CDS it belongs to. Each item navigates to the Data and Stewardship table.
+
+---
+
 ## build-20260716-1911 — Feature: Uncovered Dimensions dashboard card is now expandable
 
 ### Changed

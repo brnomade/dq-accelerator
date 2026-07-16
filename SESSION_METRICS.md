@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260716-1934 — Feature: Incomplete Definitions dashboard card is now expandable
+
+**Date:** 2026-07-16
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Implementation | -- | -- | 5 min | |
+| **Total** | **0 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/220_screen_dashboard.js`: added `cdsById` lookup; Incomplete Definitions card converted to `ExpandableActionCard` with items listing each incomplete CDE by name and CDS
+
+---
+
 ## build-20260716-1911 — Feature: Uncovered Dimensions dashboard card is now expandable
 
 **Date:** 2026-07-16
