@@ -1903,7 +1903,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260716-1912</div>
+              <div className="header-app-sub">build-20260716-1934</div>
             </div>
           </div>
         </div>
@@ -15284,6 +15284,8 @@ function DashboardScreen() {
   (data.executive_agency || []).forEach(a => { agencyById[a.executive_agency_id] = a; });
   const dirById = {};
   (data.directorate || []).forEach(d => { dirById[d.directorate_id] = d; });
+  const cdsById = {};
+  (data.critical_data_set || []).forEach(c => { cdsById[c.critical_data_set_id] = c; });
   const agencyNames = Array.from(gaps.myAgencyIds)
     .map(id => agencyById[id] ? agencyById[id].agency_acronymn : String(id))
     .join(', ');
@@ -15297,7 +15299,19 @@ function DashboardScreen() {
     { count: gaps.unprotectedCdes.length, label: 'Unprotected CDEs',       description: 'Individual CDEs with no rule allocations \u2014 not validated.',              screen: 'rulenav', table: null },
     { count: gaps.unprofiledCdes.length,  label: 'Unprofiled CDEs',        description: 'CDEs with no matching field profiling record.',                               screen: 'table',   table: 'source_table_ddl' },
     { count: gaps.unratedCdes.length,     label: 'Unrated CDEs',           description: 'CDEs with no criticality assessment. Invisible to the RAG Simulator.',        screen: 'table',   table: 'critical_data_element' },
-    { count: gaps.incompleteCdes.length,  label: 'Incomplete Definitions',  description: 'CDEs missing a definition or explanation.',                                   screen: 'table',   table: 'critical_data_element' },
+    {
+      count: gaps.incompleteCdes.length,
+      label: 'Incomplete Definitions',
+      description: 'CDEs missing a definition or explanation.',
+      items: gaps.incompleteCdes.map(function(cde) {
+        var cds = cdsById[cde.critical_data_set_id];
+        return {
+          label:      cde.data_element_name || ('CDE #' + cde.critical_data_element_id),
+          sublabel:   cds ? cds.data_set_name : null,
+          navigateTo: { screen: 'table', table: 'critical_data_element' },
+        };
+      }),
+    },
     {
       count: gaps.uncoveredDims.length,
       label: 'Uncovered Dimensions',
