@@ -4,6 +4,30 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260716-1852 — Fix: My Data filter in Rules Explorer hides unrelated rules
+
+### Fixed
+- **My Data filter scope** — when My Data is active, rules with no allocations linked to the steward's CDSes are now excluded from the list entirely. Previously those rules were still shown with empty allocation counts, making the filter ineffective at narrowing the view.
+
+---
+
+## build-20260716-1850 — Polish: MANUAL toggle state uses amber styling
+
+### Changed
+- **MANUAL button colour** — the AUTOMATED/MANUAL toggle on each rule row now uses amber (`var(--amber)`) for the MANUAL state, matching the brightness and weight of the AUTOMATED state. Previously MANUAL was rendered in faint grey.
+
+---
+
+## build-20260716-1833 — Bug fix: rule automated flag defaults to true; toggle in Rules Explorer
+
+### Fixed
+- **Automated default** — new Data Quality Rules now default `automated = true`. Previously they always defaulted to false, meaning newly created rules were silently excluded from the DQ engine.
+
+### Changed
+- **Automated toggle in Rules Explorer** — the static yellow "AUTOMATED" badge on each rule row has been replaced with a clickable AUTOMATED / MANUAL toggle button. Green when automated, grey when manual. Clicking it flips the flag immediately without opening the edit form. Disabled in read-only mode.
+
+---
+
 ## build-20260716-1825 — Bug fix: adding an agency now auto-creates weight rows
 
 ### Fixed
