@@ -5,6 +5,22 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260716-1833 — Bug fix: rule automated flag defaults to true; toggle in Rules Explorer
+
+**Date:** 2026-07-16
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Code review | 5 min | -- | -- | |
+| Implementation | -- | -- | 10 min | |
+| **Total** | **5 min** | **0 min** | **10 min** | |
+
+### Changes delivered
+- `src/145_view_rules.js`: `handleAddRule` — `automated` default changed from `false` to `true`
+- `src/145_view_rules.js`: `RulesRuleRow` — static AUTOMATED badge replaced with AUTOMATED/MANUAL toggle button; added `onToggleAutomated` prop and `handleToggleAutomated` handler in `RuleExplorerView`
+
+---
+
 ## build-20260716-1825 — Bug fix: adding an agency now auto-creates weight rows
 
 **Date:** 2026-07-16

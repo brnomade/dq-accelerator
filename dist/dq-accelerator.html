@@ -1903,7 +1903,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260716-1825</div>
+              <div className="header-app-sub">build-20260716-1834</div>
             </div>
           </div>
         </div>
@@ -6745,7 +6745,7 @@ function RulesAgencyRow({ agencyEntry, ruleId, rule, critGroupsSorted, critLevel
 // -------------------------------------------------------------------------------
 function RulesRuleRow({ ruleEntry, critGroupsSorted, critLevelsById, dimensionsById,
   expanded, onToggle, onEdit, onRetire, onRestore, onEditAlloc, onRetireAlloc, onRestoreAlloc,
-  onOpenSql, canEdit, accent }) {
+  onOpenSql, onToggleAutomated, canEdit, accent }) {
   const { rule, agencies, agencyCount, cdeCount, allocCount } = ruleEntry;
   const pk        = rule.data_quality_rule_id;
   const expKey    = 'rule_' + pk;
@@ -6782,11 +6782,18 @@ function RulesRuleRow({ ruleEntry, critGroupsSorted, critLevelsById, dimensionsB
           )}
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
-          {rule.automated && (
-            <span style={{ fontSize:9, fontFamily:'var(--mono)', fontWeight:700,
-              color:'var(--amber)', background:'var(--amber-bg)', border:'1px solid var(--amber)',
-              borderRadius:3, padding:'1px 6px', whiteSpace:'nowrap' }}>AUTOMATED</span>
-          )}
+          <button
+            onClick={e => { e.stopPropagation(); onToggleAutomated(rule); }}
+            disabled={!canEdit}
+            title={rule.automated ? 'Automated - click to set Manual' : 'Manual - click to set Automated'}
+            style={{ fontSize:9, fontFamily:'var(--mono)', fontWeight:700,
+              color: rule.automated ? 'var(--green)' : 'var(--text3)',
+              background: rule.automated ? 'rgba(34,201,142,0.12)' : 'var(--bg3)',
+              border: '1px solid ' + (rule.automated ? 'var(--green)' : 'var(--border)'),
+              borderRadius:3, padding:'1px 6px', whiteSpace:'nowrap',
+              cursor: canEdit ? 'pointer' : 'default' }}>
+            {rule.automated ? 'AUTOMATED' : 'MANUAL'}
+          </button>
           <span style={{ fontSize:10, fontFamily:'var(--mono)', color:'var(--text3)' }}>{'#' + pk}</span>
           {hasAllocs && (
             <span style={{ fontSize:10, fontFamily:'var(--mono)', color:'var(--text3)', whiteSpace:'nowrap' }}>
@@ -6948,10 +6955,11 @@ function RuleExplorerView() {
     data_quality_rule_id: nextPk('data_quality_rule'),
     rule_name: null, rule_explanation: null,
     sql_code: null, sql_code_sample: null,
-    source_code_link: null, automated: false, retiring_timestamp: null,
+    source_code_link: null, automated: true, retiring_timestamp: null,
   }});
-  const handleEditRule    = (rule) => setRulePanel({ record: { ...rule } });
-  const handleRuleSave    = (saved) => { upsertRecord('data_quality_rule', saved); setRulePanel(null); };
+  const handleEditRule        = (rule) => setRulePanel({ record: { ...rule } });
+  const handleRuleSave        = (saved) => { upsertRecord('data_quality_rule', saved); setRulePanel(null); };
+  const handleToggleAutomated = (rule) => { if (canEdit) upsertRecord('data_quality_rule', { ...rule, automated: !rule.automated }); };
   const handleRetireRule  = (rule) => { if (canEdit) retireRecord('data_quality_rule', rule.data_quality_rule_id); };
   const handleRestoreRule = (rule) => { if (canEdit) restoreRecord('data_quality_rule', rule.data_quality_rule_id); };
 
@@ -7058,7 +7066,7 @@ function RuleExplorerView() {
               dimensionsById={dimensionsById} expanded={expanded} onToggle={toggleKey}
               onEdit={handleEditRule} onRetire={handleRetireRule} onRestore={handleRestoreRule}
               onEditAlloc={handleEditAlloc} onRetireAlloc={handleRetireAlloc} onRestoreAlloc={handleRestoreAlloc}
-              onOpenSql={handleOpenSql} canEdit={canEdit} accent={accent}
+              onOpenSql={handleOpenSql} onToggleAutomated={handleToggleAutomated} canEdit={canEdit} accent={accent}
             />
           ))}
         </div>
