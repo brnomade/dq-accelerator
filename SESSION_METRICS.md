@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260717-1549 — Fix: Rule Generator CDE prefix now includes the actual field name
+
+**Date:** 2026-07-17
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Diagnosis + fix | 5 min | -- | 5 min | |
+| **Total** | **5 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/180_screen_generator.js`: `buildSuggestionPrompt` — CDE prefix line now interpolates the actual field name (`CDE ${field} - `); rule_name example updated to show both Generic and CDE forms with the real field name
+
+---
+
 ## build-20260717-1539 — Feature: NEW pill on Rule Generator suggestion cards
 
 **Date:** 2026-07-17
