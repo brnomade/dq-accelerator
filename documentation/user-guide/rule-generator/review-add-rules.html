@@ -109,11 +109,7 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
     </li>
     <li>
       <div class="snum">3</div>
-      <div class="sbody">Use the <span class="f">Frequency</span> dropdown to set how often the rule should run (DAILY, WEEKLY, MONTHLY, AD-HOC). Default is DAILY.</div>
-    </li>
-    <li>
-      <div class="snum">4</div>
-      <div class="sbody">Use the <span class="f">Bumper</span> +/&minus; buttons to set the RAG threshold sensitivity for this rule allocation (1&ndash;5). Default is 1. See <a href="../rag-simulator/rag-calculation.html" style="color:var(--blue)">How the RAG rating is calculated</a> for what the bumper value does.</div>
+      <div class="sbody">Use the inline <span class="f">RAG preview</span> to test pass-rate thresholds before committing. Enter the total record count in <strong>Sample size</strong> and the count of records the rule would flag in <strong>Failing</strong>. The RAG badge (GREEN / AMBER / RED) updates instantly. The threshold legend below the inputs shows the pass-rate percentages required for Green and Amber, derived from the CDE's criticality scores. If no criticality is defined for the CDE, the preview shows a message instead of inputs. To adjust the underlying thresholds, use the <a href="../rag-simulator/rag-calculation.html" style="color:var(--blue)">RAG Simulator</a>.</div>
     </li>
   </ol>
 
