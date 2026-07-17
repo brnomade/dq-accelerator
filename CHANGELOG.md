@@ -4,6 +4,15 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260717-1642 — Feature: Export screen simplified for non-master users
+
+### Changed
+- **Export screen — non-master view** — users who are not the master steward now see only two export options: **Delta export** and **Backup export**. The per-group and per-table CSV export sections are hidden for non-masters and remain visible only to the master steward.
+- **Export screen — Delta export card** — the delta export card is now always visible to non-master users, even when no steward identity has been set. In that state it shows a prompt: "Set your steward identity in Settings to enable delta export." Previously the card was hidden entirely.
+- **Export screen — Backup export** — the "Export configuration" card is renamed to "Backup export" and its button label changed from "Export all N tables as zip" to "Export backup". The soft-deleted toggle remains as a single control affecting the backup zip content.
+
+---
+
 ## build-20260717-1631 — Feature: Rule Generator Step 3 mini RAG preview
 
 ### Changed

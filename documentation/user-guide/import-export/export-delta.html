@@ -44,11 +44,11 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
   <h1>How to export your delta</h1>
   <p class="lead">A delta export captures only the changes you have made since the last master file was loaded. Send the file to your master steward so they can merge your work with other stewards&rsquo; changes.</p>
 
-  <div class="prereq">Your steward identity must be set before exporting. The delta file is signed with your name. Go to Settings (top-right cog icon) and select your name under Steward Identity.<br/><br/>The Delta export card only appears if you loaded data from a master file. If you see &ldquo;No base snapshot found&rdquo;, re-import from a master JSON file first.</div>
+  <div class="prereq">Your steward identity must be set before exporting. The delta file is signed with your name. Go to Settings (top-right cog icon) and select your name under Steward Identity.<br/><br/>If you see &ldquo;No base snapshot found&rdquo; in the Delta export card, re-import from a master JSON file first &mdash; the delta is calculated against the last master import.</div>
 
   <ol class="steps">
     <li><div class="snum">1</div><div class="sbody">Click <span class="f">Export</span> in the left sidebar.</div></li>
-    <li><div class="snum">2</div><div class="sbody">Find the <span class="f">Delta export</span> card at the top of the page. It shows the base version your changes were made against.</div></li>
+    <li><div class="snum">2</div><div class="sbody">Find the <span class="f">Delta export</span> card at the top of the page. If your steward identity is not set, the card shows a prompt to configure it in Settings. Once set, the card shows the base version your changes were made against.</div></li>
     <li><div class="snum">3</div><div class="sbody">Click <span class="f">Export my delta</span>. A file named <span class="mono">dq_delta_[your name]_[timestamp].json</span> downloads to your computer.</div></li>
     <li><div class="snum">4</div><div class="sbody">Send the file to your master steward for review and merge.</div></li>
   </ol>
