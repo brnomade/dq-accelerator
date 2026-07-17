@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260717-1655 — Fix: All 22 tables now exportable; Profiling group added
+
+**Date:** 2026-07-17
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Audit + fix | 10 min | -- | 5 min | |
+| **Total** | **10 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/10_constants.js`: TABLE_GROUPS updated — added `critical_data_set`, `data_quality_rule`, `data_quality_rule_allocation`, `cde_criticality` to Data Quality Elements; added `stewardship` to Ownership Hierarchy; moved `source_table_ddl` and `field_profiling` into new Profiling group. All 22 SCHEMA tables now covered across 5 groups.
+
+---
+
 ## build-20260717-1642 — Feature: Export screen simplified for non-master users
 
 **Date:** 2026-07-17

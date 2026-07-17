@@ -304,15 +304,28 @@ const TABLE_GROUPS = [
   {
     id: 'dq',
     label: 'Data Quality Elements',
-    description: 'The core data quality model -- sets, elements, rules, allocations and stewardship',
+    description: 'The core data quality model -- sets, elements, rules, allocations and criticality',
     color: '--green',
     accent: 'var(--green)',
     tables: [
+      'critical_data_set',
       'critical_data_element',
-      'source_table_ddl',
-      'field_profiling',
+      'data_quality_rule',
+      'data_quality_rule_allocation',
+      'cde_criticality',
       'shortlist_group',
       'cde_shortlist_tag',
+    ],
+  },
+  {
+    id: 'profiling',
+    label: 'Profiling',
+    description: 'Table DDL definitions and field-level profiling statistics',
+    color: '--green',
+    accent: 'var(--green)',
+    tables: [
+      'source_table_ddl',
+      'field_profiling',
     ],
   },
   {
@@ -324,6 +337,7 @@ const TABLE_GROUPS = [
     tables: [
       'executive_agency',
       'directorate',
+      'stewardship',
       'data_patron',
       'data_owner',
       'data_steward',

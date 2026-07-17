@@ -4,6 +4,16 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260717-1655 — Fix: All 22 tables now exportable for master users; Profiling group added
+
+### Fixed
+- **Export screen — master view** — five tables were missing from the per-group and per-table export sections: `critical_data_set`, `data_quality_rule`, `data_quality_rule_allocation`, `cde_criticality`, and `stewardship`. All are now included.
+
+### Changed
+- **TABLE_GROUPS** — `critical_data_set`, `data_quality_rule`, `data_quality_rule_allocation`, `cde_criticality` added to the **Data Quality Elements** group; `stewardship` added to **Ownership Hierarchy**; `source_table_ddl` and `field_profiling` moved out of Data Quality Elements into a new dedicated **Profiling** group. All 22 schema tables are now represented across the 5 export groups.
+
+---
+
 ## build-20260717-1642 — Feature: Export screen simplified for non-master users
 
 ### Changed
