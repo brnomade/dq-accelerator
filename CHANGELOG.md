@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260717-1549 — Fix: Rule Generator CDE prefix now includes the actual field name
+
+### Fixed
+- **Rule Generator prompt — CDE prefix naming** — the AI was producing rule names with the literal prefix `CDE -` instead of substituting the actual field name. The prompt now instructs the AI to use `CDE {field_name} - ` (e.g. `CDE staff_id - values must be unique`) and provides a concrete example in the rule_name hint. The field name is interpolated into the prompt at generation time so the AI has no ambiguity about what to substitute.
+
+---
+
 ## build-20260717-1539 — Feature: NEW pill on Rule Generator suggestion cards
 
 ### Changed

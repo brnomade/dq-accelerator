@@ -1903,7 +1903,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260717-1539</div>
+              <div className="header-app-sub">build-20260717-1549</div>
             </div>
           </div>
         </div>
@@ -10305,7 +10305,7 @@ function buildSuggestionPrompt(cde, ddlCols, profRecord, cdsName, existingRulesC
     const shortCds = cdsName.length > 30 ? cdsName.substring(0, 28).trim() + '..' : cdsName;
     lines.push(`  "${shortCds} - " : rule is meaningful only in the context of this Critical Data Set`);
   }
-  lines.push('  "CDE - "         : rule is highly specific to this one field and cannot be generalised');
+  lines.push(`  "CDE ${field} - " : rule is highly specific to this one field and cannot be generalised -- replace "${field}" with the actual field name exactly as shown`);
   lines.push('If a CDS or CDE name is long, shorten it in a way that remains logical and recognisable.');
   lines.push('');
   lines.push('Each element is either a NEW rule or a REUSE suggestion -- choose based on the catalogue above.');
@@ -10313,7 +10313,7 @@ function buildSuggestionPrompt(cde, ddlCols, profRecord, cdsName, existingRulesC
   lines.push('NEW rule (no equivalent exists in the catalogue):');
   lines.push('[');
   lines.push('  {');
-  lines.push('    "rule_name": "prefix + assertive statement, e.g. \'Generic - field values cannot be null or empty\'",');
+  lines.push(`    "rule_name": "prefix + assertive statement, e.g. 'Generic - field values cannot be null or empty' or 'CDE ${field} - values must match the expected pattern'",`);
   lines.push('    "dimension": "one of: Completeness, Validity, Uniqueness, Consistency, Timeliness, Accuracy",');
   lines.push('    "description": "business rule statement -- must start with \'As a business rule, \' and complete the sentence in plain English. Do not mention SQL, thresholds, or technical implementation details.",');
   lines.push('    "basis": "what in the profiling data triggered this suggestion",');
