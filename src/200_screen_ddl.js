@@ -275,7 +275,7 @@ function parseFieldRefs(sqlCode, tableRefs) {
 // ===============================================================================
 // AGENDA ASSEMBLY  (Task 3)
 // ===============================================================================
-function buildProfilingAgenda({ cdes, rules, allocs, fieldProfiling, ddls, dimensions, scopeCdsIds }) {
+function buildProfilingAgenda({ cdes, rules, allocs, fieldProfiling, ddls, dimensions, scopeCdsIds, cdeInfoMap }) {
   // --- lookup maps ---
   const profilingByKey = {};
   for (const p of fieldProfiling) {
@@ -329,6 +329,15 @@ function buildProfilingAgenda({ cdes, rules, allocs, fieldProfiling, ddls, dimen
       };
     }
     fieldMap[key].cdeIds.push(cde.critical_data_element_id);
+    const cdeInfo = cdeInfoMap && cdeInfoMap[cde.critical_data_element_id];
+    if (cdeInfo) {
+      if (!fieldMap[key].cdsSeenIds) fieldMap[key].cdsSeenIds = new Set();
+      if (!fieldMap[key].cdsInfoList) fieldMap[key].cdsInfoList = [];
+      if (!fieldMap[key].cdsSeenIds.has(cdeInfo.cdsId)) {
+        fieldMap[key].cdsSeenIds.add(cdeInfo.cdsId);
+        fieldMap[key].cdsInfoList.push(cdeInfo);
+      }
+    }
     const cdeAllocs = allocsByCdeId[cde.critical_data_element_id] || [];
     fieldMap[key].ruleCount += cdeAllocs.length;
     for (const a of cdeAllocs) fieldMap[key].dimsCovered.add(a.quality_dimension_id);
@@ -412,6 +421,7 @@ function buildProfilingAgenda({ cdes, rules, allocs, fieldProfiling, ddls, dimen
       dimCoverage,
       coveredCount,
       snapshotFilter: entry.snapshotFilter || null,
+      cdsInfoList:    entry.cdsInfoList || [],
     });
   }
 
@@ -498,7 +508,7 @@ function ProfilingSummaryStrip({ tableGroups, dimCount }) {
 // FIELD ROW  (Task 5)
 // ===============================================================================
 function FieldRow({ fieldEntry, dimensions, onProfile, canEdit, accent }) {
-  const { field, origin, ruleCount, type, profiling, dimCoverage, coveredCount } = fieldEntry;
+  const { field, origin, ruleCount, type, profiling, dimCoverage, coveredCount, cdsInfoList } = fieldEntry;
   const isProfiled = !!profiling;
   const rulesBlind = !isProfiled && ruleCount > 0;
   const dimCount   = dimensions.length;
@@ -513,6 +523,10 @@ function FieldRow({ fieldEntry, dimensions, onProfile, canEdit, accent }) {
     ? ('Profiled on' + (profiling.profiled_at ? ' ' + profiling.profiled_at : '') +
        (profiling.profiled_by ? ' by ' + profiling.profiled_by : ''))
     : 'Not yet profiled';
+
+  const cdsTooltip = cdsInfoList && cdsInfoList.length > 0
+    ? cdsInfoList.map(function(c) { return (c.agencyName || 'Unknown Agency') + ' / ' + (c.cdsName || 'Unknown CDS'); }).join('\n')
+    : null;
 
   return (
     <div style={{
@@ -534,12 +548,14 @@ function FieldRow({ fieldEntry, dimensions, onProfile, canEdit, accent }) {
         )}
       </div>
 
-      {/* Badge */}
+      {/* Origin badge - CDS tooltip on CDE/CDE+SQL rows */}
       <div style={{ display:'flex', justifyContent:'center' }}>
-        <span style={{ fontSize:9, fontWeight:700, letterSpacing:'0.05em',
-          color: badge.color, background: badge.color + '18',
-          border: `1px solid ${badge.color}40`,
-          borderRadius:3, padding:'1px 5px', whiteSpace:'nowrap' }}>
+        <span title={cdsTooltip || undefined}
+          style={{ fontSize:9, fontWeight:700, letterSpacing:'0.05em',
+            color: badge.color, background: badge.color + '18',
+            border: `1px solid ${badge.color}40`,
+            borderRadius:3, padding:'1px 5px', whiteSpace:'nowrap',
+            cursor: cdsTooltip ? 'help' : 'default' }}>
           {badge.label}
         </span>
       </div>
@@ -1177,6 +1193,34 @@ function ProfilingView() {
 
   const scopeCdsIds = (myDataOnly && myStewardCdsIds) ? myStewardCdsIds : null;
 
+  // CDE -> CDS -> Directorate -> Agency lookup map for CDS pill
+  const cdeInfoMap = useMemo(() => {
+    if (!data) return {};
+    const cdsById = {};
+    for (const c of (data.critical_data_set || []))
+      if (!c.retiring_timestamp) cdsById[c.critical_data_set_id] = c;
+    const dirById = {};
+    for (const d of (data.directorate || []))
+      if (!d.retiring_timestamp) dirById[d.directorate_id] = d;
+    const agencyById = {};
+    for (const a of (data.executive_agency || []))
+      if (!a.retiring_timestamp) agencyById[a.executive_agency_id] = a;
+    const map = {};
+    for (const cde of (data.critical_data_element || [])) {
+      if (cde.retiring_timestamp) continue;
+      const cds = cdsById[cde.critical_data_set_id];
+      if (!cds) continue;
+      const dir    = dirById[cds.directorate_id];
+      const agency = dir ? agencyById[dir.executive_agency_id] : null;
+      map[cde.critical_data_element_id] = {
+        cdsId:      cds.critical_data_set_id,
+        cdsName:    cds.data_set_name || '',
+        agencyName: agency ? (agency.agency_name || agency.agency_acronymn || '') : '',
+      };
+    }
+    return map;
+  }, [data]);
+
   // Build agenda (Task 3)
   const tableGroups = useMemo(() => {
     if (!data) return [];
@@ -1188,8 +1232,9 @@ function ProfilingView() {
       ddls:          data.source_table_ddl             || [],
       dimensions,
       scopeCdsIds,
+      cdeInfoMap,
     });
-  }, [data, dimensions, scopeCdsIds]);
+  }, [data, dimensions, scopeCdsIds, cdeInfoMap]);
 
   const orphanDdls = useMemo(() => {
     if (!data) return [];
