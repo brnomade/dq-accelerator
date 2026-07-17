@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260717-1442 — Feature: CDS context tooltip on Profiling field rows
+
+### Changed
+- **Profiling page — field rows** — the CDE and CDE+SQL origin badges now carry a hover tooltip listing every Critical Data Set the field belongs to, formatted as `Agency / CDS name` (one line per CDS). No new column is added. SQL-only fields have no tooltip. The change helps data stewards navigate directly to the correct CDS in the Rule Generator after profiling a field.
+
+---
+
 ## build-20260716-1934 — Feature: Incomplete Definitions dashboard card is now expandable
 
 ### Changed

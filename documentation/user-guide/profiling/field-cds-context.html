@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How to identify which CDS a field belongs to &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.steps{list-style:none;padding:0;display:flex;flex-direction:column}
+.steps li{display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
+.steps li:last-child{border-bottom:none}
+.snum{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:var(--mono);font-weight:600;color:var(--text2)}
+.sbody{flex:1;font-size:14px;color:var(--text);line-height:1.6;padding-top:2px}
+.sbody .sub{font-size:12px;color:var(--text3);margin-top:3px}
+.f{font-weight:600;color:var(--blue)}
+.fg{font-weight:600;color:var(--green)}
+.mono{font-family:var(--mono);font-size:12px;color:var(--text2)}
+.note{margin-top:16px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; Table &amp; Field Profiling</div>
+  <h1>How to identify which CDS a field belongs to</h1>
+  <p class="lead">Each field row in the Profiling page shows a <strong>CDS badge</strong> when the field is registered as a Critical Data Element. Hovering over the badge tells you which Agency and Critical Data Set the field belongs to, so you can navigate directly to the right CDS in the Rule Generator without searching.</p>
+
+  <h2>Reading the CDS context</h2>
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody">
+        Click <span class="f">Profiling</span> in the left sidebar and expand a table by clicking its header row.
+      </div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody">
+        Look at the field rows. Each row has an origin badge on the left: <span class="fg">CDE</span>, <span class="mono" style="color:#a06af9">SQL</span>, or <span class="mono" style="color:#5b9cf6">CDE+SQL</span>.
+        <div class="sub">SQL-only fields are not registered as Critical Data Elements and therefore have no CDS association. Only CDE and CDE+SQL rows carry CDS context.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">3</div>
+      <div class="sbody">
+        Hover over the <span class="fg">CDE</span> or <span class="mono" style="color:#5b9cf6">CDE+SQL</span> badge. A tooltip appears listing each Critical Data Set the field belongs to, one per line, in the format:
+        <br/><span class="mono">Agency name / CDS name</span>
+        <div class="sub">A field that appears in more than one CDS shows all of them in the tooltip, one line each.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">4</div>
+      <div class="sbody">
+        Note the Agency and CDS name shown in the tooltip. Go to the <span class="f">Rule Generator</span> page and select that Agency and CDS to find the field and generate or review rules for it.
+      </div>
+    </li>
+  </ol>
+
+  <div class="note">
+    The CDS badge does not indicate how many rules the field has or whether it has been profiled. Use the rules count column and the green tick for that information. The badge is purely a navigation aid connecting the Profiling page to the Rule Generator.
+  </div>
+
+  <div class="related">
+    <div class="rtitle">Related guides</div>
+    <ul class="rlist">
+      <li><a href="field-profile.html">How to profile a field &rsaquo;</a></li>
+      <li><a href="field-filter.html">How to filter fields by profiling status &rsaquo;</a></li>
+      <li><a href="../rule-generator/generate-suggestions.html">How to generate rule suggestions for a field &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>

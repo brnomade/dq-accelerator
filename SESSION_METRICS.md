@@ -5,6 +5,23 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260717-1442 — Feature: CDS context tooltip on Profiling field rows
+
+**Date:** 2026-07-17
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Implementation | 15 min | 10 min | 20 min | |
+| **Total** | **15 min** | **10 min** | **20 min** | |
+
+### Changes delivered
+- `src/200_screen_ddl.js`: `buildProfilingAgenda` accepts `cdeInfoMap`; builds `cdsInfoList` per field entry from CDE→CDS→Directorate→Agency chain; CDS/Agency tooltip attached to the existing CDE/CDE+SQL origin badge (cursor:help); no new column or grid change
+- `documentation/user-guide/profiling/field-profile.html`: step 3 updated to mention the CDS badge
+- `documentation/user-guide/profiling/field-cds-context.html`: new guide — how to identify which CDS a field belongs to
+- `documentation/user-guide/index.html`: new guide added to Table & Field Profiling section
+
+---
+
 ## build-20260716-1934 — Feature: Incomplete Definitions dashboard card is now expandable
 
 **Date:** 2026-07-16
