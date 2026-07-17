@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260717-1631 — Feature: Rule Generator Step 3 mini RAG preview
+
+### Changed
+- **Rule Generator — Step 3 suggestion cards** — the frequency dropdown and bumper stepper have been removed from each suggestion card. In their place, a compact inline RAG preview lets data stewards enter a sample size and a failing record count and instantly see the resulting RAG badge (GREEN / AMBER / RED) together with the green and amber pass-rate thresholds derived from the CDE's criticality scores. When no criticality is defined for the selected CDE, the calculator area shows "RAG score unavailable - no criticality is defined for this CDE" instead of the inputs.
+
+---
+
 ## build-20260717-1549 — Fix: Rule Generator CDE prefix now includes the actual field name
 
 ### Fixed

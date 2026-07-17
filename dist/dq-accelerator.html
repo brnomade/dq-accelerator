@@ -1903,7 +1903,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260717-1549</div>
+              <div className="header-app-sub">build-20260717-1631</div>
             </div>
           </div>
         </div>
@@ -10357,10 +10357,11 @@ function DataRuleGeneratorScreen() {
   const [suggestions,   setSuggestions]  = useState([]);
   const [copied,        setCopied]        = useState(false);
 
-  // Step 3 per-card state: { [idx]: { ruleName, dimension, frequency, bumper, status } }
+  // Step 3 per-card state: { [idx]: { ruleName, dimension } }
   const [cardState,     setCardState]    = useState({});
   const [addedRules,    setAddedRules]   = useState({});
   const [testCopied,    setTestCopied]   = useState({});
+  const [miniRagState,  setMiniRagState] = useState({});
 
   const cdes     = data?.critical_data_element || [];
   const cdSets   = data?.critical_data_set     || [];
@@ -10370,7 +10371,11 @@ function DataRuleGeneratorScreen() {
   const ddls     = data?.source_table_ddl      || [];
   const dims     = data?.quality_dimension     || [];
   const rules    = data?.data_quality_rule     || [];
-  const allocs   = data?.data_quality_rule_allocation || [];
+  const allocs      = data?.data_quality_rule_allocation || [];
+  const critRows    = data?.cde_criticality        || [];
+  const critGroups  = data?.criticality_group      || [];
+  const critLevels  = data?.criticality_level      || [];
+  const groupWeights = data?.criticality_group_weight || [];
 
   // My Data scope filter
   const { myDataOnly, setMyDataOnly, scopeCdsIds, scopeDirIds, scopeAgencyIds } =
@@ -10393,6 +10398,8 @@ function DataRuleGeneratorScreen() {
     }
     return m;
   }, [rules]);
+  const groupById  = useMemo(() => Object.fromEntries(critGroups.map(g => [g.criticality_group_id, g])), [critGroups]);
+  const levelById  = useMemo(() => Object.fromEntries(critLevels.map(l => [l.criticality_level_id, l])), [critLevels]);
 
   // Allocations for the selected CDE
   const existingAllocsForCde = useMemo(() =>
@@ -10500,6 +10507,33 @@ function DataRuleGeneratorScreen() {
   const dir    = cds ? dirById[cds.directorate_id] : null;
   const agency = dir ? agencyById[dir.executive_agency_id] : null;
 
+  const agencyGroupWeights = useMemo(() => {
+    const agencyId = agency?.executive_agency_id;
+    if (!agencyId) return {};
+    return Object.fromEntries(
+      groupWeights
+        .filter(w => w.executive_agency_id === agencyId && !w.retiring_timestamp)
+        .map(w => [w.criticality_group_id, w.weight_value])
+    );
+  }, [groupWeights, agency]);
+
+  const cdeGreenThresh = useMemo(() => {
+    if (!selectedCdeId) return null;
+    const rows = critRows.filter(r => r.critical_data_element_id === selectedCdeId && !r.retiring_timestamp);
+    if (rows.length === 0) return null;
+    const weighted = rows.map(r => {
+      const lvl   = levelById[r.criticality_level_id];
+      const desc  = (lvl?.criticality_description || '').toLowerCase();
+      const score = CRIT_LEVEL_SCORES[desc] ?? 0;
+      const weight = agencyGroupWeights[r.criticality_group_id] ?? 1;
+      return { score, weight };
+    });
+    const totalWeight = weighted.reduce((s, { weight }) => s + weight, 0);
+    if (totalWeight === 0) return 0;
+    const overallScore = weighted.reduce((s, { score, weight }) => s + score * weight, 0) / totalWeight;
+    return getRelativeScore(overallScore);
+  }, [critRows, selectedCdeId, levelById, agencyGroupWeights]);
+
   const fieldProfile = useMemo(() => {
     if (!cde) return null;
     return profiling.find(p =>
@@ -10522,7 +10556,7 @@ function DataRuleGeneratorScreen() {
 
   const resetAll = () => {
     setPromptBuilt(false); setPromptText(''); setResponseText('');
-    setParseError(''); setSuggestions([]); setCardState({}); setAddedRules({});
+    setParseError(''); setSuggestions([]); setCardState({}); setAddedRules({}); setMiniRagState({});
   };
 
   const resetEverything = () => {
@@ -10602,13 +10636,16 @@ function DataRuleGeneratorScreen() {
     setSuggestions(normed);
     const cs = {};
     normed.forEach((s, i) => {
-      cs[i] = { ruleName: s.rule_name, dimension: s.dimension, frequency: 'DAILY', bumper: 1 };
+      cs[i] = { ruleName: s.rule_name, dimension: s.dimension };
     });
     setCardState(cs);
   };
 
   const setCard = (i, field, val) =>
     setCardState(prev => ({ ...prev, [i]: { ...prev[i], [field]: val } }));
+
+  const setMiniRag = (i, field, val) =>
+    setMiniRagState(prev => ({ ...prev, [i]: { ...(prev[i] || {}), [field]: val } }));
 
   const resolvePlaceholders = (text) => substituteCdeTokens(text, cde);
 
@@ -11105,39 +11142,53 @@ function DataRuleGeneratorScreen() {
                         {['Completeness','Validity','Uniqueness','Consistency','Timeliness','Accuracy']
                           .map(d => <option key={d} value={d}>{d}</option>)}
                       </select>
-                      {/* Frequency */}
-                      <select value={cs.frequency || 'DAILY'}
-                        onChange={e => setCard(i, 'frequency', e.target.value)}
-                        style={{ fontSize:10, padding:'3px 7px', cursor:'pointer',
-                          background:'var(--bg)', border:'1px solid var(--border)',
-                          borderRadius:'var(--radius)', color:'var(--text)',
-                          fontFamily:'var(--mono)' }}>
-                        {['DAILY','WEEKLY','MONTHLY','AD-HOC'].map(f =>
-                          <option key={f} value={f}>{f}</option>)}
-                      </select>
-                      {/* Bumper */}
-                      <div style={{ display:'flex', alignItems:'center', gap:4 }}>
-                        <span style={{ fontSize:10, color:'var(--text3)', fontFamily:'var(--mono)' }}>
-                          Bumper:
-                        </span>
-                        <button onClick={() => setCard(i, 'bumper', Math.max(1, (cs.bumper??1) - 1))}
-                          style={{ background:'var(--bg)', border:'1px solid var(--border)',
-                            borderRadius:3, width:18, height:20, cursor:'pointer',
-                            color:'var(--text2)', fontSize:10,
-                            display:'flex', alignItems:'center', justifyContent:'center' }}>
-                          -
-                        </button>
-                        <span style={{ fontSize:11, fontFamily:'var(--mono)', fontWeight:600,
-                          color:'var(--amber)', minWidth:16, textAlign:'center' }}>
-                          {cs.bumper ?? 1}
-                        </span>
-                        <button onClick={() => setCard(i, 'bumper', Math.min(5, (cs.bumper??1) + 1))}
-                          style={{ background:'var(--bg)', border:'1px solid var(--border)',
-                            borderRadius:3, width:18, height:20, cursor:'pointer',
-                            color:'var(--text2)', fontSize:10,
-                            display:'flex', alignItems:'center', justifyContent:'center' }}>
-                          +
-                        </button>
+                      {/* Mini RAG calculator */}
+                      <div style={{ display:'flex', flexDirection:'column', gap:5,
+                        padding:'8px 10px', background:'var(--bg3)',
+                        border:'1px solid var(--border)', borderRadius:'var(--radius)' }}>
+                        {cdeGreenThresh === null ? (
+                          <div style={{ fontSize:10, color:'var(--text3)', fontFamily:'var(--mono)', fontStyle:'italic' }}>
+                            RAG score unavailable - no criticality is defined for this CDE
+                          </div>
+                        ) : (
+                          <>
+                            <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+                              <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+                                <span style={{ fontSize:10, color:'var(--text3)', fontFamily:'var(--mono)' }}>Sample size</span>
+                                <input type="number" min="0"
+                                  value={(miniRagState[i] || {}).sampleSize || ''}
+                                  onChange={e => setMiniRag(i, 'sampleSize', e.target.value)}
+                                  placeholder="e.g. 1000"
+                                  style={{ width:72, fontSize:10, padding:'3px 6px', fontFamily:'var(--mono)',
+                                    background:'var(--bg)', border:'1px solid var(--border)',
+                                    borderRadius:'var(--radius)', color:'var(--text)' }}/>
+                              </div>
+                              <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+                                <span style={{ fontSize:10, color:'var(--text3)', fontFamily:'var(--mono)' }}>Failing</span>
+                                <input type="number" min="0"
+                                  value={(miniRagState[i] || {}).failingCount || ''}
+                                  onChange={e => setMiniRag(i, 'failingCount', e.target.value)}
+                                  placeholder="e.g. 20"
+                                  style={{ width:72, fontSize:10, padding:'3px 6px', fontFamily:'var(--mono)',
+                                    background:'var(--bg)', border:'1px solid var(--border)',
+                                    borderRadius:'var(--radius)', color:'var(--text)' }}/>
+                              </div>
+                              {(() => {
+                                const mr = miniRagState[i] || {};
+                                const ss = parseFloat(mr.sampleSize);
+                                const fc = parseFloat(mr.failingCount);
+                                if (!mr.sampleSize || !mr.failingCount || isNaN(ss) || isNaN(fc) || ss <= 0)
+                                  return <RagBadge label="-"/>;
+                                return <RagBadge label={getRagLabel(Math.max(0,(ss-fc)/ss), cdeGreenThresh)}/>;
+                              })()}
+                            </div>
+                            <div style={{ fontSize:10, color:'var(--text3)', fontFamily:'var(--mono)' }}>
+                              {'Green >= '}{Math.round(cdeGreenThresh * 100)}{'%'}
+                              {'  |  '}
+                              {'Amber >= '}{Math.round((cdeGreenThresh - 0.10) * 100)}{'%'}
+                            </div>
+                          </>
+                        )}
                       </div>
                       <button {...dp} onClick={() => handleAddRule(i)}
                         disabled={s.reuse && !existingRule}

@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260717-1631 — Feature: Rule Generator Step 3 mini RAG preview
+
+**Date:** 2026-07-17
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Design + implementation | 15 min | 10 min | 20 min | |
+| **Total** | **15 min** | **10 min** | **20 min** | |
+
+### Changes delivered
+- `src/180_screen_generator.js`: removed frequency dropdown and bumper stepper from Step 3 cards; added `miniRagState` state + `setMiniRag` helper; added criticality data arrays (`cde_criticality`, `criticality_group`, `criticality_level`, `criticality_group_weight`); added `groupById`, `levelById`, `agencyGroupWeights`, `cdeGreenThresh` computations; replaced removed controls with inline RAG calculator (sample size + failing records inputs, `RagBadge`, threshold legend, fallback message for CDE with no criticality)
+
+---
+
 ## build-20260717-1549 — Fix: Rule Generator CDE prefix now includes the actual field name
 
 **Date:** 2026-07-17
