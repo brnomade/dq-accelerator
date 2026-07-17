@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260717-1539 — Feature: NEW pill on Rule Generator suggestion cards
+
+**Date:** 2026-07-17
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Implementation | 5 min | -- | 5 min | |
+| **Total** | **5 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/180_screen_generator.js`: added green NEW pill (`!s.reuse`) to suggestion card header, placed before the existing blue REUSE EXISTING pill
+
+---
+
 ## build-20260717-1442 — Feature: CDS context tooltip on Profiling field rows
 
 **Date:** 2026-07-17
