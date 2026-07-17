@@ -814,6 +814,15 @@ function DataRuleGeneratorScreen() {
                 }}>
                   {/* Card header */}
                   <div style={{ display:'flex', alignItems:'flex-start', gap:6, marginBottom:8, flexWrap:'wrap' }}>
+                    {!s.reuse && (
+                      <span style={{ fontSize:9, fontWeight:700, fontFamily:'var(--mono)',
+                        color:'var(--green)', background:'rgba(34,201,142,0.1)',
+                        border:'1px solid rgba(34,201,142,0.35)',
+                        borderRadius:3, padding:'2px 8px', flexShrink:0,
+                        textTransform:'uppercase', letterSpacing:'0.06em' }}>
+                        New
+                      </span>
+                    )}
                     {s.reuse && (
                       <span style={{ fontSize:9, fontWeight:700, fontFamily:'var(--mono)',
                         color:reuseColor, background:'rgba(74,158,255,0.1)',

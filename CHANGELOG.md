@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260717-1539 — Feature: NEW pill on Rule Generator suggestion cards
+
+### Changed
+- **Rule Generator — Step 3 suggestion cards** — new rule suggestions now show a green **NEW** pill at the start of the card header, mirroring the existing blue **REUSE EXISTING** pill. Every suggestion card now opens with an unambiguous intent label before the dimension badge.
+
+---
+
 ## build-20260717-1442 — Feature: CDS context tooltip on Profiling field rows
 
 ### Changed
