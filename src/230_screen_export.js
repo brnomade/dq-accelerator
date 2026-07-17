@@ -91,7 +91,7 @@ function ExportScreen() {
       <div className="page-sub">Download individual CSVs or the full dataset as a zip for AWS import.</div>
 
       {/* Delta export -- steward copies only */}
-      {!isMaster && stewardIdentity && (
+      {!isMaster && (
         <div className="card" style={{ marginBottom:20, borderLeft:'3px solid var(--accent)' }}>
           <div className="card-title">
             <span style={{ width:3, height:14, borderRadius:2,
@@ -104,7 +104,13 @@ function ExportScreen() {
               STEWARD
             </span>
           </div>
-          {!baseSnapshot ? (
+          {!stewardIdentity ? (
+            <div style={{ fontSize:12, color:'var(--text3)', padding:'8px 12px',
+              background:'var(--bg)', border:'1px solid var(--border)',
+              borderRadius:'var(--radius)' }}>
+              Set your steward identity in Settings to enable delta export.
+            </div>
+          ) : !baseSnapshot ? (
             <div style={{ fontSize:12, color:'var(--amber)', padding:'8px 12px',
               background:'var(--amber-bg)', borderRadius:'var(--radius)' }}>
               No base snapshot found. Re-import from a master JSON file to enable delta export.
@@ -172,7 +178,7 @@ function ExportScreen() {
       )}
 
       <div className="card" style={{ marginBottom:20 }}>
-        <div className="card-title"><span className="dot"/>Export configuration</div>
+        <div className="card-title"><span className="dot"/>Backup export</div>
         <div className="toggle-row" style={{ borderTop:'none', marginTop:0, paddingTop:0 }}>
           <label className="toggle">
             <input type="checkbox" checked={includeSoftDeleted} onChange={e => setIncludeSoftDeleted(e.target.checked)}/>
@@ -189,12 +195,12 @@ function ExportScreen() {
         </div>
         <div style={{ marginTop:12 }}>
           <button className="btn btn-green" onClick={handleExportAll} disabled={exporting || !canEdit}>
-            <Icon.Download/>{exporting?'Preparing zip...':`Export all ${allTables.length} tables as zip`}
+            <Icon.Download/>{exporting ? 'Preparing backup...' : 'Export backup'}
           </button>
         </div>
       </div>
 
-      {TABLE_GROUPS.map(group => {
+      {isMaster && TABLE_GROUPS.map(group => {
         const groupTotal = group.tables.reduce((s,t) => s+(counts[t]||0), 0);
         const isExp = exportingGroup===group.id;
         return (

@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260717-1642 — Feature: Export screen simplified for non-master users
+
+**Date:** 2026-07-17
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Design + implementation | 10 min | -- | 10 min | |
+| **Total** | **10 min** | **0 min** | **10 min** | |
+
+### Changes delivered
+- `src/230_screen_export.js`: delta card shown always to non-masters (with disabled state when no steward identity); "Export configuration" card renamed to "Backup export"; button label changed to "Export backup"; TABLE_GROUPS section gated behind `isMaster`
+
+---
+
 ## build-20260717-1631 — Feature: Rule Generator Step 3 mini RAG preview
 
 **Date:** 2026-07-17
