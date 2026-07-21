@@ -1937,7 +1937,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260721-2101</div>
+              <div className="header-app-sub">build-20260721-2104</div>
             </div>
           </div>
         </div>
@@ -15058,9 +15058,9 @@ function ImportScreen({ onImport, onMerge }) {
               {!importing && (
                 <div style={{ marginTop:10, display:'flex', justifyContent:'flex-end' }}>
                   <button
-                    className="btn-primary"
+                    className="btn btn-primary"
                     onClick={() => navigate({ screen:'dashboard', table:null })}>
-                    Proceed to Dashboard
+                    Proceed
                   </button>
                 </div>
               )}
