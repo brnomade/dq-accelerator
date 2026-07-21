@@ -14,6 +14,7 @@ Items appear in this order. Route format is `{ screen, table }`.
 | DQ Assistant | `screen:assistant` | `AssistantScreen` | `250_screen_assistant.js` |
 | Export | `screen:export` | `ExportScreen` | `230_screen_export.js` |
 | Import | `screen:import` | `ImportScreen` | `210_screen_import.js` |
+| Data Browser _(master only)_ | `screen:databrowser` | `DataBrowserScreen` | `215_screen_databrowser.js` |
 
 ---
 

@@ -126,6 +126,15 @@ function Sidebar({ route, onNavigate, data, onToggle, isMaster }) {
           {!collapsed && <span className="nav-item-label">Import</span>}
         </div>
 
+        {/* Data Browser -- master only */}
+        {isMaster && (
+          <div className={`nav-item ${isActive('databrowser') ? 'active' : ''}`}
+            onClick={() => onNavigate({ screen: 'databrowser', table: null })}>
+            <span className="nav-item-icon"><Icon.Database/></span>
+            {!collapsed && <span className="nav-item-label">Data Browser</span>}
+          </div>
+        )}
+
         <div style={{ height:8, borderBottom:'1px solid var(--border)', marginBottom:8 }}/>
 
         {/* TABLE GROUPS */}
@@ -216,18 +225,6 @@ function Sidebar({ route, onNavigate, data, onToggle, isMaster }) {
                     color: isActive('rulenav') ? 'var(--text)' : 'var(--text2)' }}>
                     Rules Explorer
                   </span>
-                </div>
-              )}
-              {open && group.id === 'dq' && (
-                <div
-                  className={`nav-table-item ${isActive('table', 'source_table_ddl') ? 'active' : ''}`}
-                  onClick={() => onNavigate({ screen: 'table', table: 'source_table_ddl' })}>
-                  <span style={{ width: 3, height: 10, borderRadius: 1,
-                    background: group.accent, opacity: 0.5, flexShrink: 0 }}/>
-                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    Profiling
-                  </span>
-                  <span className="nav-table-badge">{liveCounts['source_table_ddl'] ?? 0}</span>
                 </div>
               )}
               {open && group.tables.map(t => {

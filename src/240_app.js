@@ -46,6 +46,13 @@ function Breadcrumb({ route }) {
       </div>
     );
   }
+  if (route.screen === 'databrowser') {
+    return (
+      <div className="breadcrumb">
+        <span className="breadcrumb-current">Data Browser</span>
+      </div>
+    );
+  }
   if (route.screen === 'assistant') {
     return (
       <div className="breadcrumb">
@@ -181,8 +188,12 @@ function App() {
 
   const handleReset = () => {
     clearStorage();
+    localStorage.removeItem(STEWARD_IDENTITY_KEY);
+    localStorage.removeItem(BASE_VERSION_KEY);
+    localStorage.removeItem(BASE_SNAPSHOT_KEY);
     setData(null);
     setSavedAt(null);
+    setStewardIdentityState(null);
     setRoute({ screen:'import', table:null });
     setResetStage(0);
   };
@@ -432,7 +443,8 @@ function App() {
       return <NoDataScreen onNavigateImport={() => navigate({ screen:'import', table:null })}/>;
     }
     switch (route.screen) {
-      case 'import':    return <ImportScreen onImport={handleImport} onMerge={handleDeltaMerge}/>;
+      case 'import':      return <ImportScreen onImport={handleImport} onMerge={handleDeltaMerge}/>;
+      case 'databrowser': return <DataBrowserScreen/>;
       case 'rulegenerator': return <DataRuleGeneratorScreen/>;
       case 'assistant':     return <AssistantScreen/>;
       case 'coverage':    return <CDECoverageScreen/>;

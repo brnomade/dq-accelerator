@@ -4,6 +4,21 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260721-1949 — Fix: Steward identity cleared on reset; duplicate Profiling menu removed
+
+### Fixed
+- **Reset Data — steward identity** — pressing Reset Data now clears the steward identity, base version, and base snapshot from localStorage and React state. Previously only the main data store was cleared, leaving a stale identity that could mismatch the newly imported dataset.
+- **Sidebar — duplicate Profiling item** — the Data Quality Elements group had a hardcoded "Profiling" link to `source_table_ddl` that became a duplicate after the dedicated Profiling group was added in build-20260717-1655. The hardcoded entry has been removed; the Profiling group is now the sole sidebar entry for that screen.
+
+---
+
+## build-20260721-1758 — Feature: Data Browser screen for master stewards
+
+### Added
+- **Data Browser** — new master-only screen accessible from the sidebar between Import and the table-group separator. Provides a raw database-client view of all 22 SCHEMA tables without any FK resolution, display labels, or edit actions. Left panel lists all tables alphabetically with active row count and retired row count (in amber). Right panel shows the selected table in a sortable grid using physical column names (`col.name`); PK columns carry an amber `PK` badge, FK columns carry a blue `FK` badge; clicking any column header sorts ascending then descending with an arrow indicator. A free-text filter bar narrows rows by any field value. A "Show retired" toggle (default off) reveals soft-deleted rows with an amber tint; each retired row shows an "Undo" button that calls `restoreRecord` to clear the `retiring_timestamp`.
+
+---
+
 ## build-20260721-1731 — Feature: Conflict card redesigned as physical 3-column diff table
 
 ### Changed

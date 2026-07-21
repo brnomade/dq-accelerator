@@ -5,6 +5,40 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260721-1949 — Fix: Reset clears identity; duplicate Profiling removed
+
+**Date:** 2026-07-21
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Bug fix x2 | 5 min | -- | 5 min | |
+| **Total** | **5 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/240_app.js`: `handleReset` — added `localStorage.removeItem` for `STEWARD_IDENTITY_KEY`, `BASE_VERSION_KEY`, `BASE_SNAPSHOT_KEY` and `setStewardIdentityState(null)` to fully clear session state on reset.
+- `src/80_sidebar.js`: removed hardcoded "Profiling" nav item from the Data Quality Elements (`dq`) group; the dedicated Profiling TABLE_GROUP already covers this.
+
+---
+
+## build-20260721-1758 — Feature: Data Browser screen
+
+**Date:** 2026-07-21
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Design + implementation | 10 min | 10 min | 25 min | |
+| **Total** | **10 min** | **10 min** | **25 min** | |
+
+### Changes delivered
+- `src/215_screen_databrowser.js`: new `DataBrowserScreen` component — left panel of 22 alphabetical tables with active/retired counts; right panel with filter bar, show-retired toggle, sortable physical-name grid, PK/FK badges, null cell display, retired row tint, and Undo retirement button.
+- `src/80_sidebar.js`: added master-only "Data Browser" nav item (with `Icon.Database`) between Import and the table-group separator.
+- `src/240_app.js`: added `case 'databrowser'` route and breadcrumb branch.
+- `APP_TREE.md`: updated sidebar navigation table.
+- `designs/DESIGN_DATA_BROWSER.md`: new design document.
+- `plans/PLAN_DATA_BROWSER.md`: new plan document.
+
+---
+
 ## build-20260721-1731 — Feature: Conflict card redesigned as 3-column diff table
 
 **Date:** 2026-07-21
