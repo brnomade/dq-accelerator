@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260721-2129 — Feature: Import FK integrity check
+
+**Date:** 2026-07-21
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Feature | 5 min | -- | 5 min | |
+| **Total** | **5 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/20_data_utils.js`: second pass in `importWorkbook` checks all FK columns against their target table PK sets; emits `err`-level log entries for any unresolved FK values.
+
+---
+
 ## build-20260721-2122 — Feature: Data Browser bulk retire / un-retire
 
 **Date:** 2026-07-21
