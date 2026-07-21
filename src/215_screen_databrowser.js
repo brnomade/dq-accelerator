@@ -313,20 +313,13 @@ function DataBrowserScreen() {
                               padding: '5px 10px',
                               borderBottom: '1px solid var(--border)',
                               fontFamily: (col.isPk || col.fk) ? 'var(--mono)' : 'inherit',
-                              color: isNull ? 'var(--text2)' : (isDupe && col.isPk ? 'var(--red)' : 'var(--text)'),
+                              color: isNull ? 'var(--text2)' : 'var(--text)',
                               maxWidth: 280, overflow: 'hidden',
                               textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                             }}>
                             {isNull
                               ? <span style={{ fontStyle: 'italic', fontSize: 11 }}>{'null'}</span>
-                              : col.isPk && isDupe
-                                ? <span style={{ display:'inline-flex', alignItems:'center', gap: 4 }}>
-                                    {String(val)}
-                                    <span title={'Duplicate PK'} style={{ color:'var(--red)', lineHeight:1 }}>
-                                      <Icon.Warning/>
-                                    </span>
-                                  </span>
-                                : String(val)
+                              : String(val)
                             }
                           </td>
                         );

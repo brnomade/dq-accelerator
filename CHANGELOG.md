@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260721-2112 — Fix: Data Browser duplicate row indicator — colour only, no icon
+
+### Changed
+- **Data Browser — row grid** — removed the warning icon and red PK cell colour from duplicate rows. Row background colour (`--red-bg`) is sufficient to identify duplicates; the icon was visual noise.
+
+---
+
 ## build-20260721-2110 — Feature: Data Browser flags duplicate PKs in table list and row grid
 
 ### Changed

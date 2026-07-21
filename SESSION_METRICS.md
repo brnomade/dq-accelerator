@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260721-2112 — Fix: Data Browser duplicate row — colour only
+
+**Date:** 2026-07-21
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Fix | 1 min | -- | 1 min | |
+| **Total** | **1 min** | **0 min** | **1 min** | |
+
+### Changes delivered
+- `src/215_screen_databrowser.js`: removed warning icon and red PK cell colour from duplicate rows; red row background is the sole indicator.
+
+---
+
 ## build-20260721-2110 — Feature: Data Browser duplicate PK indicators
 
 **Date:** 2026-07-21
