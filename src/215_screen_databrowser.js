@@ -2,12 +2,15 @@
 // DATA BROWSER SCREEN -- master-steward raw table inspector
 // ===============================================================================
 function DataBrowserScreen() {
-  const { data, isMaster, restoreRecord } = useApp();
+  const { data, isMaster, restoreRecord, bulkSetRetiring } = useApp();
   const [selectedTable, setSelectedTable] = useState(null);
   const [filterText,    setFilterText]    = useState('');
   const [showRetired,   setShowRetired]   = useState(false);
   const [sortCol,       setSortCol]       = useState(null);
   const [sortDir,       setSortDir]       = useState('asc');
+  const [selectedKeys,  setSelectedKeys]  = useState(new Set());
+
+  const headerCheckRef = useRef(null);
 
   const tables = useMemo(() => Object.keys(SCHEMA).sort(), []);
 
@@ -65,25 +68,43 @@ function DataBrowserScreen() {
     return (selectedTable && data) ? (data[selectedTable] || []) : [];
   }, [selectedTable, data]);
 
+  // displayRows carries the original allRows index for stable selection keys
   const displayRows = useMemo(() => {
-    let rows = allRows;
-    if (!showRetired) rows = rows.filter(r => !r.retiring_timestamp);
+    let items = allRows.map((row, origIdx) => ({ row, origIdx }));
+    if (!showRetired) items = items.filter(item => !item.row.retiring_timestamp);
     if (filterText.trim()) {
       const q = filterText.toLowerCase();
-      rows = rows.filter(r =>
-        Object.values(r).some(v => v !== null && v !== undefined && String(v).toLowerCase().includes(q))
+      items = items.filter(item =>
+        Object.values(item.row).some(v => v !== null && v !== undefined && String(v).toLowerCase().includes(q))
       );
     }
     if (sortCol) {
-      rows = [...rows].sort((a, b) => {
-        const av = a[sortCol] ?? '';
-        const bv = b[sortCol] ?? '';
+      items = [...items].sort((a, b) => {
+        const av = a.row[sortCol] ?? '';
+        const bv = b.row[sortCol] ?? '';
         const cmp = String(av).localeCompare(String(bv), undefined, { numeric: true });
         return sortDir === 'asc' ? cmp : -cmp;
       });
     }
-    return rows;
+    return items;
   }, [allRows, showRetired, filterText, sortCol, sortDir]);
+
+  // Clear selection when table changes or allRows changes (after bulk action)
+  useEffect(() => { setSelectedKeys(new Set()); }, [selectedTable, allRows]);
+
+  // Selection derived state
+  const selLiveCount    = displayRows.filter(item => selectedKeys.has(item.origIdx) && !item.row.retiring_timestamp).length;
+  const selRetiredCount = displayRows.filter(item => selectedKeys.has(item.origIdx) && !!item.row.retiring_timestamp).length;
+  const selCount        = selLiveCount + selRetiredCount;
+  const allDisplaySel   = displayRows.length > 0 && displayRows.every(item => selectedKeys.has(item.origIdx));
+  const someDisplaySel  = displayRows.some(item => selectedKeys.has(item.origIdx));
+
+  // Drive header checkbox indeterminate state via ref
+  useEffect(() => {
+    if (headerCheckRef.current) {
+      headerCheckRef.current.indeterminate = someDisplaySel && !allDisplaySel;
+    }
+  }, [someDisplaySel, allDisplaySel]);
 
   const handleSort = (colName) => {
     if (sortCol === colName) {
@@ -101,6 +122,42 @@ function DataBrowserScreen() {
     setSortDir('asc');
   };
 
+  const handleHeaderCheck = () => {
+    if (allDisplaySel) {
+      setSelectedKeys(prev => {
+        const next = new Set(prev);
+        displayRows.forEach(item => next.delete(item.origIdx));
+        return next;
+      });
+    } else {
+      setSelectedKeys(prev => {
+        const next = new Set(prev);
+        displayRows.forEach(item => next.add(item.origIdx));
+        return next;
+      });
+    }
+  };
+
+  const handleRowCheck = (origIdx) => {
+    setSelectedKeys(prev => {
+      const next = new Set(prev);
+      if (next.has(origIdx)) next.delete(origIdx);
+      else next.add(origIdx);
+      return next;
+    });
+  };
+
+  const handleBulkAction = (retire) => {
+    if (!selectedTable || !pkField) return;
+    const pkValues = new Set(
+      displayRows
+        .filter(item => selectedKeys.has(item.origIdx))
+        .map(item => item.row[pkField])
+    );
+    bulkSetRetiring(selectedTable, pkValues, retire);
+    setSelectedKeys(new Set());
+  };
+
   if (!isMaster) {
     return (
       <div className="fade-in" style={{ display:'flex', alignItems:'center',
@@ -112,9 +169,24 @@ function DataBrowserScreen() {
     );
   }
 
-  const colSpanTotal  = displayCols.length + (showRetired ? 1 : 0);
+  const colSpanTotal  = displayCols.length + 2 + (showRetired ? 1 : 0); // +2: checkbox col + undo col when retired
   const sortArrow     = sortDir === 'asc' ? String.fromCharCode(8593) : String.fromCharCode(8595);
   const selectedDupes = selectedTable ? (dupePkMap[selectedTable] || null) : null;
+
+  // Retire button label and disabled state
+  let retireBtnLabel    = 'Retire selected';
+  let retireBtnDisabled = false;
+  let retireBtnAction   = true; // true = retire, false = un-retire
+  if (selCount === 0) {
+    retireBtnLabel    = 'Retire / Un-retire';
+    retireBtnDisabled = true;
+  } else if (selLiveCount > 0 && selRetiredCount > 0) {
+    retireBtnLabel    = 'Mixed selection';
+    retireBtnDisabled = true;
+  } else if (selRetiredCount > 0) {
+    retireBtnLabel    = 'Un-retire selected';
+    retireBtnAction   = false;
+  }
 
   return (
     <div className="fade-in" style={{ display:'flex', height:'100%', overflow:'hidden' }}>
@@ -217,6 +289,16 @@ function DataBrowserScreen() {
               onChange={e => setShowRetired(e.target.checked)}/>
             Show retired
           </label>
+          <button
+            className="btn btn-ghost"
+            disabled={retireBtnDisabled}
+            onClick={() => handleBulkAction(retireBtnAction)}
+            style={{
+              fontSize: 11, padding: '3px 10px', flexShrink: 0,
+              color: retireBtnDisabled ? 'var(--text2)' : undefined,
+            }}>
+            {retireBtnLabel}
+          </button>
           <div style={{ fontSize: 11, color: 'var(--text2)', flexShrink: 0 }}>
             {displayRows.length}{' '}{displayRows.length === 1 ? 'row' : 'rows'}
           </div>
@@ -233,6 +315,18 @@ function DataBrowserScreen() {
             <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontSize: 12 }}>
               <thead>
                 <tr>
+                  <th style={{
+                    width: 36, padding: '7px 0 7px 10px', textAlign: 'center',
+                    position: 'sticky', top: 0, zIndex: 2,
+                    background: 'var(--bg2)', boxShadow: '0 1px 0 var(--border)',
+                  }}>
+                    <input
+                      type="checkbox"
+                      ref={headerCheckRef}
+                      checked={allDisplaySel}
+                      onChange={handleHeaderCheck}
+                    />
+                  </th>
                   {displayCols.map(col => {
                     const isSorted = sortCol === col.name;
                     const isFk     = !col.isPk && !!col.fk;
@@ -274,14 +368,12 @@ function DataBrowserScreen() {
                       </th>
                     );
                   })}
-                  {showRetired && (
-                    <th style={{
-                      padding: '7px 10px', width: 60,
-                      position: 'sticky', top: 0, zIndex: 2,
-                      background: 'var(--bg2)',
-                      boxShadow: '0 1px 0 var(--border)',
-                    }}/>
-                  )}
+                  <th style={{
+                    padding: '7px 10px', width: 60,
+                    position: 'sticky', top: 0, zIndex: 2,
+                    background: 'var(--bg2)',
+                    boxShadow: '0 1px 0 var(--border)',
+                  }}/>
                 </tr>
               </thead>
               <tbody>
@@ -292,18 +384,30 @@ function DataBrowserScreen() {
                       No rows.
                     </td>
                   </tr>
-                ) : displayRows.map((row, ri) => {
-                  const isRetired = !!row.retiring_timestamp;
-                  const isDupe    = selectedDupes && pkField && selectedDupes.has(row[pkField]);
+                ) : displayRows.map((item) => {
+                  const { row, origIdx } = item;
+                  const isRetired  = !!row.retiring_timestamp;
+                  const isDupe     = selectedDupes && pkField && selectedDupes.has(row[pkField]);
+                  const isChecked  = selectedKeys.has(origIdx);
                   let rowBg = 'transparent';
-                  if (isDupe)     rowBg = 'var(--red-bg)';
+                  if (isDupe)      rowBg = 'var(--red-bg)';
                   else if (isRetired) rowBg = 'rgba(255,176,32,0.05)';
                   return (
-                    <tr key={ri}
+                    <tr key={origIdx}
                       style={{
                         opacity:    isRetired ? 0.6 : 1,
                         background: rowBg,
                       }}>
+                      <td style={{
+                        padding: '5px 0 5px 10px', textAlign: 'center',
+                        borderBottom: '1px solid var(--border)', width: 36,
+                      }}>
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => handleRowCheck(origIdx)}
+                        />
+                      </td>
                       {displayCols.map(col => {
                         const val    = row[col.name];
                         const isNull = val === null || val === undefined;
@@ -324,25 +428,23 @@ function DataBrowserScreen() {
                           </td>
                         );
                       })}
-                      {showRetired && (
-                        <td style={{
-                          padding: '5px 10px', borderBottom: '1px solid var(--border)',
-                          width: 60, textAlign: 'right',
-                        }}>
-                          {isRetired && pkField && (
-                            <button
-                              onClick={() => restoreRecord(selectedTable, row[pkField])}
-                              style={{
-                                fontSize: 10, padding: '2px 7px', cursor: 'pointer',
-                                fontWeight: 600, borderRadius: 4,
-                                background: 'var(--amber-bg)', color: 'var(--amber)',
-                                border: '1px solid var(--amber)',
-                              }}>
-                              Undo
-                            </button>
-                          )}
-                        </td>
-                      )}
+                      <td style={{
+                        padding: '5px 10px', borderBottom: '1px solid var(--border)',
+                        width: 60, textAlign: 'right',
+                      }}>
+                        {isRetired && pkField && (
+                          <button
+                            onClick={() => restoreRecord(selectedTable, row[pkField])}
+                            style={{
+                              fontSize: 10, padding: '2px 7px', cursor: 'pointer',
+                              fontWeight: 600, borderRadius: 4,
+                              background: 'var(--amber-bg)', color: 'var(--amber)',
+                              border: '1px solid var(--amber)',
+                            }}>
+                            Undo
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   );
                 })}

@@ -4,6 +4,15 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260721-2122 — Feature: Data Browser bulk retire / un-retire via checkboxes
+
+### Added
+- **Data Browser — row selection** — each data row now has a checkbox in a new leftmost column. A header checkbox selects or deselects all rows in the current filtered view; it shows an indeterminate state when only some rows are selected.
+- **Data Browser — Retire / Un-retire button** — a context-sensitive button appears in the toolbar. When only live rows are selected it reads "Retire selected"; when only retired rows are selected it reads "Un-retire selected". When both live and retired rows are selected simultaneously it reads "Mixed selection" and is disabled. When nothing is selected it is disabled. After the action completes the selection is cleared.
+- **`240_app.js`** — new `bulkSetRetiring(tableName, pkValues, retire)` context function performs a single `setData` call to retire or un-retire a Set of PK values, keeping the per-row Undo button unchanged.
+
+---
+
 ## build-20260721-2112 — Fix: Data Browser duplicate row indicator — colour only, no icon
 
 ### Changed
