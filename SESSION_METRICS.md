@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260721-2017 — Feature: Data Browser live/total row counts
+
+**Date:** 2026-07-21
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Feature | 2 min | -- | 2 min | |
+| **Total** | **2 min** | **0 min** | **2 min** | |
+
+### Changes delivered
+- `src/215_screen_databrowser.js`: table list counter changed from `active +retired` to `active/total`; total shown in amber when retired rows exist.
+
+---
+
 ## build-20260721-2013 — Fix: Data Browser transparent header
 
 **Date:** 2026-07-21
