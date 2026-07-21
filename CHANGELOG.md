@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260721-2101 — Feature: Import requires explicit Proceed to Dashboard after every import
+
+### Changed
+- **Import screen** — the screen no longer auto-navigates to the dashboard after an Excel import. Instead, a "Proceed to Dashboard" button appears below the import log once the import finishes. This gives the steward time to read all log messages (including duplicate PK errors) before moving on. The button is always shown after a completed import, regardless of whether the log contains errors or only info entries.
+
+---
+
 ## build-20260721-2059 — Fix: Import stays on screen when errors are present
 
 ### Fixed

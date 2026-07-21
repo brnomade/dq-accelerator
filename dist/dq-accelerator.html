@@ -1937,7 +1937,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260721-2059</div>
+              <div className="header-app-sub">build-20260721-2101</div>
             </div>
           </div>
         </div>
@@ -15055,6 +15055,15 @@ function ImportScreen({ onImport, onMerge }) {
                   {e.msg}
                 </div>
               ))}
+              {!importing && (
+                <div style={{ marginTop:10, display:'flex', justifyContent:'flex-end' }}>
+                  <button
+                    className="btn-primary"
+                    onClick={() => navigate({ screen:'dashboard', table:null })}>
+                    Proceed to Dashboard
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -16465,11 +16474,9 @@ function App() {
   // -- Navigation & import ----------------------------------
   const navigate = useCallback((newRoute) => setRoute(newRoute), []);
 
-  const handleImport = useCallback((importedData, importLog) => {
+  const handleImport = useCallback((importedData) => {
     setData(importedData);
     persist(importedData);
-    const hasErrors = importLog && importLog.some(function(e) { return e.level === 'err'; });
-    if (!hasErrors) setRoute({ screen:'dashboard', table:null });
   }, [persist]);
 
   const handleDeltaMerge = useCallback((mergedData) => {

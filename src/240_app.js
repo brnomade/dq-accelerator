@@ -175,11 +175,9 @@ function App() {
   // -- Navigation & import ----------------------------------
   const navigate = useCallback((newRoute) => setRoute(newRoute), []);
 
-  const handleImport = useCallback((importedData, importLog) => {
+  const handleImport = useCallback((importedData) => {
     setData(importedData);
     persist(importedData);
-    const hasErrors = importLog && importLog.some(function(e) { return e.level === 'err'; });
-    if (!hasErrors) setRoute({ screen:'dashboard', table:null });
   }, [persist]);
 
   const handleDeltaMerge = useCallback((mergedData) => {
