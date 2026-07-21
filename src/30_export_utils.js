@@ -40,6 +40,29 @@ function runHealthCheck(data) {
     const retired = rows.filter(r => r.retiring_timestamp);
     tableCounts[tableName] = { total: rows.length, live: live.length, retired: retired.length };
 
+    // Check duplicate PKs
+    const pk = schema.pk;
+    if (pk) {
+      const seen = new Set();
+      const dupes = new Set();
+      for (const row of rows) {
+        const v = row[pk];
+        if (v === null || v === undefined) continue;
+        if (seen.has(v)) dupes.add(v);
+        else seen.add(v);
+      }
+      for (const v of dupes) {
+        issues.push({
+          table: tableName,
+          pk: v,
+          field: pk,
+          value: v,
+          refTable: null,
+          msg: tableName + '[' + v + '].' + pk + ' -- duplicate primary key',
+        });
+      }
+    }
+
     // Check FK references
     for (const col of schema.cols) {
       if (!col.fk) continue;
@@ -56,7 +79,7 @@ function runHealthCheck(data) {
             field: col.name,
             value: val,
             refTable: col.fk.table,
-            msg: `${tableName}[${row[schema.pk]}].${col.name} = ${val} -- no matching record in ${col.fk.table}`,
+            msg: tableName + '[' + row[schema.pk] + '].' + col.name + ' = ' + val + ' -- no matching record in ' + col.fk.table,
           });
         }
       }

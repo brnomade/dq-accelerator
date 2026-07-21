@@ -1168,6 +1168,29 @@ function runHealthCheck(data) {
     const retired = rows.filter(r => r.retiring_timestamp);
     tableCounts[tableName] = { total: rows.length, live: live.length, retired: retired.length };
 
+    // Check duplicate PKs
+    const pk = schema.pk;
+    if (pk) {
+      const seen = new Set();
+      const dupes = new Set();
+      for (const row of rows) {
+        const v = row[pk];
+        if (v === null || v === undefined) continue;
+        if (seen.has(v)) dupes.add(v);
+        else seen.add(v);
+      }
+      for (const v of dupes) {
+        issues.push({
+          table: tableName,
+          pk: v,
+          field: pk,
+          value: v,
+          refTable: null,
+          msg: tableName + '[' + v + '].' + pk + ' -- duplicate primary key',
+        });
+      }
+    }
+
     // Check FK references
     for (const col of schema.cols) {
       if (!col.fk) continue;
@@ -1184,7 +1207,7 @@ function runHealthCheck(data) {
             field: col.name,
             value: val,
             refTable: col.fk.table,
-            msg: `${tableName}[${row[schema.pk]}].${col.name} = ${val} -- no matching record in ${col.fk.table}`,
+            msg: tableName + '[' + row[schema.pk] + '].' + col.name + ' = ' + val + ' -- no matching record in ' + col.fk.table,
           });
         }
       }
@@ -1959,7 +1982,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260721-2135</div>
+              <div className="header-app-sub">build-20260721-2211</div>
             </div>
           </div>
         </div>
@@ -15750,24 +15773,102 @@ function computeStewardGaps(data, stewardIdentity) {
       return { cds, cdeCount, ruleCount, ratedCount, profiledCount };
     });
 
-  // Scoped FK integrity issues: filter runHealthCheck output to my scope
+  // All integrity issues (PK duplicates + FK violations across all tables)
   const { issues: allIssues } = runHealthCheck(data);
-  const scopedIssues = allIssues.filter(iss => {
-    if (iss.table === 'critical_data_element')        return myCdeIds.has(iss.pk);
-    if (iss.table === 'critical_data_set')            return myCdsIds.has(iss.pk);
-    if (iss.table === 'data_quality_rule_allocation') {
-      const a = (data.data_quality_rule_allocation || []).find(r => r.data_quality_rule_allocation_id === iss.pk);
-      return a && myCdeIds.has(a.critical_data_element_id);
-    }
-    if (iss.table === 'cde_criticality') {
-      const c = (data.cde_criticality || []).find(r => r.cde_criticality_id === iss.pk);
-      return c && myCdeIds.has(c.critical_data_element_id);
-    }
-    if (iss.table === 'stewardship') {
-      const s = (data.stewardship || []).find(r => r.stewardship_id === iss.pk);
-      return s && myCdsIds.has(s.critical_data_set_id);
-    }
-    return false;
+
+  // Scoped issues: build a comprehensive per-table PK scope set for this steward
+  const myAllocationIds = new Set(
+    live('data_quality_rule_allocation')
+      .filter(function(a) { return myCdeIds.has(a.critical_data_element_id); })
+      .map(function(a) { return a.data_quality_rule_allocation_id; })
+  );
+  const myRuleIds = new Set(
+    live('data_quality_rule_allocation')
+      .filter(function(a) { return myCdeIds.has(a.critical_data_element_id); })
+      .map(function(a) { return a.data_quality_rule_id; })
+  );
+  const myCriticalityIds = new Set(
+    live('cde_criticality')
+      .filter(function(c) { return myCdeIds.has(c.critical_data_element_id); })
+      .map(function(c) { return c.cde_criticality_id; })
+  );
+  const myStewardshipIds = new Set(
+    live('stewardship')
+      .filter(function(s) { return myCdsIds.has(s.critical_data_set_id); })
+      .map(function(s) { return s.stewardship_id; })
+  );
+  const myPatronIds = new Set(
+    live('data_patron')
+      .filter(function(p) { return myAgencyIds.has(p.executive_agency_id); })
+      .map(function(p) { return p.data_patron_id; })
+  );
+  const myOwnerIds = new Set(
+    live('data_owner')
+      .filter(function(o) { return myAgencyDirIds.has(o.directorate_id); })
+      .map(function(o) { return o.data_owner_id; })
+  );
+  const myCgwIds = new Set(
+    live('criticality_group_weight')
+      .filter(function(w) { return myAgencyIds.has(w.executive_agency_id); })
+      .map(function(w) { return w.criticality_group_weight_id; })
+  );
+  const myQdwIds = new Set(
+    live('quality_dimension_weight')
+      .filter(function(w) { return myAgencyIds.has(w.executive_agency_id); })
+      .map(function(w) { return w.quality_dimension_weight_id; })
+  );
+  const myCdeDbTableKeys = new Set(
+    myCdes.map(function(c) { return (c.source_database_name || '') + '|' + (c.source_table_name || ''); })
+  );
+  const myDdlIds = new Set(
+    live('source_table_ddl')
+      .filter(function(d) { return myCdeDbTableKeys.has((d.source_database_name || '') + '|' + (d.source_table_name || '')); })
+      .map(function(d) { return d.source_table_ddl_id; })
+  );
+  const myCdeFieldKeys = new Set(
+    myCdes.map(function(c) { return (c.source_database_name || '') + '|' + (c.source_table_name || '') + '|' + (c.source_field_name || ''); })
+  );
+  const myProfilingIds = new Set(
+    live('field_profiling')
+      .filter(function(f) { return myCdeFieldKeys.has((f.source_database_name || '') + '|' + (f.source_table_name || '') + '|' + (f.source_field_name || '')); })
+      .map(function(f) { return f.field_profiling_id; })
+  );
+  const myShortlistGroupIds = new Set(
+    (data.shortlist_group || [])
+      .filter(function(g) { return myAgencyDirIds.has(g.directorate_id); })
+      .map(function(g) { return g.shortlist_group_id; })
+  );
+  // Reference tables have no steward scope -- include all their PKs
+  function allPks(t) { return new Set((data[t] || []).map(function(r) { return r[SCHEMA[t] && SCHEMA[t].pk]; })); }
+
+  const scopePksByTable = {
+    executive_agency_type:        allPks('executive_agency_type'),
+    executive_agency:             myAgencyIds,
+    directorate:                  myAgencyDirIds,
+    critical_data_set:            myCdsIds,
+    critical_data_element:        myCdeIds,
+    data_quality_rule:            myRuleIds,
+    data_quality_rule_allocation: myAllocationIds,
+    cde_criticality:              myCriticalityIds,
+    stewardship:                  myStewardshipIds,
+    data_patron:                  myPatronIds,
+    data_owner:                   myOwnerIds,
+    data_steward:                 allPks('data_steward'),
+    quality_dimension:            allPks('quality_dimension'),
+    criticality_group:            allPks('criticality_group'),
+    criticality_level:            allPks('criticality_level'),
+    criticality_group_weight:     myCgwIds,
+    quality_dimension_weight:     myQdwIds,
+    steward_role_type:            allPks('steward_role_type'),
+    source_table_ddl:             myDdlIds,
+    field_profiling:              myProfilingIds,
+    shortlist_group:              myShortlistGroupIds,
+  };
+
+  const scopedIssues = allIssues.filter(function(iss) {
+    var scopeSet = scopePksByTable[iss.table];
+    if (!scopeSet) return true;
+    return scopeSet.has(iss.pk);
   });
 
   return {
@@ -15775,7 +15876,7 @@ function computeStewardGaps(data, stewardIdentity) {
     unownedCds, emptyCds, unprotectedCds, unprotectedCdes,
     unprofiledCdes, unratedCdes, incompleteCdes, undocumentedCds,
     uncoveredDims, dimensionCoverage,
-    myCdsSummary, scopedIssues,
+    myCdsSummary, allIssues, scopedIssues,
   };
 }
 
@@ -16014,9 +16115,11 @@ function DashboardScreen() {
     },
   ];
 
+  const displayIssues = isMaster ? gaps.allIssues : displayIssues;
+
   const allClear = hasPersonalCds &&
     cards.every(c => c.count === 0) &&
-    gaps.scopedIssues.length === 0;
+    displayIssues.length === 0;
 
   return (
     <div className="fade-in">
@@ -16211,71 +16314,78 @@ function DashboardScreen() {
             </div>
           </div>
 
-          {/* Data integrity -- collapsible, scoped to steward's data */}
-          <div style={{ marginBottom: 24 }}>
-            <div
-              onClick={() => setFkOpen(function(o) { return !o; })}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '10px 14px', cursor: 'pointer',
-                background: 'var(--bg2)',
-                border: '1px solid ' + (gaps.scopedIssues.length ? 'var(--amber)' : 'var(--border)'),
-                borderLeft: '3px solid ' + (gaps.scopedIssues.length ? 'var(--amber)' : 'var(--border)'),
-                borderRadius: fkOpen ? 'var(--radius) var(--radius) 0 0' : 'var(--radius)',
-              }}
-            >
-              <span style={{
-                fontWeight: 600, fontSize: 12,
-                color: gaps.scopedIssues.length ? 'var(--amber)' : 'var(--text3)',
-              }}>
-                Data integrity
-              </span>
-              <span style={{
-                fontSize: 11, padding: '1px 7px', borderRadius: 10,
-                background: gaps.scopedIssues.length ? 'var(--amber-bg)' : 'var(--bg3)',
-                color: gaps.scopedIssues.length ? 'var(--amber)' : 'var(--text3)',
-                border: '1px solid ' + (gaps.scopedIssues.length ? 'var(--amber)' : 'var(--border)'),
-              }}>
-                {gaps.scopedIssues.length} issue{gaps.scopedIssues.length !== 1 ? 's' : ''}
-              </span>
-              <span style={{ marginLeft: 'auto', color: 'var(--text3)', fontSize: 12 }}>
-                {fkOpen ? '\u25be' : '\u25b8'}
-              </span>
-            </div>
-            {fkOpen && (
-              <div style={{
-                border: '1px solid var(--border)',
-                borderTop: 'none',
-                borderRadius: '0 0 var(--radius) var(--radius)',
-                overflow: 'hidden',
-              }}>
-                {gaps.scopedIssues.length === 0 ? (
-                  <div style={{ padding: '12px 14px', fontSize: 12, color: 'var(--text3)' }}>
-                    No integrity issues found in your scope.
-                  </div>
-                ) : (
-                  <div className="issue-list" style={{ margin: 0, borderRadius: 0 }}>
-                    {gaps.scopedIssues.slice(0, 30).map(function(iss, i) {
-                      return (
-                        <div key={i} className="issue-item">
-                          <span className="issue-badge">{iss.table}</span>
-                          <span style={{ color: 'var(--amber)', fontSize: 11 }}>{iss.msg}</span>
-                        </div>
-                      );
-                    })}
-                    {gaps.scopedIssues.length > 30 && (
-                      <div className="status-row status-warn">
-                        ...and {gaps.scopedIssues.length - 30} more
-                      </div>
-                    )}
+
+        </div>
+      )}
+
+      {/* Data integrity -- always shown when identity is set; master sees full DB, stewards see scoped */}
+      <div style={{ marginBottom: 24 }}>
+        <div
+          onClick={() => setFkOpen(function(o) { return !o; })}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '10px 14px', cursor: 'pointer',
+            background: 'var(--bg2)',
+            border: '1px solid ' + (displayIssues.length ? 'var(--amber)' : 'var(--border)'),
+            borderLeft: '3px solid ' + (displayIssues.length ? 'var(--amber)' : 'var(--border)'),
+            borderRadius: fkOpen ? 'var(--radius) var(--radius) 0 0' : 'var(--radius)',
+          }}
+        >
+          <span style={{
+            fontWeight: 600, fontSize: 12,
+            color: displayIssues.length ? 'var(--amber)' : 'var(--text3)',
+          }}>
+            Data integrity
+          </span>
+          {isMaster && (
+            <span style={{ fontSize: 10, color: 'var(--text3)', marginLeft: 2 }}>
+              (full database)
+            </span>
+          )}
+          <span style={{
+            fontSize: 11, padding: '1px 7px', borderRadius: 10,
+            background: displayIssues.length ? 'var(--amber-bg)' : 'var(--bg3)',
+            color: displayIssues.length ? 'var(--amber)' : 'var(--text3)',
+            border: '1px solid ' + (displayIssues.length ? 'var(--amber)' : 'var(--border)'),
+          }}>
+            {displayIssues.length} issue{displayIssues.length !== 1 ? 's' : ''}
+          </span>
+          <span style={{ marginLeft: 'auto', color: 'var(--text3)', fontSize: 12 }}>
+            {fkOpen ? '\u25be' : '\u25b8'}
+          </span>
+        </div>
+        {fkOpen && (
+          <div style={{
+            border: '1px solid var(--border)',
+            borderTop: 'none',
+            borderRadius: '0 0 var(--radius) var(--radius)',
+            overflow: 'hidden',
+          }}>
+            {displayIssues.length === 0 ? (
+              <div style={{ padding: '12px 14px', fontSize: 12, color: 'var(--text3)' }}>
+                {isMaster ? 'No integrity issues found in the database.' : 'No integrity issues found in your scope.'}
+              </div>
+            ) : (
+              <div className="issue-list" style={{ margin: 0, borderRadius: 0 }}>
+                {displayIssues.slice(0, 50).map(function(iss, i) {
+                  return (
+                    <div key={i} className="issue-item">
+                      <span className="issue-badge">{iss.table}</span>
+                      <span style={{ color: 'var(--amber)', fontSize: 11 }}>{iss.msg}</span>
+                    </div>
+                  );
+                })}
+                {displayIssues.length > 50 && (
+                  <div className="status-row status-warn">
+                    {'...and ' + (displayIssues.length - 50) + ' more'}
                   </div>
                 )}
               </div>
             )}
           </div>
+        )}
+      </div>
 
-        </div>
-      )}
     </div>
   );
 }

@@ -4,6 +4,15 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260721-2211 — Feature: Dashboard Data Integrity improvements
+
+### Added
+- **Dashboard — Data Integrity section** — PK duplicate detection added to `runHealthCheck` (previously only FK violations were checked). All 18 tables are now checked for both duplicate PKs and FK violations; the previous 5-table scope in `computeStewardGaps` has been replaced with a comprehensive per-table scope map covering all SCHEMA tables.
+- **Dashboard — Master Steward** — Data Integrity section is now always visible when a steward identity is set, regardless of whether they have personal CDS assignments. Master stewards see all issues across the entire database (`allIssues`); regular stewards see only issues scoped to their data (`scopedIssues`). The section header includes a `(full database)` label for masters.
+- **Dashboard — Data Integrity section** — Issue list limit raised from 30 to 50. Empty state message is context-aware ("...in the database" for master, "...in your scope" for regular stewards).
+
+---
+
 ## build-20260721-2135 — Feature: Data Browser FK integrity indicators
 
 ### Added
