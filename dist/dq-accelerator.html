@@ -1982,7 +1982,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260721-2211</div>
+              <div className="header-app-sub">build-20260721-2213</div>
             </div>
           </div>
         </div>
@@ -16115,7 +16115,7 @@ function DashboardScreen() {
     },
   ];
 
-  const displayIssues = isMaster ? gaps.allIssues : displayIssues;
+  const displayIssues = isMaster ? gaps.allIssues : gaps.scopedIssues;
 
   const allClear = hasPersonalCds &&
     cards.every(c => c.count === 0) &&

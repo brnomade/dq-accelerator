@@ -471,7 +471,7 @@ function DashboardScreen() {
     },
   ];
 
-  const displayIssues = isMaster ? gaps.allIssues : displayIssues;
+  const displayIssues = isMaster ? gaps.allIssues : gaps.scopedIssues;
 
   const allClear = hasPersonalCds &&
     cards.every(c => c.count === 0) &&
