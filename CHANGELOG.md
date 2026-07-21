@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260721-2129 — Feature: Import FK integrity check
+
+### Added
+- **Import — FK integrity validation** — `importWorkbook` now runs a second pass after all sheets are loaded, checking every foreign key column in every table against the PK set of the referenced table. Any FK value that cannot be resolved (i.e. the referenced record does not exist in the imported data) is reported as an `err`-level log entry, e.g. `data_quality_rule_allocation.critical_data_set_id: 3 unresolved FK values not found in critical_data_set (12, 45, 99) -- fix the source data and re-import`. Null FK values are skipped (optional FK). The check covers all SCHEMA-defined FK relationships automatically with no hardcoding.
+
+---
+
 ## build-20260721-2122 — Feature: Data Browser bulk retire / un-retire via checkboxes
 
 ### Added

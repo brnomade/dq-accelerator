@@ -133,6 +133,28 @@ function importWorkbook(arrayBuffer) {
     }
   }
 
+  // Second pass: FK integrity check across all loaded tables
+  for (const [tableName, schema] of Object.entries(SCHEMA)) {
+    const rows = result[tableName];
+    if (!rows || rows.length === 0) continue;
+    for (const col of (schema.cols || [])) {
+      if (!col.fk) continue;
+      const targetRows = result[col.fk.table];
+      if (!targetRows) continue;
+      const validPks = new Set(targetRows.map(r => r[col.fk.field]));
+      const badVals  = new Set();
+      for (const row of rows) {
+        const v = row[col.name];
+        if (v === null || v === undefined) continue;
+        if (!validPks.has(v)) badVals.add(v);
+      }
+      if (badVals.size > 0) {
+        const badList = [...badVals].sort((a, b) => a - b).join(', ');
+        log.push({ level: 'err', msg: `${tableName}.${col.name}: ${badVals.size} unresolved FK value${badVals.size > 1 ? 's' : ''} not found in ${col.fk.table} (${badList}) -- fix the source data and re-import` });
+      }
+    }
+  }
+
   return { data: result, log };
 }
 
