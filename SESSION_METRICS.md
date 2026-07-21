@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260721-1949 — Fix: Reset clears identity; duplicate Profiling removed
+
+**Date:** 2026-07-21
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Bug fix x2 | 5 min | -- | 5 min | |
+| **Total** | **5 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/240_app.js`: `handleReset` — added `localStorage.removeItem` for `STEWARD_IDENTITY_KEY`, `BASE_VERSION_KEY`, `BASE_SNAPSHOT_KEY` and `setStewardIdentityState(null)` to fully clear session state on reset.
+- `src/80_sidebar.js`: removed hardcoded "Profiling" nav item from the Data Quality Elements (`dq`) group; the dedicated Profiling TABLE_GROUP already covers this.
+
+---
+
 ## build-20260721-1758 — Feature: Data Browser screen
 
 **Date:** 2026-07-21

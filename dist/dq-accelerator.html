@@ -1917,7 +1917,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260721-1758</div>
+              <div className="header-app-sub">build-20260721-1949</div>
             </div>
           </div>
         </div>
@@ -2220,18 +2220,6 @@ function Sidebar({ route, onNavigate, data, onToggle, isMaster }) {
                     color: isActive('rulenav') ? 'var(--text)' : 'var(--text2)' }}>
                     Rules Explorer
                   </span>
-                </div>
-              )}
-              {open && group.id === 'dq' && (
-                <div
-                  className={`nav-table-item ${isActive('table', 'source_table_ddl') ? 'active' : ''}`}
-                  onClick={() => onNavigate({ screen: 'table', table: 'source_table_ddl' })}>
-                  <span style={{ width: 3, height: 10, borderRadius: 1,
-                    background: group.accent, opacity: 0.5, flexShrink: 0 }}/>
-                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    Profiling
-                  </span>
-                  <span className="nav-table-badge">{liveCounts['source_table_ddl'] ?? 0}</span>
                 </div>
               )}
               {open && group.tables.map(t => {
@@ -16468,8 +16456,12 @@ function App() {
 
   const handleReset = () => {
     clearStorage();
+    localStorage.removeItem(STEWARD_IDENTITY_KEY);
+    localStorage.removeItem(BASE_VERSION_KEY);
+    localStorage.removeItem(BASE_SNAPSHOT_KEY);
     setData(null);
     setSavedAt(null);
+    setStewardIdentityState(null);
     setRoute({ screen:'import', table:null });
     setResetStage(0);
   };

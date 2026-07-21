@@ -188,8 +188,12 @@ function App() {
 
   const handleReset = () => {
     clearStorage();
+    localStorage.removeItem(STEWARD_IDENTITY_KEY);
+    localStorage.removeItem(BASE_VERSION_KEY);
+    localStorage.removeItem(BASE_SNAPSHOT_KEY);
     setData(null);
     setSavedAt(null);
+    setStewardIdentityState(null);
     setRoute({ screen:'import', table:null });
     setResetStage(0);
   };

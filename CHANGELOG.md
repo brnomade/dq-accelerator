@@ -4,6 +4,14 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260721-1949 — Fix: Steward identity cleared on reset; duplicate Profiling menu removed
+
+### Fixed
+- **Reset Data — steward identity** — pressing Reset Data now clears the steward identity, base version, and base snapshot from localStorage and React state. Previously only the main data store was cleared, leaving a stale identity that could mismatch the newly imported dataset.
+- **Sidebar — duplicate Profiling item** — the Data Quality Elements group had a hardcoded "Profiling" link to `source_table_ddl` that became a duplicate after the dedicated Profiling group was added in build-20260717-1655. The hardcoded entry has been removed; the Profiling group is now the sole sidebar entry for that screen.
+
+---
+
 ## build-20260721-1758 — Feature: Data Browser screen for master stewards
 
 ### Added

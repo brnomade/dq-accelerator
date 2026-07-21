@@ -227,18 +227,6 @@ function Sidebar({ route, onNavigate, data, onToggle, isMaster }) {
                   </span>
                 </div>
               )}
-              {open && group.id === 'dq' && (
-                <div
-                  className={`nav-table-item ${isActive('table', 'source_table_ddl') ? 'active' : ''}`}
-                  onClick={() => onNavigate({ screen: 'table', table: 'source_table_ddl' })}>
-                  <span style={{ width: 3, height: 10, borderRadius: 1,
-                    background: group.accent, opacity: 0.5, flexShrink: 0 }}/>
-                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    Profiling
-                  </span>
-                  <span className="nav-table-badge">{liveCounts['source_table_ddl'] ?? 0}</span>
-                </div>
-              )}
               {open && group.tables.map(t => {
                 if (group.id === 'dq') return null;
                 if (t === 'field_profiling') return null;
