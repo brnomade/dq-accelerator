@@ -110,7 +110,27 @@ function importWorkbook(arrayBuffer) {
     const ws = wb.Sheets[sheetName];
     const rows = importSheet(ws, tableName);
     result[tableName] = rows;
-    log.push({ level: 'info', msg: `${tableName}: imported ${rows.length} rows` });
+
+    const pk = SCHEMA[tableName]?.pk;
+    if (pk) {
+      const seen = new Set();
+      const dupes = new Set();
+      for (const row of rows) {
+        const pkVal = row[pk];
+        if (pkVal !== null && pkVal !== undefined) {
+          if (seen.has(pkVal)) dupes.add(pkVal);
+          else seen.add(pkVal);
+        }
+      }
+      if (dupes.size > 0) {
+        const dupeList = [...dupes].sort((a, b) => a - b).join(', ');
+        log.push({ level: 'err', msg: `${tableName}: ${dupes.size} duplicate PK${dupes.size > 1 ? 's' : ''} found (${pk}: ${dupeList}) -- fix the source data and re-import` });
+      } else {
+        log.push({ level: 'info', msg: `${tableName}: imported ${rows.length} rows` });
+      }
+    } else {
+      log.push({ level: 'info', msg: `${tableName}: imported ${rows.length} rows` });
+    }
   }
 
   return { data: result, log };
