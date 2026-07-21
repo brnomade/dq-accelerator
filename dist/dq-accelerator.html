@@ -1937,7 +1937,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260721-2110</div>
+              <div className="header-app-sub">build-20260721-2112</div>
             </div>
           </div>
         </div>
@@ -15394,20 +15394,13 @@ function DataBrowserScreen() {
                               padding: '5px 10px',
                               borderBottom: '1px solid var(--border)',
                               fontFamily: (col.isPk || col.fk) ? 'var(--mono)' : 'inherit',
-                              color: isNull ? 'var(--text2)' : (isDupe && col.isPk ? 'var(--red)' : 'var(--text)'),
+                              color: isNull ? 'var(--text2)' : 'var(--text)',
                               maxWidth: 280, overflow: 'hidden',
                               textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                             }}>
                             {isNull
                               ? <span style={{ fontStyle: 'italic', fontSize: 11 }}>{'null'}</span>
-                              : col.isPk && isDupe
-                                ? <span style={{ display:'inline-flex', alignItems:'center', gap: 4 }}>
-                                    {String(val)}
-                                    <span title={'Duplicate PK'} style={{ color:'var(--red)', lineHeight:1 }}>
-                                      <Icon.Warning/>
-                                    </span>
-                                  </span>
-                                : String(val)
+                              : String(val)
                             }
                           </td>
                         );
