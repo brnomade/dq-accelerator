@@ -5,6 +5,23 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260721-1659 — Fix: DQ Assistant sql_code_sample prompt
+
+**Date:** 2026-07-21
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Investigation + fix + docs | 20 min | -- | 10 min | |
+| **Total** | **20 min** | **0 min** | **10 min** | |
+
+### Changes delivered
+- `src/250_screen_assistant.js`: `buildOutputFormatSection` — changed `sql_code_sample` template value from descriptive string to `null`; moved field notes into shared `fieldNotes` array applied to both conversation modes; added 5-line precise explanation of when to populate, what form it must take, and the LIMIT prohibition.
+- `documentation/user-guide/rules-explorer/rule-add-edit.html`: corrected SQL sample field description in the field reference table; added link to new guide.
+- `documentation/user-guide/rules-explorer/sql-sample-explained.html`: new guide page explaining the failure rate calculation model, the bounded-rule scenario, what sql_code_sample must contain, and rules for correct use.
+- `documentation/user-guide/index.html`: added "When to use the SQL sample field" to the Rules Explorer section.
+
+---
+
 ## build-20260717-1655 — Fix: All 22 tables now exportable; Profiling group added
 
 **Date:** 2026-07-17

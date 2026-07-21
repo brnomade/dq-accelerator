@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>When to use the SQL sample field &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+p{font-size:14px;color:var(--text2);line-height:1.65;margin-bottom:14px}
+.formula{margin:20px 0;padding:16px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-family:var(--mono);font-size:13px;color:var(--text);line-height:1.8}
+.formula .label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.scenario{margin:20px 0;padding:16px 20px;background:var(--bg2);border-left:3px solid var(--border);border-radius:var(--radius)}
+.scenario.ok{border-left-color:var(--green)}.scenario.warn{border-left-color:var(--amber)}
+.scenario-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.scenario p{margin-bottom:6px;font-size:13px}
+.code{font-family:var(--mono);font-size:12px;color:var(--text2);background:var(--bg3);padding:10px 14px;border-radius:var(--radius);margin:10px 0;line-height:1.7;white-space:pre-wrap}
+.note{margin-top:20px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; <a href="rule-add-edit.html">Rules Explorer</a></div>
+  <h1>When to use the SQL sample field</h1>
+  <p class="lead">The SQL sample field is a specialist override for the denominator of the failure rate calculation. It is left blank for the vast majority of rules.</p>
+
+  <h2>How failure rate is calculated</h2>
+
+  <p>Every data quality rule produces a failure rate: the proportion of records in scope that fail the check. The calculation has two parts:</p>
+
+  <div class="formula">
+    <div class="label">Standard formula</div>
+    Failure rate = sql_code result (count of failing records)<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &divide; universe (COUNT(*) WHERE snapshot_filter)
+  </div>
+
+  <p>The <strong>universe</strong> is the total number of rows in scope for the rule. By default, this is a plain <code style="font-family:var(--mono);font-size:12px;color:var(--text2)">COUNT(*)</code> filtered only by the CDE's snapshot filter &mdash; meaning every live row in the table is considered a candidate.</p>
+
+  <p>This works correctly for rules that apply to every row in the table. Most rules fall into this category.</p>
+
+  <h2>When the default universe is wrong</h2>
+
+  <p>Some rules are intentionally bounded to a subset of rows beyond what the snapshot filter covers. The failure count only looks at those rows &mdash; but if the denominator is still the full table, the failure rate is artificially diluted and meaningless.</p>
+
+  <div class="scenario warn">
+    <div class="scenario-label">Example: a date-bounded rule</div>
+    <p>A rule checks that every prisoner record created in the past 10 days has a case worker assigned.</p>
+    <p><strong>sql_code</strong> counts failures only among records where <code style="font-family:var(--mono);font-size:12px">created_date &gt;= today - 10 days</code>.</p>
+    <p>If the table holds 50,000 records but only 200 were created in the last 10 days, dividing by 50,000 produces a near-zero rate that tells you nothing about the actual problem.</p>
+    <p>The correct denominator is the count of the same 200 recent records &mdash; not the full table.</p>
+  </div>
+
+  <p>This is the only scenario where the SQL sample field is needed.</p>
+
+  <h2>What to put in the SQL sample field</h2>
+
+  <p>The SQL sample field must contain a <code style="font-family:var(--mono);font-size:12px;color:var(--text2)">COUNT(*)</code> query that applies the same bounding condition as the rule SQL, in addition to the snapshot filter. It replaces the default full-table count as the denominator.</p>
+
+  <div class="scenario ok">
+    <div class="scenario-label">Correct sql_code_sample for the example above</div>
+    <div class="code">SELECT COUNT(*)
+FROM {table}
+WHERE {snapshot}
+  AND created_date &gt;= DATEADD(day, -10, GETDATE())</div>
+    <p style="font-size:12px;color:var(--text3);margin-top:6px">The bounding condition matches the one in sql_code exactly. The snapshot token ensures both queries operate on the same base population.</p>
+  </div>
+
+  <div class="note">
+    <strong>Rules for the SQL sample field</strong><br>
+    &bull; Must be a <code style="font-family:var(--mono);font-size:11px">COUNT(*)</code> query &mdash; not a row-level SELECT.<br>
+    &bull; Must include the snapshot filter token (<code style="font-family:var(--mono);font-size:11px">{snapshot}</code>) plus the same bounding condition as sql_code.<br>
+    &bull; Never use LIMIT &mdash; this is a count of the universe, not a sample of rows.<br>
+    &bull; Leave blank for any rule that checks all rows in the snapshot. That is the common case.
+  </div>
+
+  <h2>AI-generated rules</h2>
+
+  <p>When the DQ Assistant generates a rule, it sets sql_code_sample to null unless it detects that the rule SQL is bounded to a subset. If you review an AI-generated rule and notice the failure rate looks wrong in production, check whether the rule has a bounding condition that the default universe does not cover, and add a sql_code_sample manually via the edit panel in the Rules Explorer.</p>
+
+  <div class="related">
+    <div class="rtitle">Related guides</div>
+    <ul class="rlist">
+      <li><a href="rule-add-edit.html">How to add or edit a rule &rsaquo;</a></li>
+      <li><a href="view-sql.html">How to view rule SQL &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>

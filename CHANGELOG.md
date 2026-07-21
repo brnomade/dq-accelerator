@@ -4,6 +4,17 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260721-1659 — Fix: DQ Assistant no longer generates spurious LIMIT in sql_code_sample
+
+### Fixed
+- **DQ Assistant — output format prompt** — the `sql_code_sample` field was described only as "Optional: simplified SQL for technical reference", causing the AI to fill it in with a `SELECT ... LIMIT 100` row-level query on every rule it generated. The description is now replaced with an explicit note that explains the field's true purpose (custom denominator for bounded rules), when it must be `null` (the common case), what form it must take when populated (`COUNT(*)` with a matching bounding condition), and that `LIMIT` is never valid here. The default in the output format template is now `null`.
+
+### Documentation
+- **User guide — Rules Explorer** — corrected the SQL sample field description in the "How to add or edit a rule" page. The previous description ("row-level sample alongside the aggregate check") was misleading.
+- **User guide — Rules Explorer** — new guide page "When to use the SQL sample field" added, covering how the failure rate is calculated, what the default universe is, the bounded-rule scenario that warrants a custom denominator, and the rules for what sql_code_sample must contain.
+
+---
+
 ## build-20260717-1655 — Fix: All 22 tables now exportable for master users; Profiling group added
 
 ### Fixed

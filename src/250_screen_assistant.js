@@ -259,12 +259,12 @@ function buildSchemaSection(selectedCdeIds, extraTableIds, conversationMode, dat
       if (cols.length > 0) {
         cols.forEach(c => { lines.push(c.name + '  ' + c.type); });
       } else if (ddl.ddl_text) {
-        lines.push('[DDL text available but not yet parsed -- parse via Physical Layer screen]');
+        lines.push('[Table profiling available but not yet parsed -- parse via Physical Layer screen]');
       }
       lines.push('');
     } else {
       lines.push('### ' + tblName + ' (contains the field in scope)');
-      lines.push('No DDL registered. Add DDL via the Physical Layer screen to provide schema context.');
+      lines.push('No profiling data available. Perform table and CDE profiling  to provide schema context.');
       lines.push('');
     }
   });
@@ -544,7 +544,7 @@ function buildOutputFormatSection(conversationMode) {
     '    "Example of a record that would FAIL: [description]"',
     '  ],',
     '  "sql_code": "Full SQL implementing the rule -- must produce a pass rate between 0 and 1",',
-    '  "sql_code_sample": "Optional: simplified SQL for technical reference",',
+    '  "sql_code_sample": null,',
     '  "quality_dimension_id": 0,',
     '  "cde_id": 0,',
     '  "cde_suggestion": "If cde_id is null: field name and table you believe this applies to",',
@@ -556,16 +556,23 @@ function buildOutputFormatSection(conversationMode) {
     '===RULE_PROPOSAL_END===',
   ];
 
+  const fieldNotes = [
+    'Replace the placeholder values above with the actual values for this rule.',
+    'quality_dimension_id must be an integer from the dimension list above.',
+    'cde_id must be an integer from the data fields list above, or null if not pre-selected.',
+    'bumper_value is a decimal between 0 and 1 (e.g. 0.99 means 99 in 100 records must pass).',
+    'sql_code_sample must be null in the common case. Only populate it when the rule counts failures',
+    'within a bounded subset of rows that is narrower than the full snapshot (for example, only',
+    'records created in the past 10 days). In that case, provide a COUNT(*) SQL that applies the',
+    'same bounding condition as sql_code -- this value becomes the denominator of the failure rate',
+    'calculation instead of the default full-table COUNT(*) WHERE snapshot_filter. Never use LIMIT.',
+    '',
+  ];
+
   if (conversationMode !== 'technical') {
-    return intro.concat([
-      'Replace the placeholder values above with the actual values for this rule.',
-      'quality_dimension_id must be an integer from the dimension list above.',
-      'cde_id must be an integer from the data fields list above, or null if not pre-selected.',
-      'bumper_value is a decimal between 0 and 1 (e.g. 0.99 means 99 in 100 records must pass).',
-      '',
-    ]).concat(block).join('\n');
+    return intro.concat(fieldNotes).concat(block).join('\n');
   }
-  return intro.concat(block).join('\n');
+  return intro.concat(fieldNotes).concat(block).join('\n');
 }
 
 function buildAssistantPrompt(ruleIntent, selectedCdeIds, extraTableIds, conversationMode, data) {
@@ -1376,7 +1383,7 @@ function Stage3Panel({
             </div>
             {ddls.length === 0
               ? <div style={{ fontSize:12, color:'var(--text3)' }}>
-                  No DDL tables registered. Add DDL via Physical Layer to enable this.
+                  No Profiling data is available. Profile tables or CDEs to enable this.
                 </div>
               : ddls.map(ddl => {
                   const sel = suppSel.includes(ddl.source_table_ddl_id);

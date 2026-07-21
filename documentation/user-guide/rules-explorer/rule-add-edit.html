@@ -127,7 +127,7 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
       </tr>
       <tr>
         <td>SQL sample <span class="opt">optional</span></td>
-        <td>An alternative SQL template used to generate a row-level sample alongside the aggregate check. If left blank, the application falls back to a default sampling approach (shown as a <strong>DEF</strong> badge in the allocation row).</td>
+        <td>A custom denominator query used only when the rule counts failures within a bounded subset of rows rather than the full snapshot. Leave blank in the common case. See <a href="sql-sample-explained.html" style="color:var(--blue)">When to use the SQL sample field</a> for a full explanation.</td>
       </tr>
       <tr>
         <td>Source link <span class="opt">optional</span></td>

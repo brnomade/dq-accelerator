@@ -1917,7 +1917,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260717-1655</div>
+              <div className="header-app-sub">build-20260721-1659</div>
             </div>
           </div>
         </div>
@@ -17172,7 +17172,7 @@ function buildOutputFormatSection(conversationMode) {
     '    "Example of a record that would FAIL: [description]"',
     '  ],',
     '  "sql_code": "Full SQL implementing the rule -- must produce a pass rate between 0 and 1",',
-    '  "sql_code_sample": "Optional: simplified SQL for technical reference",',
+    '  "sql_code_sample": null,',
     '  "quality_dimension_id": 0,',
     '  "cde_id": 0,',
     '  "cde_suggestion": "If cde_id is null: field name and table you believe this applies to",',
@@ -17184,16 +17184,23 @@ function buildOutputFormatSection(conversationMode) {
     '===RULE_PROPOSAL_END===',
   ];
 
+  const fieldNotes = [
+    'Replace the placeholder values above with the actual values for this rule.',
+    'quality_dimension_id must be an integer from the dimension list above.',
+    'cde_id must be an integer from the data fields list above, or null if not pre-selected.',
+    'bumper_value is a decimal between 0 and 1 (e.g. 0.99 means 99 in 100 records must pass).',
+    'sql_code_sample must be null in the common case. Only populate it when the rule counts failures',
+    'within a bounded subset of rows that is narrower than the full snapshot (for example, only',
+    'records created in the past 10 days). In that case, provide a COUNT(*) SQL that applies the',
+    'same bounding condition as sql_code -- this value becomes the denominator of the failure rate',
+    'calculation instead of the default full-table COUNT(*) WHERE snapshot_filter. Never use LIMIT.',
+    '',
+  ];
+
   if (conversationMode !== 'technical') {
-    return intro.concat([
-      'Replace the placeholder values above with the actual values for this rule.',
-      'quality_dimension_id must be an integer from the dimension list above.',
-      'cde_id must be an integer from the data fields list above, or null if not pre-selected.',
-      'bumper_value is a decimal between 0 and 1 (e.g. 0.99 means 99 in 100 records must pass).',
-      '',
-    ]).concat(block).join('\n');
+    return intro.concat(fieldNotes).concat(block).join('\n');
   }
-  return intro.concat(block).join('\n');
+  return intro.concat(fieldNotes).concat(block).join('\n');
 }
 
 function buildAssistantPrompt(ruleIntent, selectedCdeIds, extraTableIds, conversationMode, data) {
