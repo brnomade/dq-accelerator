@@ -4,6 +4,15 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260721-2110 — Feature: Data Browser flags duplicate PKs in table list and row grid
+
+### Changed
+- **Data Browser — table list** — tables with duplicate primary key values now show a red warning icon (`Icon.Warning`) to the right of the row counter. Hovering the icon shows a native tooltip listing the count and the specific duplicate PK values (e.g. `2 duplicate PKs: 182, 183`).
+- **Data Browser — toolbar** — when the selected table has duplicate PKs, a red warning summary appears in the toolbar between the table name and the filter input (e.g. `2 duplicate PKs`).
+- **Data Browser — row grid** — rows whose PK value is duplicated are highlighted with a red background (`--red-bg`) and the PK cell value is coloured red with a warning icon and tooltip `Duplicate PK`. Row keys changed from `row[pkField]` to the array index `ri` to avoid React duplicate-key warnings when the same PK value appears multiple times.
+
+---
+
 ## build-20260721-2104 — Fix: Import Proceed button style and label
 
 ### Fixed

@@ -24,6 +24,27 @@ function DataBrowserScreen() {
     return out;
   }, [data, tables]);
 
+  // dupePkMap: tableName -> Set of PK values that appear more than once
+  const dupePkMap = useMemo(() => {
+    if (!data) return {};
+    const out = {};
+    for (const t of tables) {
+      const pk   = SCHEMA[t]?.pk;
+      if (!pk) continue;
+      const rows = data[t] || [];
+      const seen = new Set();
+      const dupes = new Set();
+      for (const row of rows) {
+        const v = row[pk];
+        if (v === null || v === undefined) continue;
+        if (seen.has(v)) dupes.add(v);
+        else seen.add(v);
+      }
+      if (dupes.size > 0) out[t] = dupes;
+    }
+    return out;
+  }, [data, tables]);
+
   useEffect(() => {
     if (!selectedTable && tables.length) setSelectedTable(tables[0]);
   }, []);
@@ -93,6 +114,7 @@ function DataBrowserScreen() {
 
   const colSpanTotal  = displayCols.length + (showRetired ? 1 : 0);
   const sortArrow     = sortDir === 'asc' ? String.fromCharCode(8593) : String.fromCharCode(8595);
+  const selectedDupes = selectedTable ? (dupePkMap[selectedTable] || null) : null;
 
   return (
     <div className="fade-in" style={{ display:'flex', height:'100%', overflow:'hidden' }}>
@@ -114,6 +136,11 @@ function DataBrowserScreen() {
         {tables.map(t => {
           const counts     = rowCounts[t] || { active: 0, retired: 0 };
           const isSelected = t === selectedTable;
+          const dupes      = dupePkMap[t];
+          const dupeList   = dupes ? [...dupes].sort((a, b) => a - b).join(', ') : null;
+          const dupeTitle  = dupeList
+            ? (dupes.size + ' duplicate PK' + (dupes.size > 1 ? 's' : '') + ': ' + dupeList)
+            : null;
           return (
             <div key={t}
               onClick={() => handleTableSelect(t)}
@@ -136,6 +163,11 @@ function DataBrowserScreen() {
                   {'/' + (counts.active + counts.retired)}
                 </span>
               </span>
+              {dupeTitle && (
+                <span title={dupeTitle} style={{ color: 'var(--red)', flexShrink: 0, lineHeight: 1 }}>
+                  <Icon.Warning/>
+                </span>
+              )}
             </div>
           );
         })}
@@ -156,6 +188,15 @@ function DataBrowserScreen() {
           }}>
             {selectedTable || ''}
           </div>
+          {selectedDupes && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 5,
+              fontSize: 11, color: 'var(--red)', flexShrink: 0,
+            }}>
+              <Icon.Warning/>
+              {selectedDupes.size + ' duplicate PK' + (selectedDupes.size > 1 ? 's' : '')}
+            </div>
+          )}
           <input
             type="text"
             placeholder="Filter rows..."
@@ -253,12 +294,15 @@ function DataBrowserScreen() {
                   </tr>
                 ) : displayRows.map((row, ri) => {
                   const isRetired = !!row.retiring_timestamp;
-                  const rowKey    = (pkField && row[pkField] !== undefined) ? row[pkField] : ri;
+                  const isDupe    = selectedDupes && pkField && selectedDupes.has(row[pkField]);
+                  let rowBg = 'transparent';
+                  if (isDupe)     rowBg = 'var(--red-bg)';
+                  else if (isRetired) rowBg = 'rgba(255,176,32,0.05)';
                   return (
-                    <tr key={rowKey}
+                    <tr key={ri}
                       style={{
                         opacity:    isRetired ? 0.6 : 1,
-                        background: isRetired ? 'rgba(255,176,32,0.05)' : 'transparent',
+                        background: rowBg,
                       }}>
                       {displayCols.map(col => {
                         const val    = row[col.name];
@@ -269,13 +313,20 @@ function DataBrowserScreen() {
                               padding: '5px 10px',
                               borderBottom: '1px solid var(--border)',
                               fontFamily: (col.isPk || col.fk) ? 'var(--mono)' : 'inherit',
-                              color: isNull ? 'var(--text2)' : 'var(--text)',
+                              color: isNull ? 'var(--text2)' : (isDupe && col.isPk ? 'var(--red)' : 'var(--text)'),
                               maxWidth: 280, overflow: 'hidden',
                               textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                             }}>
                             {isNull
                               ? <span style={{ fontStyle: 'italic', fontSize: 11 }}>{'null'}</span>
-                              : String(val)
+                              : col.isPk && isDupe
+                                ? <span style={{ display:'inline-flex', alignItems:'center', gap: 4 }}>
+                                    {String(val)}
+                                    <span title={'Duplicate PK'} style={{ color:'var(--red)', lineHeight:1 }}>
+                                      <Icon.Warning/>
+                                    </span>
+                                  </span>
+                                : String(val)
                             }
                           </td>
                         );
