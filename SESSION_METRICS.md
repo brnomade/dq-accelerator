@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260721-2122 — Feature: Data Browser bulk retire / un-retire
+
+**Date:** 2026-07-21
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Feature | 5 min | -- | 20 min | |
+| **Total** | **5 min** | **0 min** | **20 min** | |
+
+### Changes delivered
+- `src/215_screen_databrowser.js`: checkboxes per row + header checkbox (with indeterminate state); context-sensitive Retire/Un-retire/Mixed selection toolbar button; displayRows restructured to carry origIdx for stable selection; selection cleared on table switch and after bulk action.
+- `src/240_app.js`: `bulkSetRetiring` added to context.
+
+---
+
 ## build-20260721-2112 — Fix: Data Browser duplicate row — colour only
 
 **Date:** 2026-07-21

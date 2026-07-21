@@ -139,6 +139,19 @@ function App() {
     });
   }, [persist, stewardIdentity]);
 
+  const bulkSetRetiring = useCallback((tableName, pkValues, retire) => {
+    const pk = SCHEMA[tableName]?.pk;
+    if (!pk) return;
+    const ts = retire ? new Date().toISOString() : null;
+    setData(prev => {
+      const rows = prev[tableName] || [];
+      const next = rows.map(r => pkValues.has(r[pk]) ? { ...r, retiring_timestamp: ts } : r);
+      const n = { ...prev, [tableName]: next };
+      persist(n);
+      return n;
+    });
+  }, [persist]);
+
   const nextPk = useCallback((tableName) => {
     const pk = SCHEMA[tableName]?.pk;
     if (!pk || !data) return 1;
@@ -430,11 +443,11 @@ function App() {
   // -- Context value ----------------------------------------
   const ctxValue = useMemo(() => ({
     data, lookups, savedAt, hasData,
-    updateTable, upsertRecord, retireRecord, restoreRecord, nextPk, designateAsMaster,
+    updateTable, upsertRecord, retireRecord, restoreRecord, bulkSetRetiring, nextPk, designateAsMaster,
     openForm, openCritForm, openSqlPanel, openAllocForm, openCdeForm, navigate, openDdlForm,
     isMaster, stewardIdentity,
     canEdit: !!stewardIdentity,
-  }), [data, lookups, savedAt, hasData, updateTable, upsertRecord, retireRecord, restoreRecord, nextPk, designateAsMaster, openForm, openCritForm, openSqlPanel, openAllocForm, openCdeForm, navigate, openDdlForm, isMaster, stewardIdentity]);
+  }), [data, lookups, savedAt, hasData, updateTable, upsertRecord, retireRecord, restoreRecord, bulkSetRetiring, nextPk, designateAsMaster, openForm, openCritForm, openSqlPanel, openAllocForm, openCdeForm, navigate, openDdlForm, isMaster, stewardIdentity]);
 
   // -- Screen renderer --------------------------------------
   const renderScreen = () => {
