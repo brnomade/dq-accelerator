@@ -55,16 +55,18 @@ The steward opens Settings, selects their identity, and optionally designates as
 
 All new records created by a steward receive PKs in their **steward namespace**: `steward_id × 1,000,000 + sequence`. This guarantees no PK collision between stewards or between stewards and the master.
 
-**Delta-tracked tables** (only changes to these tables are included in a delta export):
-- `critical_data_element`
-- `data_quality_rule`
-- `data_quality_rule_allocation`
-- `cde_criticality`
-- `stewardship`
-- `source_table_ddl`
-- `field_profiling`
+**Delta-tracked tables** — all 22 SCHEMA tables are included in a delta export (expanded from the original 7 in commit `1181a83`):
 
-Changes to reference/lookup tables (e.g. `quality_dimension`, `criticality_level`) are not delta-tracked; those are managed exclusively by the master via Excel import.
+Reference lookups: `executive_agency_type`, `steward_role_type`, `quality_dimension`, `criticality_group`, `criticality_level`
+Organisational hierarchy: `executive_agency`, `directorate`
+People: `data_patron`, `data_owner`, `data_steward`
+Weights: `criticality_group_weight`, `quality_dimension_weight`
+Core data model: `critical_data_set`, `critical_data_element`, `stewardship`, `cde_criticality`
+Rules: `data_quality_rule`, `data_quality_rule_allocation`
+Shortlists: `shortlist_group`, `cde_shortlist_tag`
+Profiling: `source_table_ddl`, `field_profiling`
+
+**Snapshot staleness risk:** if a steward's base snapshot was saved before `DELTA_TABLES` was expanded, the tables added by the expansion will have no snapshot entries. All records in those tables will appear as `inserted` on the next delta export, even if the steward made no changes to them. The remedy is to re-import the master JSON, which resets the snapshot to cover all current tables.
 
 ### Step 5 — Steward exports delta
 
@@ -151,6 +153,22 @@ The steward imports the new Master JSON (same as Step 3).
   }
 }
 ```
+
+### Design decision: full rows in inserts and updates
+
+Both `inserted` and `updated` entries in a delta carry the **complete record** — every column defined in SCHEMA — not just the changed fields.
+
+**Why full rows for inserts** is self-evident: the record does not exist in the master and must be created in full.
+
+**Why full rows for updates** (not a partial diff):
+
+1. **Wholesale replacement at merge time.** `applyMergedChanges` replaces the master record entirely: `r[pkField] === row[pkField] ? row : r`. A partial update would silently destroy every field not present in the diff.
+
+2. **Conflict resolution requires the complete intended state.** When the master reviews a conflict, the steward row is shown as the full proposed record. A partial row would make it impossible to know what the record should look like after acceptance — the master would see only what changed, not the authoritative new state.
+
+3. **No risk of silent data loss.** With partial updates, a field valid in the master but absent from the steward diff would be destroyed on merge without any conflict being raised. Full rows mean the merge is always a predictable, auditable replacement.
+
+4. **Column completeness is structurally guaranteed.** `buildDelta` serialises the full in-memory row object, so whatever the application stored is exported. No column selection or projection is applied. Verified against SCHEMA in July 2026: all rows in a real steward delta matched their SCHEMA column sets exactly.
 
 ### Merge Report (`dq_merge_report_<timestamp>.json`)
 ```json
