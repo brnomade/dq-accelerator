@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260721-2101 — Feature: Explicit Proceed button after import
+
+**Date:** 2026-07-21
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Feature | 3 min | -- | 3 min | |
+| **Total** | **3 min** | **0 min** | **3 min** | |
+
+### Changes delivered
+- `src/210_screen_import.js`: "Proceed to Dashboard" button added below import log; appears once import finishes.
+- `src/240_app.js`: `handleImport` no longer auto-navigates; navigation is entirely user-driven via the new button.
+
+---
+
 ## build-20260721-2059 — Fix: Import stays on screen when errors present
 
 **Date:** 2026-07-21

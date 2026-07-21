@@ -566,6 +566,15 @@ function ImportScreen({ onImport, onMerge }) {
                   {e.msg}
                 </div>
               ))}
+              {!importing && (
+                <div style={{ marginTop:10, display:'flex', justifyContent:'flex-end' }}>
+                  <button
+                    className="btn-primary"
+                    onClick={() => navigate({ screen:'dashboard', table:null })}>
+                    Proceed to Dashboard
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
