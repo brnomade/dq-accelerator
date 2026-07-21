@@ -1959,7 +1959,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260721-2129</div>
+              <div className="header-app-sub">build-20260721-2135</div>
             </div>
           </div>
         </div>
@@ -15138,7 +15138,7 @@ function DataBrowserScreen() {
       const pk   = SCHEMA[t]?.pk;
       if (!pk) continue;
       const rows = data[t] || [];
-      const seen = new Set();
+      const seen  = new Set();
       const dupes = new Set();
       for (const row of rows) {
         const v = row[pk];
@@ -15147,6 +15147,31 @@ function DataBrowserScreen() {
         else seen.add(v);
       }
       if (dupes.size > 0) out[t] = dupes;
+    }
+    return out;
+  }, [data, tables]);
+
+  // fkIssuesMap: tableName -> { colName -> Set<badValues> }
+  const fkIssuesMap = useMemo(() => {
+    if (!data) return {};
+    const out = {};
+    for (const [tableName, schema] of Object.entries(SCHEMA)) {
+      const rows = data[tableName] || [];
+      if (!rows.length) continue;
+      const tableIssues = {};
+      for (const col of (schema.cols || [])) {
+        if (!col.fk) continue;
+        const targetRows = data[col.fk.table] || [];
+        const validPks   = new Set(targetRows.map(r => r[col.fk.field]));
+        const badVals    = new Set();
+        for (const row of rows) {
+          const v = row[col.name];
+          if (v === null || v === undefined) continue;
+          if (!validPks.has(v)) badVals.add(v);
+        }
+        if (badVals.size > 0) tableIssues[col.name] = badVals;
+      }
+      if (Object.keys(tableIssues).length > 0) out[tableName] = tableIssues;
     }
     return out;
   }, [data, tables]);
@@ -15272,23 +15297,38 @@ function DataBrowserScreen() {
     );
   }
 
-  const colSpanTotal  = displayCols.length + 2 + (showRetired ? 1 : 0); // +2: checkbox col + undo col when retired
-  const sortArrow     = sortDir === 'asc' ? String.fromCharCode(8593) : String.fromCharCode(8595);
-  const selectedDupes = selectedTable ? (dupePkMap[selectedTable] || null) : null;
+  const colSpanTotal   = displayCols.length + 2;
+  const sortArrow      = sortDir === 'asc' ? String.fromCharCode(8593) : String.fromCharCode(8595);
+  const selectedDupes  = selectedTable ? (dupePkMap[selectedTable]   || null) : null;
+  const selectedFkIssues = selectedTable ? (fkIssuesMap[selectedTable] || null) : null;
+
+  // Count FK-affected rows in selected table for toolbar summary
+  const fkBadCount = selectedFkIssues
+    ? allRows.filter(row => {
+        for (const [colName, badVals] of Object.entries(selectedFkIssues)) {
+          const v = row[colName];
+          if (v !== null && v !== undefined && badVals.has(v)) return true;
+        }
+        return false;
+      }).length
+    : 0;
 
   // Retire button label and disabled state
-  let retireBtnLabel    = 'Retire selected';
-  let retireBtnDisabled = false;
-  let retireBtnAction   = true; // true = retire, false = un-retire
-  if (selCount === 0) {
-    retireBtnLabel    = 'Retire / Un-retire';
-    retireBtnDisabled = true;
-  } else if (selLiveCount > 0 && selRetiredCount > 0) {
-    retireBtnLabel    = 'Mixed selection';
-    retireBtnDisabled = true;
-  } else if (selRetiredCount > 0) {
-    retireBtnLabel    = 'Un-retire selected';
-    retireBtnAction   = false;
+  let retireBtnLabel    = 'Retire / Un-retire';
+  let retireBtnDisabled = true;
+  let retireBtnAction   = true;
+  if (selCount > 0) {
+    if (selLiveCount > 0 && selRetiredCount > 0) {
+      retireBtnLabel    = 'Mixed selection';
+      retireBtnDisabled = true;
+    } else if (selRetiredCount > 0) {
+      retireBtnLabel    = 'Un-retire selected';
+      retireBtnDisabled = false;
+      retireBtnAction   = false;
+    } else {
+      retireBtnLabel    = 'Retire selected';
+      retireBtnDisabled = false;
+    }
   }
 
   return (
@@ -15312,10 +15352,23 @@ function DataBrowserScreen() {
           const counts     = rowCounts[t] || { active: 0, retired: 0 };
           const isSelected = t === selectedTable;
           const dupes      = dupePkMap[t];
-          const dupeList   = dupes ? [...dupes].sort((a, b) => a - b).join(', ') : null;
-          const dupeTitle  = dupeList
-            ? (dupes.size + ' duplicate PK' + (dupes.size > 1 ? 's' : '') + ': ' + dupeList)
-            : null;
+          const fkIssues   = fkIssuesMap[t];
+          const hasIssue   = !!(dupes || fkIssues);
+
+          // Build tooltip lines
+          const tipParts = [];
+          if (dupes) {
+            const list = [...dupes].sort((a, b) => a - b).join(', ');
+            tipParts.push(dupes.size + ' duplicate PK' + (dupes.size > 1 ? 's' : '') + ': ' + list);
+          }
+          if (fkIssues) {
+            for (const [colName, badVals] of Object.entries(fkIssues)) {
+              const list = [...badVals].sort((a, b) => a - b).join(', ');
+              tipParts.push('Unresolved ' + colName + ': ' + list);
+            }
+          }
+          const tooltip = tipParts.join('\n');
+
           return (
             <div key={t}
               onClick={() => handleTableSelect(t)}
@@ -15325,6 +15378,11 @@ function DataBrowserScreen() {
                 background: isSelected ? 'var(--bg3)' : 'transparent',
                 borderLeft: isSelected ? '3px solid var(--accent)' : '3px solid transparent',
               }}>
+              {/* Fixed-width icon column -- always present to keep names aligned */}
+              <span style={{ width: 16, flexShrink: 0, lineHeight: 1, color: 'var(--red)' }}
+                title={tooltip || undefined}>
+                {hasIssue && <Icon.Warning/>}
+              </span>
               <span style={{
                 flex: 1, fontSize: 11, fontFamily: 'var(--mono)',
                 color: isSelected ? 'var(--text)' : 'var(--text2)',
@@ -15338,11 +15396,6 @@ function DataBrowserScreen() {
                   {'/' + (counts.active + counts.retired)}
                 </span>
               </span>
-              {dupeTitle && (
-                <span title={dupeTitle} style={{ color: 'var(--red)', flexShrink: 0, lineHeight: 1 }}>
-                  <Icon.Warning/>
-                </span>
-              )}
             </div>
           );
         })}
@@ -15364,12 +15417,15 @@ function DataBrowserScreen() {
             {selectedTable || ''}
           </div>
           {selectedDupes && (
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 5,
-              fontSize: 11, color: 'var(--red)', flexShrink: 0,
-            }}>
+            <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, color:'var(--red)', flexShrink:0 }}>
               <Icon.Warning/>
               {selectedDupes.size + ' duplicate PK' + (selectedDupes.size > 1 ? 's' : '')}
+            </div>
+          )}
+          {fkBadCount > 0 && (
+            <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, color:'var(--red)', flexShrink:0 }}>
+              <Icon.Warning/>
+              {fkBadCount + ' FK ' + (fkBadCount === 1 ? 'error' : 'errors')}
             </div>
           )}
           <input
@@ -15490,17 +15546,20 @@ function DataBrowserScreen() {
                 ) : displayRows.map((item) => {
                   const { row, origIdx } = item;
                   const isRetired  = !!row.retiring_timestamp;
-                  const isDupe     = selectedDupes && pkField && selectedDupes.has(row[pkField]);
+                  const isDupePk   = selectedDupes && pkField && selectedDupes.has(row[pkField]);
+                  const isFkBad    = selectedFkIssues
+                    ? Object.entries(selectedFkIssues).some(([colName, badVals]) => {
+                        const v = row[colName];
+                        return v !== null && v !== undefined && badVals.has(v);
+                      })
+                    : false;
                   const isChecked  = selectedKeys.has(origIdx);
                   let rowBg = 'transparent';
-                  if (isDupe)      rowBg = 'var(--red-bg)';
-                  else if (isRetired) rowBg = 'rgba(255,176,32,0.05)';
+                  if (isDupePk || isFkBad) rowBg = 'var(--red-bg)';
+                  else if (isRetired)      rowBg = 'rgba(255,176,32,0.05)';
                   return (
                     <tr key={origIdx}
-                      style={{
-                        opacity:    isRetired ? 0.6 : 1,
-                        background: rowBg,
-                      }}>
+                      style={{ opacity: isRetired ? 0.6 : 1, background: rowBg }}>
                       <td style={{
                         padding: '5px 0 5px 10px', textAlign: 'center',
                         borderBottom: '1px solid var(--border)', width: 36,

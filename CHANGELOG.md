@@ -4,6 +4,15 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260721-2135 — Feature: Data Browser FK integrity indicators
+
+### Added
+- **Data Browser — table list** — warning icon moved to a fixed-width column to the left of the table name, so all names align regardless of whether a table has errors. Icon now covers both duplicate PK errors and FK integrity errors. Tooltip lists all issues for the table (duplicate PKs on one line, each unresolved FK column on its own line).
+- **Data Browser — toolbar** — FK error count shown as a separate red badge alongside the existing duplicate PK badge when the selected table has FK integrity issues (e.g. `3 FK errors`).
+- **Data Browser — row grid** — rows with at least one unresolved FK value are highlighted with the same red background (`--red-bg`) as duplicate PK rows.
+
+---
+
 ## build-20260721-2129 — Feature: Import FK integrity check
 
 ### Added

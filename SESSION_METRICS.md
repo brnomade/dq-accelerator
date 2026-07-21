@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260721-2135 — Feature: Data Browser FK integrity indicators
+
+**Date:** 2026-07-21
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Feature | 3 min | -- | 10 min | |
+| **Total** | **3 min** | **0 min** | **10 min** | |
+
+### Changes delivered
+- `src/215_screen_databrowser.js`: `fkIssuesMap` useMemo; icon column moved left with fixed 16px width; FK bad rows highlighted red; toolbar FK error count badge; tooltip covers both PK and FK issues.
+
+---
+
 ## build-20260721-2129 — Feature: Import FK integrity check
 
 **Date:** 2026-07-21
