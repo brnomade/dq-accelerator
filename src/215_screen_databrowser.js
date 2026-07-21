@@ -132,11 +132,9 @@ function DataBrowserScreen() {
               </span>
               <span style={{ fontSize: 10, color: 'var(--text2)', flexShrink: 0 }}>
                 {counts.active}
-                {counts.retired > 0 && (
-                  <span style={{ color: 'var(--amber)', marginLeft: 2 }}>
-                    {'+' + counts.retired}
-                  </span>
-                )}
+                <span style={{ color: counts.retired > 0 ? 'var(--amber)' : 'var(--text2)' }}>
+                  {'/' + (counts.active + counts.retired)}
+                </span>
               </span>
             </div>
           );

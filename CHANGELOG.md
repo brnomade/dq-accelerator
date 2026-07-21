@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260721-2017 — Feature: Data Browser table list shows live/total row counts
+
+### Changed
+- **Data Browser — table list row counter** — each table row now shows `live/total` instead of `active +retired`. The active (live) count is shown first; the total (active + retired) follows after a `/`. When there are no retired rows the fraction is shown in muted text; when retired rows exist the total is shown in amber, giving a quick visual signal of how many rows have been soft-deleted per table.
+
+---
+
 ## build-20260721-2013 — Fix: Data Browser header transparent background
 
 ### Fixed
