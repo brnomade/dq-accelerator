@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260721-2052 — Fix: Import validation detects and reports duplicate primary keys
+
+### Fixed
+- **Import — duplicate PK detection** — `importWorkbook` in `20_data_utils.js` now scans each imported table for duplicate primary key values after loading rows from the Excel sheet. If duplicates are found the import log emits an `err`-level entry (shown in red in the Import screen) listing the table name, PK field, count, and the specific duplicated IDs (e.g. `cde_criticality: 2 duplicate PKs found (cde_criticality_id: 182, 183) -- fix the source data and re-import`). Non-duplicate tables still receive the normal `info`-level row count entry. The import continues so the steward can see all problems in one pass, but the red error messages make it unmissable that the data must be corrected before use.
+
+---
+
 ## build-20260721-2017 — Feature: Data Browser table list shows live/total row counts
 
 ### Changed

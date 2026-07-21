@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260721-2052 — Fix: Import duplicate PK detection
+
+**Date:** 2026-07-21
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Bug fix | 10 min | -- | 5 min | |
+| **Total** | **10 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/20_data_utils.js`: `importWorkbook` now scans each table for duplicate PK values after import; emits `err`-level log entry with the duplicated IDs so the steward can fix the source Excel before relying on the data.
+
+---
+
 ## build-20260721-2017 — Feature: Data Browser live/total row counts
 
 **Date:** 2026-07-21
