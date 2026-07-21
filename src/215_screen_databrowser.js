@@ -101,7 +101,7 @@ function DataBrowserScreen() {
       <div style={{
         width: 224, flexShrink: 0,
         borderRight: '1px solid var(--border)',
-        overflowY: 'auto', background: 'var(--surface)',
+        overflowY: 'auto', background: 'var(--bg2)',
         display: 'flex', flexDirection: 'column',
       }}>
         <div style={{
@@ -120,7 +120,7 @@ function DataBrowserScreen() {
               style={{
                 padding: '7px 12px', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 6,
-                background: isSelected ? 'var(--row-hover)' : 'transparent',
+                background: isSelected ? 'var(--bg3)' : 'transparent',
                 borderLeft: isSelected ? '3px solid var(--accent)' : '3px solid transparent',
               }}>
               <span style={{
@@ -150,7 +150,7 @@ function DataBrowserScreen() {
         <div style={{
           padding: '8px 14px', borderBottom: '1px solid var(--border)',
           display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0,
-          background: 'var(--surface)',
+          background: 'var(--bg2)',
         }}>
           <div style={{
             fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 600,
@@ -165,7 +165,7 @@ function DataBrowserScreen() {
             onChange={e => setFilterText(e.target.value)}
             style={{
               flex: 1, padding: '4px 8px', fontSize: 12, minWidth: 0,
-              background: 'var(--surface)', border: '1px solid var(--border)',
+              background: 'var(--bg2)', border: '1px solid var(--border)',
               borderRadius: 4, color: 'var(--text)', outline: 'none',
             }}
           />
@@ -191,13 +191,9 @@ function DataBrowserScreen() {
           </div>
         ) : (
           <div style={{ flex: 1, overflowY: 'auto', overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontSize: 12 }}>
               <thead>
-                <tr style={{
-                  position: 'sticky', top: 0, zIndex: 2,
-                  background: 'var(--surface)',
-                  boxShadow: '0 1px 0 var(--border)',
-                }}>
+                <tr>
                   {displayCols.map(col => {
                     const isSorted = sortCol === col.name;
                     const isFk     = !col.isPk && !!col.fk;
@@ -210,6 +206,9 @@ function DataBrowserScreen() {
                           cursor: 'pointer', whiteSpace: 'nowrap',
                           color: isSorted ? 'var(--accent)' : 'var(--text)',
                           userSelect: 'none',
+                          position: 'sticky', top: 0, zIndex: 2,
+                          background: 'var(--bg2)',
+                          boxShadow: '0 1px 0 var(--border)',
                         }}>
                         {col.name}
                         {col.isPk && (
@@ -237,7 +236,12 @@ function DataBrowserScreen() {
                     );
                   })}
                   {showRetired && (
-                    <th style={{ padding: '7px 10px', width: 60 }}/>
+                    <th style={{
+                      padding: '7px 10px', width: 60,
+                      position: 'sticky', top: 0, zIndex: 2,
+                      background: 'var(--bg2)',
+                      boxShadow: '0 1px 0 var(--border)',
+                    }}/>
                   )}
                 </tr>
               </thead>

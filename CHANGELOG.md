@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260721-2013 — Fix: Data Browser header transparent background
+
+### Fixed
+- **Data Browser — sticky header** — two undefined CSS variables (`--surface`, `--row-hover`) were used in `215_screen_databrowser.js`. Neither is declared in `:root`, so both resolved to `transparent`, making the column-header row see-through as data rows scrolled beneath it. Replaced `--surface` with `--bg2` and `--row-hover` with `--bg3`, which are the correct defined variables for panel surfaces and hover/selected states respectively.
+
+---
+
 ## build-20260721-1949 — Fix: Steward identity cleared on reset; duplicate Profiling menu removed
 
 ### Fixed
