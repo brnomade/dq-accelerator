@@ -5,6 +5,25 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260721-1758 — Feature: Data Browser screen
+
+**Date:** 2026-07-21
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Design + implementation | 10 min | 10 min | 25 min | |
+| **Total** | **10 min** | **10 min** | **25 min** | |
+
+### Changes delivered
+- `src/215_screen_databrowser.js`: new `DataBrowserScreen` component — left panel of 22 alphabetical tables with active/retired counts; right panel with filter bar, show-retired toggle, sortable physical-name grid, PK/FK badges, null cell display, retired row tint, and Undo retirement button.
+- `src/80_sidebar.js`: added master-only "Data Browser" nav item (with `Icon.Database`) between Import and the table-group separator.
+- `src/240_app.js`: added `case 'databrowser'` route and breadcrumb branch.
+- `APP_TREE.md`: updated sidebar navigation table.
+- `designs/DESIGN_DATA_BROWSER.md`: new design document.
+- `plans/PLAN_DATA_BROWSER.md`: new plan document.
+
+---
+
 ## build-20260721-1731 — Feature: Conflict card redesigned as 3-column diff table
 
 **Date:** 2026-07-21

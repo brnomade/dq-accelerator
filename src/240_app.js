@@ -46,6 +46,13 @@ function Breadcrumb({ route }) {
       </div>
     );
   }
+  if (route.screen === 'databrowser') {
+    return (
+      <div className="breadcrumb">
+        <span className="breadcrumb-current">Data Browser</span>
+      </div>
+    );
+  }
   if (route.screen === 'assistant') {
     return (
       <div className="breadcrumb">
@@ -432,7 +439,8 @@ function App() {
       return <NoDataScreen onNavigateImport={() => navigate({ screen:'import', table:null })}/>;
     }
     switch (route.screen) {
-      case 'import':    return <ImportScreen onImport={handleImport} onMerge={handleDeltaMerge}/>;
+      case 'import':      return <ImportScreen onImport={handleImport} onMerge={handleDeltaMerge}/>;
+      case 'databrowser': return <DataBrowserScreen/>;
       case 'rulegenerator': return <DataRuleGeneratorScreen/>;
       case 'assistant':     return <AssistantScreen/>;
       case 'coverage':    return <CDECoverageScreen/>;

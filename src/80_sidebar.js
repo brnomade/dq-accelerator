@@ -126,6 +126,15 @@ function Sidebar({ route, onNavigate, data, onToggle, isMaster }) {
           {!collapsed && <span className="nav-item-label">Import</span>}
         </div>
 
+        {/* Data Browser -- master only */}
+        {isMaster && (
+          <div className={`nav-item ${isActive('databrowser') ? 'active' : ''}`}
+            onClick={() => onNavigate({ screen: 'databrowser', table: null })}>
+            <span className="nav-item-icon"><Icon.Database/></span>
+            {!collapsed && <span className="nav-item-label">Data Browser</span>}
+          </div>
+        )}
+
         <div style={{ height:8, borderBottom:'1px solid var(--border)', marginBottom:8 }}/>
 
         {/* TABLE GROUPS */}
