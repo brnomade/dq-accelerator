@@ -1917,7 +1917,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260721-1659</div>
+              <div className="header-app-sub">build-20260721-1731</div>
             </div>
           </div>
         </div>
@@ -14475,26 +14475,26 @@ function ShortlistImportTab({ onImport }) {
 // ===============================================================================
 function DeltaConflictCard({ conflict, resolution, onResolve }) {
   const { table, pk, masterRow, stewardRow, type } = conflict;
-  const schema   = SCHEMA[table];
-  const pkField  = schema.pk;
-  const cardKey  = `${table}:${pk}`;
+  const schema  = SCHEMA[table];
+  const pkField = schema.pk;
+  const cardKey = `${table}:${pk}`;
   const [showAll, setShowAll] = useState(false);
 
-  const diffCols = type === 'update'
-    ? (schema.cols || []).filter(col =>
-        col.name !== pkField &&
-        String(masterRow[col.name] ?? '') !== String(stewardRow[col.name] ?? ''))
-    : (schema.cols || []).filter(c => c.type !== 'datetime' && c.name !== pkField).slice(0, 4);
+  const nonPkCols = (schema.cols || []).filter(col => col.name !== pkField);
 
-  const diffColNames = new Set(diffCols.map(c => c.name));
+  const changedColNames = new Set(
+    type === 'update'
+      ? nonPkCols
+          .filter(col => String(masterRow[col.name] ?? '') !== String(stewardRow[col.name] ?? ''))
+          .map(c => c.name)
+      : []
+  );
 
-  const contextCols = type === 'update'
-    ? (schema.cols || [])
-        .filter(col => col.name !== pkField && col.type !== 'datetime' && !diffColNames.has(col.name))
-        .slice(0, 3)
-    : [];
-
-  const allCols = (schema.cols || []).filter(col => col.name !== pkField);
+  // retire: always show all master fields so master can see what would be lost
+  // update collapsed: changed rows only; update expanded: all rows
+  const visibleCols = type === 'retire'
+    ? nonPkCols
+    : showAll ? nonPkCols : nonPkCols.filter(col => changedColNames.has(col.name));
 
   const borderColor = !resolution
     ? 'rgba(245,166,35,0.5)'
@@ -14505,12 +14505,15 @@ function DeltaConflictCard({ conflict, resolution, onResolve }) {
   const statusColor = !resolution ? 'var(--amber)'
     : resolution === 'master' ? 'var(--text3)' : 'var(--green)';
 
-  const changedDivider = (
-    <div style={{ fontSize:9, fontWeight:700, color:'var(--text3)', textTransform:'uppercase',
-      letterSpacing:'0.5px', margin:'6px 0 4px', borderTop:'1px solid var(--border)', paddingTop:6 }}>
-      Changed
-    </div>
-  );
+  const thStyle = {
+    fontSize:9, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.06em',
+    color:'var(--text3)', padding:'5px 10px', borderBottom:'1px solid var(--border)',
+    background:'var(--bg3)', textAlign:'left',
+  };
+  const cell = (extra) => Object.assign({
+    padding:'4px 10px', fontSize:11, fontFamily:'var(--mono)',
+    borderBottom:'1px solid var(--border)', verticalAlign:'middle',
+  }, extra || {});
 
   return (
     <div style={{ marginBottom:12, border:`1px solid ${borderColor}`,
@@ -14519,8 +14522,10 @@ function DeltaConflictCard({ conflict, resolution, onResolve }) {
       {/* Header */}
       <div style={{ display:'flex', alignItems:'center', gap:8,
         padding:'7px 12px', borderBottom:'1px solid var(--border)', background:'var(--bg3)' }}>
+        <span style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--text2)' }}>{table}</span>
+        <span style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--text3)' }}>{' | '}</span>
         <span style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--text2)', flex:1 }}>
-          {schema.label} #{pk}
+          {pkField}: {pk}
         </span>
         <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:3,
           background: type === 'retire' ? 'rgba(245,166,35,0.15)' : 'rgba(24,180,212,0.15)',
@@ -14531,102 +14536,84 @@ function DeltaConflictCard({ conflict, resolution, onResolve }) {
         <span style={{ fontSize:10, color:statusColor }}>{statusLabel}</span>
       </div>
 
-      {/* Side-by-side */}
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr' }}>
+      {/* 3-column diff table */}
+      <table style={{ width:'100%', borderCollapse:'collapse' }}>
+        <thead>
+          <tr>
+            <th style={{ ...thStyle, width:'34%' }}>field</th>
+            <th style={{ ...thStyle, width:'33%' }}>master</th>
+            <th style={{ ...thStyle, width:'33%' }}>steward</th>
+          </tr>
+        </thead>
+        <tbody>
 
-        {/* Master panel */}
-        <div style={{ padding:'10px 12px', borderRight:'1px solid var(--border)' }}>
-          <div style={{ fontSize:10, fontWeight:700, color:'var(--text3)',
-            textTransform:'uppercase', letterSpacing:'0.5px', marginBottom:8 }}>
-            Master (current)
-          </div>
-          {showAll
-            ? allCols.map(col => (
-                <div key={col.name} style={{ marginBottom:6 }}>
-                  <div style={{ fontSize:10, color:'var(--text3)', fontFamily:'var(--mono)' }}>{col.label}</div>
-                  <div style={{ fontSize:11, color:'var(--text1)', wordBreak:'break-all' }}>
-                    {String(masterRow[col.name] ?? '-')}
-                  </div>
-                </div>
-              ))
-            : type === 'update'
-              ? <>
-                  {contextCols.map(col => (
-                    <div key={col.name} style={{ marginBottom:6 }}>
-                      <div style={{ fontSize:10, color:'var(--text3)', fontFamily:'var(--mono)' }}>{col.label}</div>
-                      <div style={{ fontSize:11, color:'var(--text2)', wordBreak:'break-all' }}>
-                        {String(masterRow[col.name] ?? '-')}
-                      </div>
-                    </div>
-                  ))}
-                  {contextCols.length > 0 && diffCols.length > 0 && changedDivider}
-                  {diffCols.map(col => (
-                    <div key={col.name} style={{ marginBottom:6 }}>
-                      <div style={{ fontSize:10, color:'var(--text3)', fontFamily:'var(--mono)' }}>{col.label}</div>
-                      <div style={{ fontSize:11, color:'var(--text1)', wordBreak:'break-all' }}>
-                        {String(masterRow[col.name] ?? '-')}
-                      </div>
-                    </div>
-                  ))}
-                </>
-              : diffCols.map(col => (
-                  <div key={col.name} style={{ marginBottom:6 }}>
-                    <div style={{ fontSize:10, color:'var(--text3)', fontFamily:'var(--mono)' }}>{col.label}</div>
-                    <div style={{ fontSize:11, color:'var(--text1)', wordBreak:'break-all' }}>
-                      {String(masterRow[col.name] ?? '-')}
-                    </div>
-                  </div>
-                ))
-          }
-        </div>
+          {/* PK row - always shown, amber PK badge */}
+          <tr style={{ background:'var(--bg3)' }}>
+            <td style={cell({ color:'var(--text3)' })}>
+              {pkField}
+              <span style={{ fontSize:9, fontWeight:700, color:'var(--amber)',
+                background:'rgba(245,166,35,0.12)', border:'1px solid rgba(245,166,35,0.3)',
+                borderRadius:3, padding:'1px 4px', marginLeft:6 }}>PK</span>
+            </td>
+            <td style={cell({ color:'var(--text2)' })}>{String(masterRow[pkField] ?? '-')}</td>
+            <td style={cell({ color:'var(--text2)' })}>
+              {type === 'retire'
+                ? String(masterRow[pkField] ?? '-')
+                : String(stewardRow ? stewardRow[pkField] ?? '-' : '-')}
+            </td>
+          </tr>
 
-        {/* Steward panel */}
-        <div style={{ padding:'10px 12px' }}>
-          <div style={{ fontSize:10, fontWeight:700, color:'var(--text3)',
-            textTransform:'uppercase', letterSpacing:'0.5px', marginBottom:8 }}>
-            Steward change
-          </div>
-          {type === 'retire'
-            ? <div style={{ padding:'8px 10px', background:'rgba(245,166,35,0.08)',
-                border:'1px solid rgba(245,166,35,0.3)', borderRadius:'var(--radius)',
-                fontSize:11, color:'var(--amber)' }}>
-                Steward wants to retire this record
-              </div>
-            : showAll
-              ? allCols.map(col => (
-                  <div key={col.name} style={{ marginBottom:6 }}>
-                    <div style={{ fontSize:10, color:'var(--text3)', fontFamily:'var(--mono)' }}>{col.label}</div>
-                    <div style={{ fontSize:11, wordBreak:'break-all',
-                      color: diffColNames.has(col.name) ? 'var(--green)' : 'var(--text2)',
-                      fontWeight: diffColNames.has(col.name) ? 500 : 400 }}>
-                      {String(stewardRow[col.name] ?? '-')}
-                    </div>
-                  </div>
-                ))
-              : <>
-                  {contextCols.map(col => (
-                    <div key={col.name} style={{ marginBottom:6 }}>
-                      <div style={{ fontSize:10, color:'var(--text3)', fontFamily:'var(--mono)' }}>{col.label}</div>
-                      <div style={{ fontSize:11, color:'var(--text2)', wordBreak:'break-all' }}>
-                        {String(stewardRow[col.name] ?? '-')}
-                      </div>
-                    </div>
-                  ))}
-                  {contextCols.length > 0 && diffCols.length > 0 && changedDivider}
-                  {diffCols.map(col => (
-                    <div key={col.name} style={{ marginBottom:6 }}>
-                      <div style={{ fontSize:10, color:'var(--text3)', fontFamily:'var(--mono)' }}>{col.label}</div>
-                      <div style={{ fontSize:11, color:'var(--green)', wordBreak:'break-all', fontWeight:500 }}>
-                        {String(stewardRow[col.name] ?? '-')}
-                      </div>
-                    </div>
-                  ))}
-                </>
-          }
-        </div>
-      </div>
+          {/* Retire notice - spans full width */}
+          {type === 'retire' && (
+            <tr>
+              <td colSpan={3} style={cell({
+                background:'rgba(245,166,35,0.08)', color:'var(--amber)',
+                borderLeft:'3px solid rgba(245,166,35,0.5)',
+              })}>
+                Steward proposes to retire this record
+              </td>
+            </tr>
+          )}
 
-      {/* Resolution buttons */}
+          {/* Data rows */}
+          {visibleCols.map(col => {
+            const isChanged = changedColNames.has(col.name);
+            const rowBg = isChanged ? 'rgba(245,166,35,0.05)' : 'transparent';
+            return (
+              <tr key={col.name} style={{ background:rowBg }}>
+                <td style={cell({ color: isChanged ? 'var(--text2)' : 'var(--text3)' })}>
+                  {col.name}
+                </td>
+                <td style={cell({ color: isChanged ? 'var(--text2)' : 'var(--text3)' })}>
+                  {String(masterRow[col.name] ?? '-')}
+                </td>
+                <td style={cell({
+                  color: type === 'retire'
+                    ? 'var(--text3)'
+                    : isChanged ? 'var(--green)' : 'var(--text3)',
+                  fontWeight: isChanged ? 500 : 400,
+                })}>
+                  {type === 'retire'
+                    ? String(masterRow[col.name] ?? '-')
+                    : String(stewardRow ? stewardRow[col.name] ?? '-' : '-')}
+                </td>
+              </tr>
+            );
+          })}
+
+          {/* Empty state when update has no visible changed cols */}
+          {visibleCols.length === 0 && type === 'update' && (
+            <tr>
+              <td colSpan={3} style={cell({ color:'var(--text3)' })}>
+                No field-level differences detected
+              </td>
+            </tr>
+          )}
+
+        </tbody>
+      </table>
+
+      {/* Resolution footer */}
       <div style={{ display:'flex', gap:8, padding:'7px 12px',
         borderTop:'1px solid var(--border)', background:'var(--bg3)', alignItems:'center' }}>
         <button
@@ -14641,10 +14628,12 @@ function DeltaConflictCard({ conflict, resolution, onResolve }) {
           onClick={() => onResolve(cardKey, 'steward')}>
           {type === 'retire' ? 'Accept retirement' : 'Accept steward'}
         </button>
-        <button className="btn btn-ghost" style={{ fontSize:11, padding:'3px 10px', marginLeft:'auto' }}
-          onClick={() => setShowAll(s => !s)}>
-          {showAll ? 'Hide fields' : 'Show all fields'}
-        </button>
+        {type === 'update' && (
+          <button className="btn btn-ghost" style={{ fontSize:11, padding:'3px 10px', marginLeft:'auto' }}
+            onClick={() => setShowAll(s => !s)}>
+            {showAll ? 'Collapse' : 'Show all fields'}
+          </button>
+        )}
       </div>
     </div>
   );

@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260721-1731 — Feature: Conflict card redesigned as physical 3-column diff table
+
+### Changed
+- **Delta import — conflict card** — the two-panel side-by-side layout has been replaced with a unified 3-column diff table (`field | master | steward`). All field names now show the raw physical column name (`col.name`) instead of the display label. The table header shows the physical table name and PK field name (`cde_criticality · cde_criticality_id: 182`) instead of the display label. The PK field is now the first visible row with an amber `PK` badge and is always shown. Changed rows are highlighted with a subtle amber row tint; steward changed values are shown in green. Default collapsed view shows PK row + changed rows only; "Show all fields" expands to all columns. Retire conflicts show all master rows so the master steward can see what would be lost, with an amber notice row and the "Show all fields" toggle hidden.
+
+---
+
 ## build-20260721-1659 — Fix: DQ Assistant no longer generates spurious LIMIT in sql_code_sample
 
 ### Fixed

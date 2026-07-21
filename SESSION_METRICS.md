@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260721-1731 — Feature: Conflict card redesigned as 3-column diff table
+
+**Date:** 2026-07-21
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Design + implementation | 15 min | 10 min | 20 min | |
+| **Total** | **15 min** | **10 min** | **20 min** | |
+
+### Changes delivered
+- `src/210_screen_import.js`: `DeltaConflictCard` fully rewritten — removed two-panel grid and stacked label/value divs; replaced with `<table>` 3-column layout (field | master | steward); all `col.label` references replaced with `col.name`; `schema.label` in header replaced with raw `table` name; PK shown as dedicated first row with amber `PK` badge; changed rows get amber row tint and green steward value; retire type shows amber notice row spanning all columns, full master field list, no Show all fields toggle; collapsed/expanded toggle retained for update type.
+- `plans/PLAN_CONFLICT_CARD_REDESIGN.md`: new plan document.
+
+---
+
 ## build-20260721-1659 — Fix: DQ Assistant sql_code_sample prompt
 
 **Date:** 2026-07-21
