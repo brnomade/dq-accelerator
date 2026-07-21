@@ -1937,7 +1937,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260721-2052</div>
+              <div className="header-app-sub">build-20260721-2059</div>
             </div>
           </div>
         </div>
@@ -16465,10 +16465,11 @@ function App() {
   // -- Navigation & import ----------------------------------
   const navigate = useCallback((newRoute) => setRoute(newRoute), []);
 
-  const handleImport = useCallback((importedData) => {
+  const handleImport = useCallback((importedData, importLog) => {
     setData(importedData);
     persist(importedData);
-    setRoute({ screen:'dashboard', table:null });
+    const hasErrors = importLog && importLog.some(function(e) { return e.level === 'err'; });
+    if (!hasErrors) setRoute({ screen:'dashboard', table:null });
   }, [persist]);
 
   const handleDeltaMerge = useCallback((mergedData) => {

@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260721-2059 — Fix: Import stays on screen when errors present
+
+**Date:** 2026-07-21
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Bug fix | 5 min | -- | 2 min | |
+| **Total** | **5 min** | **0 min** | **2 min** | |
+
+### Changes delivered
+- `src/240_app.js`: `handleImport` now only navigates to dashboard when the import log has no `err`-level entries; stays on Import screen when errors are present so the steward can read them.
+
+---
+
 ## build-20260721-2052 — Fix: Import duplicate PK detection
 
 **Date:** 2026-07-21
