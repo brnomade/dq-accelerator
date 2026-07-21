@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260721-2110 — Feature: Data Browser duplicate PK indicators
+
+**Date:** 2026-07-21
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Feature | 5 min | -- | 10 min | |
+| **Total** | **5 min** | **0 min** | **10 min** | |
+
+### Changes delivered
+- `src/215_screen_databrowser.js`: `dupePkMap` useMemo scans all tables; left panel shows red warning icon with tooltip on affected tables; toolbar shows dupe count summary; duplicate rows highlighted red with warning icon in PK cell; row key changed to array index to avoid React duplicate-key warnings.
+
+---
+
 ## build-20260721-2104 — Fix: Import Proceed button style
 
 **Date:** 2026-07-21
