@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260721-2013 — Fix: Data Browser transparent header
+
+**Date:** 2026-07-21
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Bug fix | 15 min | -- | 5 min | |
+| **Total** | **15 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/215_screen_databrowser.js`: replaced `var(--surface)` with `var(--bg2)` and `var(--row-hover)` with `var(--bg3)` — both were undefined CSS variables that resolved to transparent.
+
+---
+
 ## build-20260721-1949 — Fix: Reset clears identity; duplicate Profiling removed
 
 **Date:** 2026-07-21
