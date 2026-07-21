@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260721-2059 — Fix: Import stays on screen when errors are present
+
+### Fixed
+- **Import — error visibility** — `handleImport` in `240_app.js` was navigating to the dashboard immediately after every Excel import, regardless of whether the import log contained errors. This meant duplicate PK error messages (and any other `err`-level log entries) were never visible to the user. The fix: navigation to the dashboard is now suppressed when the import log contains at least one `err`-level entry, keeping the steward on the Import screen so the errors are readable.
+
+---
+
 ## build-20260721-2052 — Fix: Import validation detects and reports duplicate primary keys
 
 ### Fixed
