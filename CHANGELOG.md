@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260721-2104 — Fix: Import Proceed button style and label
+
+### Fixed
+- **Import screen — Proceed button** — button was missing the `btn` base class, giving it inconsistent styling. Now uses `btn btn-primary` to match all other primary action buttons in the app. Label shortened from "Proceed to Dashboard" to "Proceed".
+
+---
+
 ## build-20260721-2101 — Feature: Import requires explicit Proceed to Dashboard after every import
 
 ### Changed

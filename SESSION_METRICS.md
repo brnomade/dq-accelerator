@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260721-2104 — Fix: Import Proceed button style
+
+**Date:** 2026-07-21
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Bug fix | 2 min | -- | 1 min | |
+| **Total** | **2 min** | **0 min** | **1 min** | |
+
+### Changes delivered
+- `src/210_screen_import.js`: Proceed button changed from `btn-primary` to `btn btn-primary`; label changed to "Proceed".
+
+---
+
 ## build-20260721-2101 — Feature: Explicit Proceed button after import
 
 **Date:** 2026-07-21
