@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260721-2211 — Feature: Dashboard Data Integrity improvements
+
+**Date:** 2026-07-21
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Feature | 10 min | -- | 30 min | |
+| **Total** | **10 min** | **0 min** | **30 min** | |
+
+### Changes delivered
+- `src/30_export_utils.js`: PK duplicate detection added to `runHealthCheck`; expanded scope from 5 tables to all SCHEMA tables.
+- `src/220_screen_dashboard.js`: `computeStewardGaps` now returns `allIssues`; comprehensive `scopePksByTable` map built for all tables; `displayIssues` computed (master = allIssues, steward = scopedIssues); Data Integrity block moved outside `hasPersonalCds` gate; master label and context-aware empty message added; slice limit raised to 50.
+
+---
+
 ## build-20260721-2135 — Feature: Data Browser FK integrity indicators
 
 **Date:** 2026-07-21
