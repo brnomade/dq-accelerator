@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How to fix table data using CSV import &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--red:#e05555;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+h2{font-size:15px;font-weight:600;color:var(--text2);margin:32px 0 12px}
+.lead{font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.6}
+.master-badge{display:inline-flex;align-items:flex-start;gap:8px;margin-bottom:28px;padding:10px 14px;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.35);border-radius:var(--radius);font-size:13px;color:var(--amber);line-height:1.5}
+.master-badge strong{font-weight:700}
+.warn-badge{display:inline-flex;align-items:flex-start;gap:8px;margin-bottom:28px;padding:10px 14px;background:rgba(224,85,85,0.08);border:1px solid rgba(224,85,85,0.35);border-radius:var(--radius);font-size:13px;color:var(--red);line-height:1.5}
+.steps{list-style:none;padding:0;display:flex;flex-direction:column}
+.steps li{display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
+.steps li:last-child{border-bottom:none}
+.snum{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:var(--mono);font-weight:600;color:var(--text2)}
+.sbody{flex:1;font-size:14px;color:var(--text);line-height:1.6;padding-top:2px}
+.sbody .sub{font-size:12px;color:var(--text3);margin-top:3px}
+.f{font-weight:600;color:var(--blue)}
+.mono{font-family:var(--mono);font-size:12px;color:var(--text2)}
+.note{margin-top:16px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; Import &amp; Export</div>
+  <h1>How to fix table data using CSV import</h1>
+  <p class="lead">Use this feature when you need to correct data problems in a specific table &mdash; such as duplicate primary keys, incorrect values, or broken references &mdash; without reimporting the entire dataset. You export the affected table as a CSV, fix the rows externally, and reimport just that table to replace its contents entirely.</p>
+
+  <div class="master-badge">
+    <strong>Master steward only.</strong> The Single Table CSV tab is only visible when you are operating as the master steward. Regular stewards do not have access to this feature.
+  </div>
+
+  <div class="warn-badge">
+    <strong>Destructive operation.</strong> The table is completely replaced by the contents of the uploaded CSV. All current rows in that table are removed and replaced by the rows in the file. This cannot be undone without a prior backup.
+  </div>
+
+  <h2>Before you start</h2>
+  <p style="font-size:14px;color:var(--text2);margin-bottom:24px;line-height:1.6">
+    Export a full backup before making any changes. This gives you a recovery point if the import produces unexpected results. See <a href="export-csv-zip.html" style="color:var(--blue)">How to export a full backup</a>.
+  </p>
+
+  <h2>Step 1 &mdash; Export the table you want to fix</h2>
+  <ol class="steps">
+    <li><div class="snum">1</div><div class="sbody">Click <span class="f">Export</span> in the left sidebar.</div></li>
+    <li><div class="snum">2</div><div class="sbody">Under <span class="f">Backup export</span>, click <span class="f">Export backup</span> to download the full ZIP.<div class="sub">The ZIP contains one CSV file per table, each named after the table (e.g. <span class="mono">critical_data_element.csv</span>).</div></div></li>
+    <li><div class="snum">3</div><div class="sbody">Extract the ZIP and locate the CSV file for the table you need to fix.</div></li>
+  </ol>
+
+  <h2>Step 2 &mdash; Edit the CSV</h2>
+  <ol class="steps">
+    <li><div class="snum">1</div><div class="sbody">Open the CSV in a spreadsheet application (Excel, LibreOffice, or a text editor).</div></li>
+    <li><div class="snum">2</div><div class="sbody">Make the corrections you need &mdash; fix values, remove duplicate rows, correct primary key values, or update foreign key references.<div class="sub">Do not rename or remove the header row. Do not rename the file. The column headers and filename are used by the import to identify the table.</div></div></li>
+    <li><div class="snum">3</div><div class="sbody">Save the file as CSV, keeping the original filename (e.g. <span class="mono">critical_data_element.csv</span>).<div class="sub">If your spreadsheet application warns about losing formatting, confirm you want to keep the CSV format.</div></div></li>
+  </ol>
+
+  <h2>Step 3 &mdash; Import the corrected CSV</h2>
+  <ol class="steps">
+    <li><div class="snum">1</div><div class="sbody">Click <span class="f">Import</span> in the left sidebar.</div></li>
+    <li><div class="snum">2</div><div class="sbody">Click the <span class="f">Single Table CSV</span> tab.</div></li>
+    <li><div class="snum">3</div><div class="sbody">Drop your CSV file onto the drop zone, or click the zone to open the file picker.</div></li>
+    <li><div class="snum">4</div><div class="sbody">The application detects the table from the filename and displays a preview panel showing the table name, the current row count, and the incoming row count.<div class="sub">If the filename is not recognised, you will see an error. Rename the file to match the table name exactly (e.g. <span class="mono">critical_data_element.csv</span>) and try again.</div></div></li>
+    <li><div class="snum">5</div><div class="sbody">Review any <span class="f">FK Warnings</span> shown in the panel. These indicate rows in other tables that reference records which will no longer exist after the replace, or incoming rows that reference values not present in the database. Warnings do not block the import &mdash; review them and decide whether to proceed.<div class="sub">Example warning: rows in Data Quality Rule Allocation reference a Critical Data Element ID that is not present in your corrected CSV. Those allocation rows will have a broken reference after the replace.</div></div></li>
+    <li><div class="snum">6</div><div class="sbody">Click <span class="f">Replace Table</span> to confirm. The table is replaced immediately and your changes are saved to local storage.</div></li>
+  </ol>
+
+  <h2>Fixing problems that span multiple tables</h2>
+  <p style="font-size:14px;color:var(--text2);margin-bottom:16px;line-height:1.6">
+    If a fix requires changes to more than one table &mdash; for example, correcting a primary key value in a parent table and updating the matching foreign key values in a child table &mdash; import the tables in parent-first order:
+  </p>
+  <ol class="steps">
+    <li><div class="snum">1</div><div class="sbody">Import the parent table first (e.g. <span class="mono">critical_data_set.csv</span>).</div></li>
+    <li><div class="snum">2</div><div class="sbody">Import the child table second (e.g. <span class="mono">critical_data_element.csv</span>).<div class="sub">This order ensures the FK validation in step 3 can resolve references correctly after each replace.</div></div></li>
+  </ol>
+
+  <div class="note">
+    <strong>Soft-deleted records:</strong> the backup export excludes soft-deleted records by default. If you reimport a CSV exported without soft-deleted rows, those rows are permanently removed from the table. Export with the soft-delete toggle enabled if you need to preserve retired records.
+  </div>
+
+  <div class="related">
+    <div class="rtitle">Related guides</div>
+    <ul class="rlist">
+      <li><a href="export-csv-zip.html">How to export a full backup &rsaquo;</a></li>
+      <li><a href="import-master.html">How to import the master data file &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>
