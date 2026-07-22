@@ -178,14 +178,18 @@ function processDelta(delta, masterData, snapshot) {
 }
 
 // Apply resolved merge to master data. Returns new merged data object.
-function applyMergedChanges(masterData, processResult, resolutions) {
+function applyMergedChanges(masterData, processResult, resolutions, insertSelections) {
   const { remappedInserts, autoApplyUpdates, conflicts } = processResult;
   const merged = {};
   for (const tbl of Object.keys(masterData)) merged[tbl] = [...(masterData[tbl] || [])];
 
   for (const tbl of Object.keys(remappedInserts)) {
     if (!merged[tbl]) merged[tbl] = [];
-    merged[tbl] = [...merged[tbl], ...remappedInserts[tbl]];
+    const pkField = SCHEMA[tbl].pk;
+    const accepted = insertSelections
+      ? remappedInserts[tbl].filter(row => insertSelections[tbl + ':' + row[pkField]] !== false)
+      : remappedInserts[tbl];
+    merged[tbl] = [...merged[tbl], ...accepted];
   }
   for (const { table: tbl, row } of autoApplyUpdates) {
     const pkField = SCHEMA[tbl].pk;
@@ -207,7 +211,7 @@ function applyMergedChanges(masterData, processResult, resolutions) {
 }
 
 // Build merge report object for JSON download
-function buildMergeReport(delta, processResult, resolutions) {
+function buildMergeReport(delta, processResult, resolutions, insertSelections) {
   const { remappedInserts, autoApplyUpdates, conflicts, pkRemap } = processResult;
   const applied = {};
   const tally = (tbl, field) => {
@@ -215,7 +219,11 @@ function buildMergeReport(delta, processResult, resolutions) {
     applied[tbl][field]++;
   };
   for (const tbl of Object.keys(remappedInserts)) {
-    (remappedInserts[tbl] || []).forEach(() => tally(tbl, 'inserted'));
+    const pkField = SCHEMA[tbl] ? SCHEMA[tbl].pk : null;
+    (remappedInserts[tbl] || []).forEach(row => {
+      const key = pkField ? (tbl + ':' + row[pkField]) : null;
+      if (!insertSelections || !key || insertSelections[key] !== false) tally(tbl, 'inserted');
+    });
   }
   for (const { table: tbl } of autoApplyUpdates) tally(tbl, 'updated');
   for (const c of conflicts) {
@@ -233,6 +241,23 @@ function buildMergeReport(delta, processResult, resolutions) {
     totalUpdated  += applied[t].updated;
     totalRetired  += applied[t].retired;
   }
+
+  // Inserts summary: track proposed vs accepted vs rejected
+  let insertsProposed = 0, insertsAccepted = 0;
+  const rejectedByTable = {};
+  for (const tbl of Object.keys(remappedInserts)) {
+    const pkField = SCHEMA[tbl] ? SCHEMA[tbl].pk : null;
+    (remappedInserts[tbl] || []).forEach(row => {
+      insertsProposed++;
+      const key = pkField ? (tbl + ':' + row[pkField]) : null;
+      if (!insertSelections || !key || insertSelections[key] !== false) {
+        insertsAccepted++;
+      } else {
+        rejectedByTable[tbl] = (rejectedByTable[tbl] || 0) + 1;
+      }
+    });
+  }
+
   return {
     _type:         'merge_report',
     _merged_at:    new Date().toISOString(),
@@ -247,6 +272,12 @@ function buildMergeReport(delta, processResult, resolutions) {
       type:       c.type,
       resolution: resolutions[`${c.table}:${c.pk}`] || 'master',
     })),
+    inserts_summary: {
+      total_proposed: insertsProposed,
+      accepted:       insertsAccepted,
+      rejected:       insertsProposed - insertsAccepted,
+      rejected_by_table: rejectedByTable,
+    },
     summary: {
       total_inserted:  totalInserted,
       total_updated:   totalUpdated,

@@ -5,6 +5,23 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260722-1847 — Feature: Delta import — Insert Review panel
+
+**Date:** 2026-07-22
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Feature | 15 min | 25 min | 35 min | |
+| **Total** | **15 min** | **25 min** | **35 min** | |
+
+### Changes delivered
+- `src/71_master_version.js`: Added `insertSelections` param to `applyMergedChanges` (filters inserts by selection) and `buildMergeReport` (tallies accepted/rejected inserts, adds `inserts_summary` block).
+- `src/210_screen_import.js`: Added `InsertTableGroup` component (collapsible per-table group with checkboxes and inline row expand), `InsertReviewSection` component (section header with counts and global accept/reject), updated `DeltaMergePanel` with insert selections state and handlers, updated `handleApplyMerge` to pass selections to apply and report functions.
+- `documentation/user-guide/import-export/merge-steward-delta.html`: New guide covering full delta merge workflow.
+- `documentation/user-guide/index.html`: Added new guide to Import & Export section.
+
+---
+
 ## build-20260722-1836 — Fix: Dashboard integrity issue list now fully scrollable
 
 **Date:** 2026-07-22

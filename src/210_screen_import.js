@@ -168,6 +168,168 @@ function DeltaConflictCard({ conflict, resolution, onResolve }) {
 }
 
 // ===============================================================================
+// INSERT REVIEW -- per-table group card
+// ===============================================================================
+function InsertTableGroup({ tableName, rows, selections, onToggleRow, onAcceptTable, onRejectTable }) {
+  const [expanded,     setExpanded]     = useState(false);
+  const [expandedRows, setExpandedRows] = useState({});
+  const schema  = SCHEMA[tableName] || {};
+  const pkField = schema.pk;
+  const cols    = schema.cols || [];
+
+  const selectedCount = rows.filter(r => selections[tableName + ':' + r[pkField]] !== false).length;
+  const badgeColor = selectedCount === rows.length ? 'var(--green)'
+    : selectedCount === 0 ? 'var(--text3)' : 'var(--amber)';
+
+  const truncate = (s, n) => { var str = String(s); return str.length > n ? str.slice(0, n) + '...' : str; };
+
+  const thStyle = {
+    fontSize:9, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.06em',
+    color:'var(--text3)', padding:'4px 8px', borderBottom:'1px solid var(--border)',
+    background:'var(--bg3)', textAlign:'left', whiteSpace:'nowrap',
+  };
+  const tdStyle = {
+    padding:'3px 8px', fontSize:11, fontFamily:'var(--mono)',
+    borderBottom:'1px solid var(--border)', verticalAlign:'middle', whiteSpace:'nowrap',
+  };
+
+  return (
+    <div style={{ marginBottom:8, border:'1px solid var(--border)', borderRadius:'var(--radius)',
+      background:'var(--bg2)', overflow:'hidden' }}>
+
+      {/* Group header */}
+      <div style={{ display:'flex', alignItems:'center', gap:8, padding:'7px 12px',
+        cursor:'pointer', background:'var(--bg3)', userSelect:'none' }}
+        onClick={() => setExpanded(e => !e)}>
+        <span style={{ fontSize:10, fontFamily:'var(--mono)', color:'var(--text3)', width:14 }}>
+          {expanded ? '[-]' : '[+]'}
+        </span>
+        <span style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--text2)', flex:1 }}>
+          {tableName}
+        </span>
+        <span style={{ fontSize:11, color:'var(--text3)' }}>{rows.length} inserts</span>
+        <span style={{ fontSize:10, padding:'2px 6px', borderRadius:3,
+          border:'1px solid var(--border)', color:badgeColor }}>
+          {selectedCount} selected
+        </span>
+        <button className="btn btn-ghost" style={{ fontSize:11, padding:'2px 8px' }}
+          onClick={e => { e.stopPropagation(); onAcceptTable(tableName); }}>Accept all</button>
+        <button className="btn btn-ghost" style={{ fontSize:11, padding:'2px 8px' }}
+          onClick={e => { e.stopPropagation(); onRejectTable(tableName); }}>Reject all</button>
+      </div>
+
+      {/* Expanded rows table */}
+      {expanded && (
+        <div style={{ overflowX:'auto' }}>
+          <table style={{ width:'100%', borderCollapse:'collapse', minWidth:400 }}>
+            <thead>
+              <tr>
+                <th style={{ ...thStyle, width:28 }}></th>
+                {cols.map(col => <th key={col.name} style={thStyle}>{col.label || col.name}</th>)}
+                <th style={{ ...thStyle, width:90 }}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map(row => {
+                const pkVal     = row[pkField];
+                const key       = tableName + ':' + pkVal;
+                const accepted  = selections[key] !== false;
+                const rowOpen   = !!expandedRows[pkVal];
+                return [
+                  <tr key={key} style={{ opacity: accepted ? 1 : 0.45, background:'var(--bg2)' }}>
+                    <td style={{ ...tdStyle, textAlign:'center' }}>
+                      <input type="checkbox" checked={accepted}
+                        onChange={() => onToggleRow(key)} />
+                    </td>
+                    {cols.map(col => (
+                      <td key={col.name} style={tdStyle} title={String(row[col.name] ?? '')}>
+                        {truncate(String(row[col.name] ?? '-'), 28)}
+                      </td>
+                    ))}
+                    <td style={{ ...tdStyle, textAlign:'right' }}>
+                      <button className="btn btn-ghost" style={{ fontSize:10, padding:'2px 6px' }}
+                        onClick={() => setExpandedRows(prev => ({ ...prev, [pkVal]: !prev[pkVal] }))}>
+                        {rowOpen ? 'Collapse' : 'Expand'}
+                      </button>
+                    </td>
+                  </tr>,
+                  rowOpen && (
+                    <tr key={key + '_detail'}>
+                      <td colSpan={cols.length + 2}
+                        style={{ padding:'6px 12px 8px 36px', background:'var(--bg)' }}>
+                        <table style={{ borderCollapse:'collapse', fontSize:11, width:'100%' }}>
+                          <tbody>
+                            {cols.map(col => (
+                              <tr key={col.name}>
+                                <td style={{ color:'var(--text3)', padding:'2px 8px',
+                                  fontFamily:'var(--mono)', width:'38%', verticalAlign:'top' }}>
+                                  {col.name}
+                                </td>
+                                <td style={{ color:'var(--text2)', padding:'2px 8px',
+                                  fontFamily:'var(--mono)', wordBreak:'break-all' }}>
+                                  {String(row[col.name] ?? '-')}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  ),
+                ];
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ===============================================================================
+// INSERT REVIEW -- section wrapper
+// ===============================================================================
+function InsertReviewSection({ remappedInserts, selections, onToggleRow, onAcceptTable, onRejectTable, onAcceptAll, onRejectAll }) {
+  const tables = Object.keys(remappedInserts).filter(t => (remappedInserts[t] || []).length > 0);
+  if (tables.length === 0) return null;
+
+  const total = tables.reduce((s, t) => s + remappedInserts[t].length, 0);
+  const selected = tables.reduce((s, t) => {
+    const pkField = SCHEMA[t] ? SCHEMA[t].pk : null;
+    return s + (remappedInserts[t] || []).filter(r =>
+      !pkField || selections[t + ':' + r[pkField]] !== false
+    ).length;
+  }, 0);
+
+  return (
+    <div style={{ marginTop:20, marginBottom:8 }}>
+      <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
+        <span style={{ fontSize:12, fontWeight:600, color:'var(--text2)', flex:1 }}>
+          {'Inserts ' + String.fromCharCode(8212) + ' ' + selected + ' of ' + total + ' selected'}
+        </span>
+        <button className="btn btn-ghost" style={{ fontSize:11 }} onClick={onAcceptAll}>
+          Accept all
+        </button>
+        <button className="btn btn-ghost" style={{ fontSize:11 }} onClick={onRejectAll}>
+          Reject all
+        </button>
+      </div>
+      {tables.map(tbl => (
+        <InsertTableGroup
+          key={tbl}
+          tableName={tbl}
+          rows={remappedInserts[tbl]}
+          selections={selections}
+          onToggleRow={onToggleRow}
+          onAcceptTable={onAcceptTable}
+          onRejectTable={onRejectTable}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ===============================================================================
 // TASK 6 -- DELTA MERGE PANEL
 // ===============================================================================
 function DeltaMergePanel({ deltaResult, resolutions, onResolve, onApply, onCancel }) {
@@ -176,6 +338,59 @@ function DeltaMergePanel({ deltaResult, resolutions, onResolve, onApply, onCance
   const allResolved = conflicts.every(c => resolutions[`${c.table}:${c.pk}`]);
   const totalInserts     = Object.values(remappedInserts).reduce((s, a) => s + a.length, 0);
   const totalAutoUpdates = autoApplyUpdates.length;
+
+  const [insertSelections, setInsertSelections] = useState(() => {
+    const init = {};
+    Object.entries(remappedInserts).forEach(function(entry) {
+      var tbl = entry[0]; var rows = entry[1];
+      var pkField = SCHEMA[tbl] ? SCHEMA[tbl].pk : null;
+      if (!pkField) return;
+      rows.forEach(function(row) { init[tbl + ':' + row[pkField]] = true; });
+    });
+    return init;
+  });
+
+  const handleToggleRow = useCallback(function(key) {
+    setInsertSelections(function(prev) { return Object.assign({}, prev, { [key]: !prev[key] }); });
+  }, []);
+
+  const handleAcceptTable = useCallback(function(tbl) {
+    setInsertSelections(function(prev) {
+      var next = Object.assign({}, prev);
+      var pkField = SCHEMA[tbl] ? SCHEMA[tbl].pk : null;
+      if (pkField) (remappedInserts[tbl] || []).forEach(function(row) {
+        next[tbl + ':' + row[pkField]] = true;
+      });
+      return next;
+    });
+  }, [remappedInserts]);
+
+  const handleRejectTable = useCallback(function(tbl) {
+    setInsertSelections(function(prev) {
+      var next = Object.assign({}, prev);
+      var pkField = SCHEMA[tbl] ? SCHEMA[tbl].pk : null;
+      if (pkField) (remappedInserts[tbl] || []).forEach(function(row) {
+        next[tbl + ':' + row[pkField]] = false;
+      });
+      return next;
+    });
+  }, [remappedInserts]);
+
+  const handleAcceptAll = useCallback(function() {
+    setInsertSelections(function(prev) {
+      var next = Object.assign({}, prev);
+      Object.keys(next).forEach(function(k) { next[k] = true; });
+      return next;
+    });
+  }, []);
+
+  const handleRejectAll = useCallback(function() {
+    setInsertSelections(function(prev) {
+      var next = Object.assign({}, prev);
+      Object.keys(next).forEach(function(k) { next[k] = false; });
+      return next;
+    });
+  }, []);
 
   return (
     <div>
@@ -257,9 +472,22 @@ function DeltaMergePanel({ deltaResult, resolutions, onResolve, onApply, onCance
         </>
       )}
 
+      {/* Insert review section */}
+      {totalInserts > 0 && (
+        <InsertReviewSection
+          remappedInserts={remappedInserts}
+          selections={insertSelections}
+          onToggleRow={handleToggleRow}
+          onAcceptTable={handleAcceptTable}
+          onRejectTable={handleRejectTable}
+          onAcceptAll={handleAcceptAll}
+          onRejectAll={handleRejectAll}
+        />
+      )}
+
       {/* Actions */}
       <div style={{ display:'flex', gap:10, marginTop:8 }}>
-        <button className="btn btn-primary" onClick={onApply} disabled={!allResolved}>
+        <button className="btn btn-primary" onClick={() => onApply(insertSelections)} disabled={!allResolved}>
           <Icon.Download/> Apply merge and download report
         </button>
         <button className="btn btn-ghost" onClick={onCancel}>Cancel</button>
@@ -364,11 +592,11 @@ function ImportScreen({ onImport, onMerge }) {
     setResolutions(prev => ({ ...prev, [key]: choice }));
   }, []);
 
-  const handleApplyMerge = useCallback(() => {
+  const handleApplyMerge = useCallback((insertSelections) => {
     if (!deltaResult) return;
     const { delta, processResult } = deltaResult;
-    const merged = applyMergedChanges(data, processResult, resolutions);
-    const report = buildMergeReport(delta, processResult, resolutions);
+    const merged = applyMergedChanges(data, processResult, resolutions, insertSelections);
+    const report = buildMergeReport(delta, processResult, resolutions, insertSelections);
     const blob = new Blob([JSON.stringify(report, null, 2)], { type:'application/json' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');

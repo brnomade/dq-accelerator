@@ -4,6 +4,21 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260722-1847 — Feature: Delta import — Insert Review panel
+
+### Added
+- **Import — Delta import — Inserts section** — after resolving conflicts, the master steward can now review all proposed inserts before applying. Records are grouped by table in collapsible panels. Each group header shows the insert count, the current selection count, and Accept/Reject all buttons for that table. Global Accept all / Reject all buttons in the section header operate across all tables at once.
+- **Import — Insert row detail** — within any expanded table group, each row has a checkbox (pre-ticked = accept) and an Expand button that reveals all field values as a two-column inline list, consistent with conflict card behaviour.
+- **Merge report — inserts_summary** — the downloaded `dq_merge_report_*.json` now includes an `inserts_summary` block recording `total_proposed`, `accepted`, `rejected`, and `rejected_by_table` counts.
+- **User guide — How to merge a steward delta** — new guide page covering the full delta merge workflow including conflict resolution and the new insert review step.
+
+### Behaviour
+- All inserts are pre-selected (accepted) on load; the fast path requires no extra interaction.
+- Unchecked rows are excluded from the merged dataset and reported in the merge report.
+- The Apply button label is unchanged: "Apply merge and download report".
+
+---
+
 ## build-20260722-1836 — Fix: Dashboard integrity issue list now fully scrollable
 
 ### Changed
