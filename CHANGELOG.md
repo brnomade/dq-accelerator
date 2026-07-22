@@ -4,6 +4,17 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260722-1956 — Enhancement: CSV import — expandable FK warning detail
+
+### Changed
+- **Import — Single Table CSV — FK Warnings** — each FK warning line now has a **Show rows** button. Clicking it expands a full field-level table of the affected records, with the broken FK column highlighted in amber. Outbound warnings show the incoming rows that have the unresolvable FK value; inbound warnings show the existing rows in the other table that will be orphaned. Clicking **Collapse** hides the detail again.
+
+### Technical
+- `validateCsvReplace()` now returns `brokenRows` (outbound) and `orphanedRows` (inbound) on each warning object alongside the existing `count`.
+- New `CsvFkWarningCard` component renders the expandable card using the same monospace table style as the delta conflict card.
+
+---
+
 ## build-20260722-1847 — Feature: Delta import — Insert Review panel
 
 ### Added

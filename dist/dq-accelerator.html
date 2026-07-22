@@ -1139,17 +1139,18 @@ function validateCsvReplace(tableName, newRows, currentData) {
     if (!targetSchema) return;
     var targetData = currentData[col.fk.table] || [];
     var targetPks = new Set(targetData.map(function(r) { return r[targetSchema.pk]; }));
-    var brokenCount = newRows.filter(function(r) {
+    var brokenRows = newRows.filter(function(r) {
       return r[col.name] != null && !targetPks.has(r[col.name]);
-    }).length;
-    if (brokenCount > 0) {
+    });
+    if (brokenRows.length > 0) {
       warnings.push({
         direction: 'outbound',
         field: col.name,
         label: col.label,
         targetTable: col.fk.table,
         targetLabel: targetSchema.label,
-        count: brokenCount,
+        count: brokenRows.length,
+        brokenRows: brokenRows,
       });
     }
   });
@@ -1161,17 +1162,18 @@ function validateCsvReplace(tableName, newRows, currentData) {
     (otherSchema.cols || []).forEach(function(col) {
       if (!col.fk || col.fk.table !== tableName) return;
       var otherData = currentData[otherTable] || [];
-      var orphanCount = otherData.filter(function(r) {
+      var orphanedRows = otherData.filter(function(r) {
         return r[col.name] != null && !newPkSet.has(r[col.name]);
-      }).length;
-      if (orphanCount > 0) {
+      });
+      if (orphanedRows.length > 0) {
         warnings.push({
           direction: 'inbound',
           sourceTable: otherTable,
           sourceLabel: otherSchema.label,
           sourceField: col.name,
           sourceFieldLabel: col.label,
-          count: orphanCount,
+          count: orphanedRows.length,
+          orphanedRows: orphanedRows,
         });
       }
     });
@@ -1939,14 +1941,18 @@ function processDelta(delta, masterData, snapshot) {
 }
 
 // Apply resolved merge to master data. Returns new merged data object.
-function applyMergedChanges(masterData, processResult, resolutions) {
+function applyMergedChanges(masterData, processResult, resolutions, insertSelections) {
   const { remappedInserts, autoApplyUpdates, conflicts } = processResult;
   const merged = {};
   for (const tbl of Object.keys(masterData)) merged[tbl] = [...(masterData[tbl] || [])];
 
   for (const tbl of Object.keys(remappedInserts)) {
     if (!merged[tbl]) merged[tbl] = [];
-    merged[tbl] = [...merged[tbl], ...remappedInserts[tbl]];
+    const pkField = SCHEMA[tbl].pk;
+    const accepted = insertSelections
+      ? remappedInserts[tbl].filter(row => insertSelections[tbl + ':' + row[pkField]] !== false)
+      : remappedInserts[tbl];
+    merged[tbl] = [...merged[tbl], ...accepted];
   }
   for (const { table: tbl, row } of autoApplyUpdates) {
     const pkField = SCHEMA[tbl].pk;
@@ -1968,7 +1974,7 @@ function applyMergedChanges(masterData, processResult, resolutions) {
 }
 
 // Build merge report object for JSON download
-function buildMergeReport(delta, processResult, resolutions) {
+function buildMergeReport(delta, processResult, resolutions, insertSelections) {
   const { remappedInserts, autoApplyUpdates, conflicts, pkRemap } = processResult;
   const applied = {};
   const tally = (tbl, field) => {
@@ -1976,7 +1982,11 @@ function buildMergeReport(delta, processResult, resolutions) {
     applied[tbl][field]++;
   };
   for (const tbl of Object.keys(remappedInserts)) {
-    (remappedInserts[tbl] || []).forEach(() => tally(tbl, 'inserted'));
+    const pkField = SCHEMA[tbl] ? SCHEMA[tbl].pk : null;
+    (remappedInserts[tbl] || []).forEach(row => {
+      const key = pkField ? (tbl + ':' + row[pkField]) : null;
+      if (!insertSelections || !key || insertSelections[key] !== false) tally(tbl, 'inserted');
+    });
   }
   for (const { table: tbl } of autoApplyUpdates) tally(tbl, 'updated');
   for (const c of conflicts) {
@@ -1994,6 +2004,23 @@ function buildMergeReport(delta, processResult, resolutions) {
     totalUpdated  += applied[t].updated;
     totalRetired  += applied[t].retired;
   }
+
+  // Inserts summary: track proposed vs accepted vs rejected
+  let insertsProposed = 0, insertsAccepted = 0;
+  const rejectedByTable = {};
+  for (const tbl of Object.keys(remappedInserts)) {
+    const pkField = SCHEMA[tbl] ? SCHEMA[tbl].pk : null;
+    (remappedInserts[tbl] || []).forEach(row => {
+      insertsProposed++;
+      const key = pkField ? (tbl + ':' + row[pkField]) : null;
+      if (!insertSelections || !key || insertSelections[key] !== false) {
+        insertsAccepted++;
+      } else {
+        rejectedByTable[tbl] = (rejectedByTable[tbl] || 0) + 1;
+      }
+    });
+  }
+
   return {
     _type:         'merge_report',
     _merged_at:    new Date().toISOString(),
@@ -2008,6 +2035,12 @@ function buildMergeReport(delta, processResult, resolutions) {
       type:       c.type,
       resolution: resolutions[`${c.table}:${c.pk}`] || 'master',
     })),
+    inserts_summary: {
+      total_proposed: insertsProposed,
+      accepted:       insertsAccepted,
+      rejected:       insertsProposed - insertsAccepted,
+      rejected_by_table: rejectedByTable,
+    },
     summary: {
       total_inserted:  totalInserted,
       total_updated:   totalUpdated,
@@ -2040,7 +2073,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260722-1837</div>
+              <div className="header-app-sub">build-20260722-1956</div>
             </div>
           </div>
         </div>
@@ -14591,6 +14624,84 @@ function ShortlistImportTab({ onImport }) {
 }
 
 // ===============================================================================
+// CSV FK WARNING CARD -- expandable row detail for FK violations
+// ===============================================================================
+function CsvFkWarningCard({ warning, importedTableName }) {
+  var isOutbound  = warning.direction === 'outbound';
+  var rows        = isOutbound ? warning.brokenRows : warning.orphanedRows;
+  var rowSchema   = isOutbound ? SCHEMA[importedTableName] : SCHEMA[warning.sourceTable];
+  var cols        = (rowSchema && rowSchema.cols) ? rowSchema.cols : [];
+  var hlField     = isOutbound ? warning.field : warning.sourceField;
+  var [expanded, setExpanded] = useState(false);
+
+  var msg = isOutbound
+    ? warning.count + ' incoming row' + (warning.count !== 1 ? 's' : '') + ' reference ' + warning.targetLabel + ' values that do not exist in this database.'
+    : warning.count + ' row' + (warning.count !== 1 ? 's' : '') + ' in "' + warning.sourceLabel + '" will be orphaned after this replace.';
+
+  var thStyle = {
+    fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
+    padding: '4px 8px', borderBottom: '1px solid var(--border)',
+    background: 'var(--bg3)', textAlign: 'left', whiteSpace: 'nowrap',
+  };
+
+  return (
+    <div style={{ marginBottom: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 11, color: '#c8a06a', paddingLeft: 10, flex: 1 }}>
+          {String.fromCharCode(8226) + ' '}{msg}
+        </span>
+        {rows && rows.length > 0 && (
+          <button className="btn btn-ghost" style={{ fontSize: 10, padding: '1px 6px', flexShrink: 0 }}
+            onClick={function() { setExpanded(function(e) { return !e; }); }}>
+            {expanded ? 'Collapse' : 'Show rows'}
+          </button>
+        )}
+      </div>
+      {expanded && rows && rows.length > 0 && (
+        <div style={{ marginTop: 6, marginLeft: 20, overflowX: 'auto',
+          border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 300 }}>
+            <thead>
+              <tr>
+                {cols.map(function(col) {
+                  return (
+                    <th key={col.name} style={Object.assign({}, thStyle, {
+                      color: col.name === hlField ? 'var(--amber)' : 'var(--text3)',
+                    })}>{col.label || col.name}</th>
+                  );
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map(function(row, i) {
+                return (
+                  <tr key={i}>
+                    {cols.map(function(col) {
+                      var isHl = col.name === hlField;
+                      return (
+                        <td key={col.name} style={{
+                          padding: '3px 8px', fontSize: 11, fontFamily: 'var(--mono)',
+                          borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap',
+                          color: isHl ? 'var(--amber)' : 'var(--text2)',
+                          background: isHl ? 'rgba(245,166,35,0.07)' : 'transparent',
+                          fontWeight: isHl ? 600 : 400,
+                        }}>
+                          {String(row[col.name] == null ? '-' : row[col.name])}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ===============================================================================
 // TASK 6 -- DELTA CONFLICT CARD
 // ===============================================================================
 function DeltaConflictCard({ conflict, resolution, onResolve }) {
@@ -14760,6 +14871,168 @@ function DeltaConflictCard({ conflict, resolution, onResolve }) {
 }
 
 // ===============================================================================
+// INSERT REVIEW -- per-table group card
+// ===============================================================================
+function InsertTableGroup({ tableName, rows, selections, onToggleRow, onAcceptTable, onRejectTable }) {
+  const [expanded,     setExpanded]     = useState(false);
+  const [expandedRows, setExpandedRows] = useState({});
+  const schema  = SCHEMA[tableName] || {};
+  const pkField = schema.pk;
+  const cols    = schema.cols || [];
+
+  const selectedCount = rows.filter(r => selections[tableName + ':' + r[pkField]] !== false).length;
+  const badgeColor = selectedCount === rows.length ? 'var(--green)'
+    : selectedCount === 0 ? 'var(--text3)' : 'var(--amber)';
+
+  const truncate = (s, n) => { var str = String(s); return str.length > n ? str.slice(0, n) + '...' : str; };
+
+  const thStyle = {
+    fontSize:9, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.06em',
+    color:'var(--text3)', padding:'4px 8px', borderBottom:'1px solid var(--border)',
+    background:'var(--bg3)', textAlign:'left', whiteSpace:'nowrap',
+  };
+  const tdStyle = {
+    padding:'3px 8px', fontSize:11, fontFamily:'var(--mono)',
+    borderBottom:'1px solid var(--border)', verticalAlign:'middle', whiteSpace:'nowrap',
+  };
+
+  return (
+    <div style={{ marginBottom:8, border:'1px solid var(--border)', borderRadius:'var(--radius)',
+      background:'var(--bg2)', overflow:'hidden' }}>
+
+      {/* Group header */}
+      <div style={{ display:'flex', alignItems:'center', gap:8, padding:'7px 12px',
+        cursor:'pointer', background:'var(--bg3)', userSelect:'none' }}
+        onClick={() => setExpanded(e => !e)}>
+        <span style={{ fontSize:10, fontFamily:'var(--mono)', color:'var(--text3)', width:14 }}>
+          {expanded ? '[-]' : '[+]'}
+        </span>
+        <span style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--text2)', flex:1 }}>
+          {tableName}
+        </span>
+        <span style={{ fontSize:11, color:'var(--text3)' }}>{rows.length} inserts</span>
+        <span style={{ fontSize:10, padding:'2px 6px', borderRadius:3,
+          border:'1px solid var(--border)', color:badgeColor }}>
+          {selectedCount} selected
+        </span>
+        <button className="btn btn-ghost" style={{ fontSize:11, padding:'2px 8px' }}
+          onClick={e => { e.stopPropagation(); onAcceptTable(tableName); }}>Accept all</button>
+        <button className="btn btn-ghost" style={{ fontSize:11, padding:'2px 8px' }}
+          onClick={e => { e.stopPropagation(); onRejectTable(tableName); }}>Reject all</button>
+      </div>
+
+      {/* Expanded rows table */}
+      {expanded && (
+        <div style={{ overflowX:'auto' }}>
+          <table style={{ width:'100%', borderCollapse:'collapse', minWidth:400 }}>
+            <thead>
+              <tr>
+                <th style={{ ...thStyle, width:28 }}></th>
+                {cols.map(col => <th key={col.name} style={thStyle}>{col.label || col.name}</th>)}
+                <th style={{ ...thStyle, width:90 }}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map(row => {
+                const pkVal     = row[pkField];
+                const key       = tableName + ':' + pkVal;
+                const accepted  = selections[key] !== false;
+                const rowOpen   = !!expandedRows[pkVal];
+                return [
+                  <tr key={key} style={{ opacity: accepted ? 1 : 0.45, background:'var(--bg2)' }}>
+                    <td style={{ ...tdStyle, textAlign:'center' }}>
+                      <input type="checkbox" checked={accepted}
+                        onChange={() => onToggleRow(key)} />
+                    </td>
+                    {cols.map(col => (
+                      <td key={col.name} style={tdStyle} title={String(row[col.name] ?? '')}>
+                        {truncate(String(row[col.name] ?? '-'), 28)}
+                      </td>
+                    ))}
+                    <td style={{ ...tdStyle, textAlign:'right' }}>
+                      <button className="btn btn-ghost" style={{ fontSize:10, padding:'2px 6px' }}
+                        onClick={() => setExpandedRows(prev => ({ ...prev, [pkVal]: !prev[pkVal] }))}>
+                        {rowOpen ? 'Collapse' : 'Expand'}
+                      </button>
+                    </td>
+                  </tr>,
+                  rowOpen && (
+                    <tr key={key + '_detail'}>
+                      <td colSpan={cols.length + 2}
+                        style={{ padding:'6px 12px 8px 36px', background:'var(--bg)' }}>
+                        <table style={{ borderCollapse:'collapse', fontSize:11, width:'100%' }}>
+                          <tbody>
+                            {cols.map(col => (
+                              <tr key={col.name}>
+                                <td style={{ color:'var(--text3)', padding:'2px 8px',
+                                  fontFamily:'var(--mono)', width:'38%', verticalAlign:'top' }}>
+                                  {col.name}
+                                </td>
+                                <td style={{ color:'var(--text2)', padding:'2px 8px',
+                                  fontFamily:'var(--mono)', wordBreak:'break-all' }}>
+                                  {String(row[col.name] ?? '-')}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  ),
+                ];
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ===============================================================================
+// INSERT REVIEW -- section wrapper
+// ===============================================================================
+function InsertReviewSection({ remappedInserts, selections, onToggleRow, onAcceptTable, onRejectTable, onAcceptAll, onRejectAll }) {
+  const tables = Object.keys(remappedInserts).filter(t => (remappedInserts[t] || []).length > 0);
+  if (tables.length === 0) return null;
+
+  const total = tables.reduce((s, t) => s + remappedInserts[t].length, 0);
+  const selected = tables.reduce((s, t) => {
+    const pkField = SCHEMA[t] ? SCHEMA[t].pk : null;
+    return s + (remappedInserts[t] || []).filter(r =>
+      !pkField || selections[t + ':' + r[pkField]] !== false
+    ).length;
+  }, 0);
+
+  return (
+    <div style={{ marginTop:20, marginBottom:8 }}>
+      <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
+        <span style={{ fontSize:12, fontWeight:600, color:'var(--text2)', flex:1 }}>
+          {'Inserts ' + String.fromCharCode(8212) + ' ' + selected + ' of ' + total + ' selected'}
+        </span>
+        <button className="btn btn-ghost" style={{ fontSize:11 }} onClick={onAcceptAll}>
+          Accept all
+        </button>
+        <button className="btn btn-ghost" style={{ fontSize:11 }} onClick={onRejectAll}>
+          Reject all
+        </button>
+      </div>
+      {tables.map(tbl => (
+        <InsertTableGroup
+          key={tbl}
+          tableName={tbl}
+          rows={remappedInserts[tbl]}
+          selections={selections}
+          onToggleRow={onToggleRow}
+          onAcceptTable={onAcceptTable}
+          onRejectTable={onRejectTable}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ===============================================================================
 // TASK 6 -- DELTA MERGE PANEL
 // ===============================================================================
 function DeltaMergePanel({ deltaResult, resolutions, onResolve, onApply, onCancel }) {
@@ -14768,6 +15041,59 @@ function DeltaMergePanel({ deltaResult, resolutions, onResolve, onApply, onCance
   const allResolved = conflicts.every(c => resolutions[`${c.table}:${c.pk}`]);
   const totalInserts     = Object.values(remappedInserts).reduce((s, a) => s + a.length, 0);
   const totalAutoUpdates = autoApplyUpdates.length;
+
+  const [insertSelections, setInsertSelections] = useState(() => {
+    const init = {};
+    Object.entries(remappedInserts).forEach(function(entry) {
+      var tbl = entry[0]; var rows = entry[1];
+      var pkField = SCHEMA[tbl] ? SCHEMA[tbl].pk : null;
+      if (!pkField) return;
+      rows.forEach(function(row) { init[tbl + ':' + row[pkField]] = true; });
+    });
+    return init;
+  });
+
+  const handleToggleRow = useCallback(function(key) {
+    setInsertSelections(function(prev) { return Object.assign({}, prev, { [key]: !prev[key] }); });
+  }, []);
+
+  const handleAcceptTable = useCallback(function(tbl) {
+    setInsertSelections(function(prev) {
+      var next = Object.assign({}, prev);
+      var pkField = SCHEMA[tbl] ? SCHEMA[tbl].pk : null;
+      if (pkField) (remappedInserts[tbl] || []).forEach(function(row) {
+        next[tbl + ':' + row[pkField]] = true;
+      });
+      return next;
+    });
+  }, [remappedInserts]);
+
+  const handleRejectTable = useCallback(function(tbl) {
+    setInsertSelections(function(prev) {
+      var next = Object.assign({}, prev);
+      var pkField = SCHEMA[tbl] ? SCHEMA[tbl].pk : null;
+      if (pkField) (remappedInserts[tbl] || []).forEach(function(row) {
+        next[tbl + ':' + row[pkField]] = false;
+      });
+      return next;
+    });
+  }, [remappedInserts]);
+
+  const handleAcceptAll = useCallback(function() {
+    setInsertSelections(function(prev) {
+      var next = Object.assign({}, prev);
+      Object.keys(next).forEach(function(k) { next[k] = true; });
+      return next;
+    });
+  }, []);
+
+  const handleRejectAll = useCallback(function() {
+    setInsertSelections(function(prev) {
+      var next = Object.assign({}, prev);
+      Object.keys(next).forEach(function(k) { next[k] = false; });
+      return next;
+    });
+  }, []);
 
   return (
     <div>
@@ -14849,9 +15175,22 @@ function DeltaMergePanel({ deltaResult, resolutions, onResolve, onApply, onCance
         </>
       )}
 
+      {/* Insert review section */}
+      {totalInserts > 0 && (
+        <InsertReviewSection
+          remappedInserts={remappedInserts}
+          selections={insertSelections}
+          onToggleRow={handleToggleRow}
+          onAcceptTable={handleAcceptTable}
+          onRejectTable={handleRejectTable}
+          onAcceptAll={handleAcceptAll}
+          onRejectAll={handleRejectAll}
+        />
+      )}
+
       {/* Actions */}
       <div style={{ display:'flex', gap:10, marginTop:8 }}>
-        <button className="btn btn-primary" onClick={onApply} disabled={!allResolved}>
+        <button className="btn btn-primary" onClick={() => onApply(insertSelections)} disabled={!allResolved}>
           <Icon.Download/> Apply merge and download report
         </button>
         <button className="btn btn-ghost" onClick={onCancel}>Cancel</button>
@@ -14956,11 +15295,11 @@ function ImportScreen({ onImport, onMerge }) {
     setResolutions(prev => ({ ...prev, [key]: choice }));
   }, []);
 
-  const handleApplyMerge = useCallback(() => {
+  const handleApplyMerge = useCallback((insertSelections) => {
     if (!deltaResult) return;
     const { delta, processResult } = deltaResult;
-    const merged = applyMergedChanges(data, processResult, resolutions);
-    const report = buildMergeReport(delta, processResult, resolutions);
+    const merged = applyMergedChanges(data, processResult, resolutions, insertSelections);
+    const report = buildMergeReport(delta, processResult, resolutions, insertSelections);
     const blob = new Blob([JSON.stringify(report, null, 2)], { type:'application/json' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
@@ -15314,13 +15653,8 @@ function ImportScreen({ onImport, onMerge }) {
                     {String.fromCharCode(9888)} FK Warnings ({csvFile.warnings.length})
                   </div>
                   {csvFile.warnings.map(function(w, i) {
-                    var msg = w.direction === 'inbound'
-                      ? w.count + ' row' + (w.count !== 1 ? 's' : '') + ' in "' + w.sourceLabel + '" will be orphaned after this replace.'
-                      : w.count + ' incoming row' + (w.count !== 1 ? 's' : '') + ' reference ' + w.targetLabel + ' values that do not exist in this database.';
                     return (
-                      <div key={i} style={{ fontSize:11, color:'#c8a06a', paddingLeft:10, marginBottom:4 }}>
-                        {String.fromCharCode(8226) + ' '}{msg}
-                      </div>
+                      <CsvFkWarningCard key={i} warning={w} importedTableName={csvFile.tableName} />
                     );
                   })}
                   <div style={{ fontSize:10, color:'var(--text3)', marginTop:6 }}>

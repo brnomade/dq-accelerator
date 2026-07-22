@@ -20,6 +20,8 @@ No schema changes. No new source files. No changes to `240_app.js`, `50_context.
 
 Append after the last existing function in the file.
 
+Each warning now includes the actual row objects alongside the count, so the UI can render an expandable detail table without re-scanning the data.
+
 ```js
 function validateCsvReplace(tableName, newRows, currentData) {
   const warnings = [];
@@ -33,17 +35,18 @@ function validateCsvReplace(tableName, newRows, currentData) {
     if (!targetSchema) return;
     var targetData = currentData[col.fk.table] || [];
     var targetPks = new Set(targetData.map(function(r) { return r[targetSchema.pk]; }));
-    var broken = newRows.filter(function(r) {
+    var brokenRows = newRows.filter(function(r) {
       return r[col.name] != null && !targetPks.has(r[col.name]);
     });
-    if (broken.length > 0) {
+    if (brokenRows.length > 0) {
       warnings.push({
         direction: 'outbound',
         field: col.name,
         label: col.label,
         targetTable: col.fk.table,
         targetLabel: targetSchema.label,
-        count: broken.length,
+        count: brokenRows.length,
+        brokenRows: brokenRows,       // actual rows for expandable UI
       });
     }
   });
@@ -55,17 +58,18 @@ function validateCsvReplace(tableName, newRows, currentData) {
     otherSchema.cols.forEach(function(col) {
       if (!col.fk || col.fk.table !== tableName) return;
       var otherData = currentData[otherTable] || [];
-      var orphaned = otherData.filter(function(r) {
+      var orphanedRows = otherData.filter(function(r) {
         return r[col.name] != null && !newPkSet.has(r[col.name]);
       });
-      if (orphaned.length > 0) {
+      if (orphanedRows.length > 0) {
         warnings.push({
           direction: 'inbound',
           sourceTable: otherTable,
           sourceLabel: otherSchema.label,
           sourceField: col.name,
           sourceFieldLabel: col.label,
-          count: orphaned.length,
+          count: orphanedRows.length,
+          orphanedRows: orphanedRows, // actual rows for expandable UI
         });
       }
     });
@@ -74,6 +78,13 @@ function validateCsvReplace(tableName, newRows, currentData) {
   return warnings;
 }
 ```
+
+## Step 1b — Add `CsvFkWarningCard` component to `210_screen_import.js`
+
+Add before `DeltaConflictCard` at the top of the file. The component receives a single `warning` object and `importedTableName`. It renders the one-line summary plus a **Show rows** toggle that expands to a full field-level table. The FK column is highlighted in amber — matching the visual language of `DeltaConflictCard`.
+
+- Outbound: renders the incoming rows (`warning.brokenRows`) using the schema of the table being imported.
+- Inbound: renders the existing orphaned rows (`warning.orphanedRows`) using the schema of `warning.sourceTable`.
 
 ---
 

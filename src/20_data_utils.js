@@ -300,17 +300,18 @@ function validateCsvReplace(tableName, newRows, currentData) {
     if (!targetSchema) return;
     var targetData = currentData[col.fk.table] || [];
     var targetPks = new Set(targetData.map(function(r) { return r[targetSchema.pk]; }));
-    var brokenCount = newRows.filter(function(r) {
+    var brokenRows = newRows.filter(function(r) {
       return r[col.name] != null && !targetPks.has(r[col.name]);
-    }).length;
-    if (brokenCount > 0) {
+    });
+    if (brokenRows.length > 0) {
       warnings.push({
         direction: 'outbound',
         field: col.name,
         label: col.label,
         targetTable: col.fk.table,
         targetLabel: targetSchema.label,
-        count: brokenCount,
+        count: brokenRows.length,
+        brokenRows: brokenRows,
       });
     }
   });
@@ -322,17 +323,18 @@ function validateCsvReplace(tableName, newRows, currentData) {
     (otherSchema.cols || []).forEach(function(col) {
       if (!col.fk || col.fk.table !== tableName) return;
       var otherData = currentData[otherTable] || [];
-      var orphanCount = otherData.filter(function(r) {
+      var orphanedRows = otherData.filter(function(r) {
         return r[col.name] != null && !newPkSet.has(r[col.name]);
-      }).length;
-      if (orphanCount > 0) {
+      });
+      if (orphanedRows.length > 0) {
         warnings.push({
           direction: 'inbound',
           sourceTable: otherTable,
           sourceLabel: otherSchema.label,
           sourceField: col.name,
           sourceFieldLabel: col.label,
-          count: orphanCount,
+          count: orphanedRows.length,
+          orphanedRows: orphanedRows,
         });
       }
     });

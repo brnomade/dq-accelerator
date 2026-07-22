@@ -80,11 +80,18 @@ Import screen → "Single Table CSV" tab  (master users only)
 │  Rows:  Current 42  →  Incoming 41  (−1 row)               │
 │                                                             │
 │  ⚠  FK Warnings (2)                                        │
-│     • 3 rows in "Data Quality Rule Allocation" reference    │
-│       critical_data_element_id values not present in the    │
-│       incoming CSV. Those rows will become orphaned.        │
-│     • 1 incoming row references critical_data_set_id 99     │
-│       which does not exist in this database.                │
+│     • 3 rows in "Data Quality Rule Allocation" will be      │
+│       orphaned after this replace.          [Show rows]     │
+│     • 1 incoming row references Critical Data Set values    │
+│       that do not exist in this database.   [Show rows]     │
+│                                                             │
+│     ▼ Expanded outbound card:                               │
+│     ┌──────────────────┬──────────────────┬──────────────┐  │
+│     │ id               │ name             │ cds_id ⚠     │  │
+│     │ 101              │ Policy Ref       │ 99 (amber)   │  │
+│     └──────────────────┴──────────────────┴──────────────┘  │
+│                                                             │
+│  Warnings are informational. You may still proceed.         │
 │                                                             │
 │  [ Cancel ]                [ Replace Table ]               │
 └─────────────────────────────────────────────────────────────┘
@@ -156,12 +163,23 @@ Example: importing `critical_data_element.csv` — any `data_quality_rule_alloca
   field: string,          // FK column name on the imported table
   targetTable: string,    // table being referenced
   count: number,          // number of incoming rows with broken FK
+  brokenRows: object[],   // the actual incoming rows with the broken FK value
   // inbound:
   sourceTable: string,    // table holding the FK column
   sourceField: string,    // FK column name in sourceTable
   count: number,          // number of existing rows that will be orphaned
+  orphanedRows: object[], // the actual existing rows that will be orphaned
 }
 ```
+
+### FK Warning Card (expandable)
+
+Each warning is rendered as a `CsvFkWarningCard` component. The card shows the one-line summary with a **Show rows** toggle button. When expanded, it renders a full table of all columns for the affected rows, with the FK column highlighted in amber.
+
+- **Outbound card**: shows the incoming CSV rows that have the broken FK value — all columns visible, FK column highlighted.
+- **Inbound card**: shows the existing rows from the other table that will be orphaned — all columns of that other table visible, the FK column highlighted.
+
+This matches the visual language of the delta import conflict card (`DeltaConflictCard`): monospace table, amber highlight for the column of interest, collapse/expand toggle.
 
 ---
 

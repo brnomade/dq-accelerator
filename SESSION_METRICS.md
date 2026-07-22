@@ -5,6 +5,24 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260722-1956 — Enhancement: CSV import — expandable FK warning detail
+
+**Date:** 2026-07-22
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Enhancement | 5 min | 5 min | 20 min | |
+| **Total** | **5 min** | **5 min** | **20 min** | |
+
+### Changes delivered
+- `src/20_data_utils.js`: Updated `validateCsvReplace` — outbound filter now stores `brokenRows` array; inbound filter now stores `orphanedRows` array.
+- `src/210_screen_import.js`: Added `CsvFkWarningCard` component; replaced simple warning text with component usage.
+- `designs/DESIGN_CSV_TABLE_IMPORT.md`: Updated warning object shape and UI layout sections.
+- `plans/PLAN_CSV_TABLE_IMPORT.md`: Updated Step 1 code and added Step 1b for new component.
+- `documentation/user-guide/import-export/fix-table-data-csv.html`: Updated step 5 to describe Show rows toggle and both warning types.
+
+---
+
 ## build-20260722-1847 — Feature: Delta import — Insert Review panel
 
 **Date:** 2026-07-22

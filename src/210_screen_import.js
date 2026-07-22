@@ -1,4 +1,82 @@
 // ===============================================================================
+// CSV FK WARNING CARD -- expandable row detail for FK violations
+// ===============================================================================
+function CsvFkWarningCard({ warning, importedTableName }) {
+  var isOutbound  = warning.direction === 'outbound';
+  var rows        = isOutbound ? warning.brokenRows : warning.orphanedRows;
+  var rowSchema   = isOutbound ? SCHEMA[importedTableName] : SCHEMA[warning.sourceTable];
+  var cols        = (rowSchema && rowSchema.cols) ? rowSchema.cols : [];
+  var hlField     = isOutbound ? warning.field : warning.sourceField;
+  var [expanded, setExpanded] = useState(false);
+
+  var msg = isOutbound
+    ? warning.count + ' incoming row' + (warning.count !== 1 ? 's' : '') + ' reference ' + warning.targetLabel + ' values that do not exist in this database.'
+    : warning.count + ' row' + (warning.count !== 1 ? 's' : '') + ' in "' + warning.sourceLabel + '" will be orphaned after this replace.';
+
+  var thStyle = {
+    fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
+    padding: '4px 8px', borderBottom: '1px solid var(--border)',
+    background: 'var(--bg3)', textAlign: 'left', whiteSpace: 'nowrap',
+  };
+
+  return (
+    <div style={{ marginBottom: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 11, color: '#c8a06a', paddingLeft: 10, flex: 1 }}>
+          {String.fromCharCode(8226) + ' '}{msg}
+        </span>
+        {rows && rows.length > 0 && (
+          <button className="btn btn-ghost" style={{ fontSize: 10, padding: '1px 6px', flexShrink: 0 }}
+            onClick={function() { setExpanded(function(e) { return !e; }); }}>
+            {expanded ? 'Collapse' : 'Show rows'}
+          </button>
+        )}
+      </div>
+      {expanded && rows && rows.length > 0 && (
+        <div style={{ marginTop: 6, marginLeft: 20, overflowX: 'auto',
+          border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 300 }}>
+            <thead>
+              <tr>
+                {cols.map(function(col) {
+                  return (
+                    <th key={col.name} style={Object.assign({}, thStyle, {
+                      color: col.name === hlField ? 'var(--amber)' : 'var(--text3)',
+                    })}>{col.label || col.name}</th>
+                  );
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map(function(row, i) {
+                return (
+                  <tr key={i}>
+                    {cols.map(function(col) {
+                      var isHl = col.name === hlField;
+                      return (
+                        <td key={col.name} style={{
+                          padding: '3px 8px', fontSize: 11, fontFamily: 'var(--mono)',
+                          borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap',
+                          color: isHl ? 'var(--amber)' : 'var(--text2)',
+                          background: isHl ? 'rgba(245,166,35,0.07)' : 'transparent',
+                          fontWeight: isHl ? 600 : 400,
+                        }}>
+                          {String(row[col.name] == null ? '-' : row[col.name])}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ===============================================================================
 // TASK 6 -- DELTA CONFLICT CARD
 // ===============================================================================
 function DeltaConflictCard({ conflict, resolution, onResolve }) {
@@ -950,13 +1028,8 @@ function ImportScreen({ onImport, onMerge }) {
                     {String.fromCharCode(9888)} FK Warnings ({csvFile.warnings.length})
                   </div>
                   {csvFile.warnings.map(function(w, i) {
-                    var msg = w.direction === 'inbound'
-                      ? w.count + ' row' + (w.count !== 1 ? 's' : '') + ' in "' + w.sourceLabel + '" will be orphaned after this replace.'
-                      : w.count + ' incoming row' + (w.count !== 1 ? 's' : '') + ' reference ' + w.targetLabel + ' values that do not exist in this database.';
                     return (
-                      <div key={i} style={{ fontSize:11, color:'#c8a06a', paddingLeft:10, marginBottom:4 }}>
-                        {String.fromCharCode(8226) + ' '}{msg}
-                      </div>
+                      <CsvFkWarningCard key={i} warning={w} importedTableName={csvFile.tableName} />
                     );
                   })}
                   <div style={{ fontSize:10, color:'var(--text3)', marginTop:6 }}>
