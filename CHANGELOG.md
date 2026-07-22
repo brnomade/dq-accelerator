@@ -4,6 +4,23 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260722-2023 — Fix: Master designation moved to localStorage
+
+### Fixed
+- **Dashboard / Data Browser — spurious FK integrity alert** — the sentinel stewardship row (`critical_data_set_id = 0`) that previously recorded master designation is now gone. The master steward is stored in a dedicated localStorage key (`moj_dq_master_v1`) and never written to the stewardship table. The FK health check, data browser, and CSV import validator no longer see a phantom row.
+
+### Migration
+- On first load, any existing sentinel row is silently detected, migrated to localStorage, stripped from the stewardship table, and the cleaned data is persisted. No user action required.
+
+### Technical
+- New functions in `71_master_version.js`: `loadMasterDesignation`, `saveMasterDesignation`, `clearMasterDesignation`.
+- `designateAsMaster` in `240_app.js` reduced to a localStorage write; no longer inserts a stewardship row.
+- `isMaster` derivation in `240_app.js` reads from `masterDesignation` state (synced via storage event) instead of scanning `data.stewardship`.
+- `SettingsPanel` in `70_header_footer.js` reads `loadMasterDesignation()` directly instead of scanning `data.stewardship`.
+- `handleReset` clears the new localStorage key alongside all other keys.
+
+---
+
 ## build-20260722-1956 — Enhancement: CSV import — expandable FK warning detail
 
 ### Changed

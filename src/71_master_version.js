@@ -52,6 +52,26 @@ function loadStewardIdentity() {
   try { return JSON.parse(localStorage.getItem(STEWARD_IDENTITY_KEY)) || null; } catch { return null; }
 }
 
+const MASTER_DESIGNATION_KEY = 'moj_dq_master_v1';
+
+function loadMasterDesignation() {
+  try { return JSON.parse(localStorage.getItem(MASTER_DESIGNATION_KEY)) || null; } catch { return null; }
+}
+
+function saveMasterDesignation(stewardId) {
+  try {
+    localStorage.setItem(MASTER_DESIGNATION_KEY, JSON.stringify({ stewardId: stewardId }));
+    window.dispatchEvent(new Event('storage'));
+  } catch {}
+}
+
+function clearMasterDesignation() {
+  try {
+    localStorage.removeItem(MASTER_DESIGNATION_KEY);
+    window.dispatchEvent(new Event('storage'));
+  } catch {}
+}
+
 // Build delta: compare current data against base snapshot
 // Returns { table: { inserted, updated, retired } } for changed tables only
 function buildDelta(data, snapshot) {

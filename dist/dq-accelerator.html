@@ -1464,15 +1464,10 @@ function SettingsPanel({ onClose }) {
   const stewards   = (data?.data_steward || []).filter(s => !s.retiring_timestamp)
     .sort((a,b) => (a.data_steward_name||'').localeCompare(b.data_steward_name||''));
 
-  const stewardships = data?.stewardship || [];
-
-  // Check if a 0,0,0 master record exists
-  const masterRecord = stewardships.find(s =>
-    s.critical_data_set_id === 0 && !s.retiring_timestamp
-  );
-  const isMasterSteward = masterRecord && masterRecord.data_steward_id === stewardId;
-  const masterSteward   = masterRecord
-    ? stewards.find(s => s.data_steward_id === masterRecord.data_steward_id)
+  var designation    = loadMasterDesignation();
+  var isMasterSteward = designation && designation.stewardId === stewardId;
+  var masterSteward  = designation
+    ? stewards.find(function(s) { return s.data_steward_id === designation.stewardId; })
     : null;
 
   const [baseVersion, setBaseVersionState] = useState(() => loadBaseVersion());
@@ -1495,7 +1490,7 @@ function SettingsPanel({ onClose }) {
     setStoredIdentity(identity);
     setIdentitySaved(true);
     setTimeout(() => setIdentitySaved(false), 2000);
-    if (!masterRecord) setMasterPrompt(true);
+    if (!loadMasterDesignation()) setMasterPrompt(true);
   };
 
   const handleDesignateMaster = () => {
@@ -1643,12 +1638,12 @@ function SettingsPanel({ onClose }) {
         )}
 
         {/* Master info if exists */}
-        {masterRecord && !isMasterSteward && (
+        {designation && !isMasterSteward && (
           <div style={{ marginBottom:14, padding:'6px 10px',
             background:'var(--bg3)', border:'1px solid var(--border)',
             borderRadius:'var(--radius)', fontSize:11, color:'var(--text3)' }}>
             Master steward: <span style={{ color:'var(--text2)', fontWeight:500 }}>
-              {masterSteward?.data_steward_name || `Steward #${masterRecord.data_steward_id}`}
+              {masterSteward ? masterSteward.data_steward_name : 'Steward #' + designation.stewardId}
             </span>
           </div>
         )}
@@ -1813,6 +1808,26 @@ const STEWARD_IDENTITY_KEY = 'moj_dq_steward_identity';
 
 function loadStewardIdentity() {
   try { return JSON.parse(localStorage.getItem(STEWARD_IDENTITY_KEY)) || null; } catch { return null; }
+}
+
+const MASTER_DESIGNATION_KEY = 'moj_dq_master_v1';
+
+function loadMasterDesignation() {
+  try { return JSON.parse(localStorage.getItem(MASTER_DESIGNATION_KEY)) || null; } catch { return null; }
+}
+
+function saveMasterDesignation(stewardId) {
+  try {
+    localStorage.setItem(MASTER_DESIGNATION_KEY, JSON.stringify({ stewardId: stewardId }));
+    window.dispatchEvent(new Event('storage'));
+  } catch {}
+}
+
+function clearMasterDesignation() {
+  try {
+    localStorage.removeItem(MASTER_DESIGNATION_KEY);
+    window.dispatchEvent(new Event('storage'));
+  } catch {}
 }
 
 // Build delta: compare current data against base snapshot
@@ -2073,7 +2088,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260722-1956</div>
+              <div className="header-app-sub">build-20260722-2024</div>
             </div>
           </div>
         </div>
@@ -17279,7 +17294,24 @@ function Breadcrumb({ route }) {
 // ===============================================================================
 function App() {
   // -- Core state ------------------------------------------
-  const stored = useMemo(() => loadFromStorage(), []);
+  const stored = useMemo(function() {
+    var s = loadFromStorage();
+    if (s && s.data && s.data.stewardship) {
+      var sentinel = s.data.stewardship.find(function(r) {
+        return r.critical_data_set_id === 0 && !r.retiring_timestamp;
+      });
+      if (sentinel) {
+        if (!loadMasterDesignation()) saveMasterDesignation(sentinel.data_steward_id);
+        var cleanedStewardship = s.data.stewardship.filter(function(r) {
+          return r.critical_data_set_id !== 0;
+        });
+        var cleanedData = Object.assign({}, s.data, { stewardship: cleanedStewardship });
+        saveToStorage(cleanedData);
+        return Object.assign({}, s, { data: cleanedData });
+      }
+    }
+    return s;
+  }, []);
   const [data,         setData]         = useState(stored?.data || null);
   const [savedAt,      setSavedAt]      = useState(stored?.savedAt || null);
   const [route,        setRoute]        = useState(() =>
@@ -17368,20 +17400,8 @@ function App() {
   }, [data, stewardIdentity, isMaster]);
 
   const designateAsMaster = useCallback((stewardDsId) => {
-    setData(prev => {
-      const rows  = (prev && prev.stewardship) ? prev.stewardship : [];
-      const maxPk = rows.reduce((m, r) => Math.max(m, r.stewardship_id ?? 0), 0);
-      const rec   = {
-        stewardship_id:       maxPk + 1,
-        critical_data_set_id: 0,
-        data_steward_id:      stewardDsId,
-        retiring_timestamp:   null,
-      };
-      const n = { ...prev, stewardship: [...rows, rec] };
-      persist(n);
-      return n;
-    });
-  }, [persist]);
+    saveMasterDesignation(stewardDsId);
+  }, []);
 
   // -- Navigation & import ----------------------------------
   const navigate = useCallback((newRoute) => setRoute(newRoute), []);
@@ -17401,9 +17421,11 @@ function App() {
     localStorage.removeItem(STEWARD_IDENTITY_KEY);
     localStorage.removeItem(BASE_VERSION_KEY);
     localStorage.removeItem(BASE_SNAPSHOT_KEY);
+    clearMasterDesignation();
     setData(null);
     setSavedAt(null);
     setStewardIdentityState(null);
+    setMasterDesignationState(null);
     setRoute({ screen:'import', table:null });
     setResetStage(0);
   };
@@ -17620,23 +17642,23 @@ function App() {
   const hasData   = !!data;
 
   // -- Master detection -------------------------------------
-  const [stewardIdentity, setStewardIdentityState] = useState(() => loadStewardIdentity());
+  const [stewardIdentity,   setStewardIdentityState]   = useState(() => loadStewardIdentity());
+  const [masterDesignation, setMasterDesignationState] = useState(() => loadMasterDesignation());
 
-  // Re-read steward identity when storage changes (settings panel writes it)
+  // Re-read identity and master designation when storage changes (settings panel writes them)
   useEffect(() => {
-    const handler = () => setStewardIdentityState(loadStewardIdentity());
+    const handler = () => {
+      setStewardIdentityState(loadStewardIdentity());
+      setMasterDesignationState(loadMasterDesignation());
+    };
     window.addEventListener('storage', handler);
     return () => window.removeEventListener('storage', handler);
   }, []);
 
   const isMaster = useMemo(() => {
-    if (!stewardIdentity || !data) return false;
-    return (data.stewardship || []).some(s =>
-      s.critical_data_set_id === 0 &&
-      s.data_steward_id === stewardIdentity.id &&
-      !s.retiring_timestamp
-    );
-  }, [data, stewardIdentity]);
+    if (!stewardIdentity || !masterDesignation) return false;
+    return masterDesignation.stewardId === stewardIdentity.id;
+  }, [stewardIdentity, masterDesignation]);
 
   // -- Context value ----------------------------------------
   const ctxValue = useMemo(() => ({

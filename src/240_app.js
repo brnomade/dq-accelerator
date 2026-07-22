@@ -81,7 +81,24 @@ function Breadcrumb({ route }) {
 // ===============================================================================
 function App() {
   // -- Core state ------------------------------------------
-  const stored = useMemo(() => loadFromStorage(), []);
+  const stored = useMemo(function() {
+    var s = loadFromStorage();
+    if (s && s.data && s.data.stewardship) {
+      var sentinel = s.data.stewardship.find(function(r) {
+        return r.critical_data_set_id === 0 && !r.retiring_timestamp;
+      });
+      if (sentinel) {
+        if (!loadMasterDesignation()) saveMasterDesignation(sentinel.data_steward_id);
+        var cleanedStewardship = s.data.stewardship.filter(function(r) {
+          return r.critical_data_set_id !== 0;
+        });
+        var cleanedData = Object.assign({}, s.data, { stewardship: cleanedStewardship });
+        saveToStorage(cleanedData);
+        return Object.assign({}, s, { data: cleanedData });
+      }
+    }
+    return s;
+  }, []);
   const [data,         setData]         = useState(stored?.data || null);
   const [savedAt,      setSavedAt]      = useState(stored?.savedAt || null);
   const [route,        setRoute]        = useState(() =>
@@ -170,20 +187,8 @@ function App() {
   }, [data, stewardIdentity, isMaster]);
 
   const designateAsMaster = useCallback((stewardDsId) => {
-    setData(prev => {
-      const rows  = (prev && prev.stewardship) ? prev.stewardship : [];
-      const maxPk = rows.reduce((m, r) => Math.max(m, r.stewardship_id ?? 0), 0);
-      const rec   = {
-        stewardship_id:       maxPk + 1,
-        critical_data_set_id: 0,
-        data_steward_id:      stewardDsId,
-        retiring_timestamp:   null,
-      };
-      const n = { ...prev, stewardship: [...rows, rec] };
-      persist(n);
-      return n;
-    });
-  }, [persist]);
+    saveMasterDesignation(stewardDsId);
+  }, []);
 
   // -- Navigation & import ----------------------------------
   const navigate = useCallback((newRoute) => setRoute(newRoute), []);
@@ -203,9 +208,11 @@ function App() {
     localStorage.removeItem(STEWARD_IDENTITY_KEY);
     localStorage.removeItem(BASE_VERSION_KEY);
     localStorage.removeItem(BASE_SNAPSHOT_KEY);
+    clearMasterDesignation();
     setData(null);
     setSavedAt(null);
     setStewardIdentityState(null);
+    setMasterDesignationState(null);
     setRoute({ screen:'import', table:null });
     setResetStage(0);
   };
@@ -422,23 +429,23 @@ function App() {
   const hasData   = !!data;
 
   // -- Master detection -------------------------------------
-  const [stewardIdentity, setStewardIdentityState] = useState(() => loadStewardIdentity());
+  const [stewardIdentity,   setStewardIdentityState]   = useState(() => loadStewardIdentity());
+  const [masterDesignation, setMasterDesignationState] = useState(() => loadMasterDesignation());
 
-  // Re-read steward identity when storage changes (settings panel writes it)
+  // Re-read identity and master designation when storage changes (settings panel writes them)
   useEffect(() => {
-    const handler = () => setStewardIdentityState(loadStewardIdentity());
+    const handler = () => {
+      setStewardIdentityState(loadStewardIdentity());
+      setMasterDesignationState(loadMasterDesignation());
+    };
     window.addEventListener('storage', handler);
     return () => window.removeEventListener('storage', handler);
   }, []);
 
   const isMaster = useMemo(() => {
-    if (!stewardIdentity || !data) return false;
-    return (data.stewardship || []).some(s =>
-      s.critical_data_set_id === 0 &&
-      s.data_steward_id === stewardIdentity.id &&
-      !s.retiring_timestamp
-    );
-  }, [data, stewardIdentity]);
+    if (!stewardIdentity || !masterDesignation) return false;
+    return masterDesignation.stewardId === stewardIdentity.id;
+  }, [stewardIdentity, masterDesignation]);
 
   // -- Context value ----------------------------------------
   const ctxValue = useMemo(() => ({

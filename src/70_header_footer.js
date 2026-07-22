@@ -66,15 +66,10 @@ function SettingsPanel({ onClose }) {
   const stewards   = (data?.data_steward || []).filter(s => !s.retiring_timestamp)
     .sort((a,b) => (a.data_steward_name||'').localeCompare(b.data_steward_name||''));
 
-  const stewardships = data?.stewardship || [];
-
-  // Check if a 0,0,0 master record exists
-  const masterRecord = stewardships.find(s =>
-    s.critical_data_set_id === 0 && !s.retiring_timestamp
-  );
-  const isMasterSteward = masterRecord && masterRecord.data_steward_id === stewardId;
-  const masterSteward   = masterRecord
-    ? stewards.find(s => s.data_steward_id === masterRecord.data_steward_id)
+  var designation    = loadMasterDesignation();
+  var isMasterSteward = designation && designation.stewardId === stewardId;
+  var masterSteward  = designation
+    ? stewards.find(function(s) { return s.data_steward_id === designation.stewardId; })
     : null;
 
   const [baseVersion, setBaseVersionState] = useState(() => loadBaseVersion());
@@ -97,7 +92,7 @@ function SettingsPanel({ onClose }) {
     setStoredIdentity(identity);
     setIdentitySaved(true);
     setTimeout(() => setIdentitySaved(false), 2000);
-    if (!masterRecord) setMasterPrompt(true);
+    if (!loadMasterDesignation()) setMasterPrompt(true);
   };
 
   const handleDesignateMaster = () => {
@@ -245,12 +240,12 @@ function SettingsPanel({ onClose }) {
         )}
 
         {/* Master info if exists */}
-        {masterRecord && !isMasterSteward && (
+        {designation && !isMasterSteward && (
           <div style={{ marginBottom:14, padding:'6px 10px',
             background:'var(--bg3)', border:'1px solid var(--border)',
             borderRadius:'var(--radius)', fontSize:11, color:'var(--text3)' }}>
             Master steward: <span style={{ color:'var(--text2)', fontWeight:500 }}>
-              {masterSteward?.data_steward_name || `Steward #${masterRecord.data_steward_id}`}
+              {masterSteward ? masterSteward.data_steward_name : 'Steward #' + designation.stewardId}
             </span>
           </div>
         )}

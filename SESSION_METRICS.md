@@ -5,6 +5,24 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260722-2023 — Fix: Master designation moved to localStorage
+
+**Date:** 2026-07-22
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Fix | 10 min | 15 min | 20 min | |
+| **Total** | **10 min** | **15 min** | **20 min** | |
+
+### Changes delivered
+- `src/71_master_version.js`: Added `MASTER_DESIGNATION_KEY`, `loadMasterDesignation`, `saveMasterDesignation`, `clearMasterDesignation`.
+- `src/240_app.js`: Migration logic in `stored` useMemo; rewrote `designateAsMaster`; added `masterDesignation` state; merged storage event handler; rewrote `isMaster` useMemo; updated `handleReset`.
+- `src/70_header_footer.js`: Replaced stewardship data scan with `loadMasterDesignation()` in `SettingsPanel`; updated master info display and save handler.
+- `designs/DESIGN_MASTER_DESIGNATION_LOCALSTORAGE.md`: New design doc.
+- `plans/PLAN_MASTER_DESIGNATION_LOCALSTORAGE.md`: New plan doc.
+
+---
+
 ## build-20260722-1956 — Enhancement: CSV import — expandable FK warning detail
 
 **Date:** 2026-07-22
