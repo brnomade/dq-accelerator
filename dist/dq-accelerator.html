@@ -767,9 +767,9 @@ const TABLE_GROUPS = [
     ],
   },
   {
-    id: 'profiling',
-    label: 'Profiling',
-    description: 'Table DDL definitions and field-level profiling statistics',
+    id: 'dbactions',
+    label: 'Database Actions',
+    description: 'Data import, export, browsing and table DDL definitions with field-level profiling statistics',
     color: '--green',
     accent: 'var(--green)',
     tables: [
@@ -2088,7 +2088,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260722-2024</div>
+              <div className="header-app-sub">build-20260722-2038</div>
             </div>
           </div>
         </div>
@@ -2278,29 +2278,6 @@ function Sidebar({ route, onNavigate, data, onToggle, isMaster }) {
           )}
         </div>
 
-        {/* Export */}
-        <div className={`nav-item ${isActive('export') ? 'active' : ''}`}
-          onClick={() => onNavigate({ screen: 'export', table: null })}>
-          <span className="nav-item-icon"><Icon.Download/></span>
-          {!collapsed && <span className="nav-item-label">Export</span>}
-        </div>
-
-        {/* Import */}
-        <div className={`nav-item ${isActive('import') ? 'active' : ''}`}
-          onClick={() => onNavigate({ screen: 'import', table: null })}>
-          <span className="nav-item-icon"><Icon.Upload/></span>
-          {!collapsed && <span className="nav-item-label">Import</span>}
-        </div>
-
-        {/* Data Browser -- master only */}
-        {isMaster && (
-          <div className={`nav-item ${isActive('databrowser') ? 'active' : ''}`}
-            onClick={() => onNavigate({ screen: 'databrowser', table: null })}>
-            <span className="nav-item-icon"><Icon.Database/></span>
-            {!collapsed && <span className="nav-item-label">Data Browser</span>}
-          </div>
-        )}
-
         <div style={{ height:8, borderBottom:'1px solid var(--border)', marginBottom:8 }}/>
 
         {/* TABLE GROUPS */}
@@ -2393,11 +2370,48 @@ function Sidebar({ route, onNavigate, data, onToggle, isMaster }) {
                   </span>
                 </div>
               )}
+              {open && group.id === 'dbactions' && (
+                <div
+                  className={`nav-table-item ${isActive('export') ? 'active' : ''}`}
+                  onClick={() => onNavigate({ screen: 'export', table: null })}>
+                  <span style={{ width: 3, height: 10, borderRadius: 1,
+                    background: group.accent, opacity: 0.8, flexShrink: 0 }}/>
+                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis',
+                    color: isActive('export') ? 'var(--text)' : 'var(--text2)' }}>
+                    Export
+                  </span>
+                </div>
+              )}
+              {open && group.id === 'dbactions' && (
+                <div
+                  className={`nav-table-item ${isActive('import') ? 'active' : ''}`}
+                  onClick={() => onNavigate({ screen: 'import', table: null })}>
+                  <span style={{ width: 3, height: 10, borderRadius: 1,
+                    background: group.accent, opacity: 0.8, flexShrink: 0 }}/>
+                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis',
+                    color: isActive('import') ? 'var(--text)' : 'var(--text2)' }}>
+                    Import
+                  </span>
+                </div>
+              )}
+              {open && group.id === 'dbactions' && isMaster && (
+                <div
+                  className={`nav-table-item ${isActive('databrowser') ? 'active' : ''}`}
+                  onClick={() => onNavigate({ screen: 'databrowser', table: null })}>
+                  <span style={{ width: 3, height: 10, borderRadius: 1,
+                    background: group.accent, opacity: 0.8, flexShrink: 0 }}/>
+                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis',
+                    color: isActive('databrowser') ? 'var(--text)' : 'var(--text2)' }}>
+                    Data Browser
+                  </span>
+                </div>
+              )}
               {open && group.tables.map(t => {
                 if (group.id === 'dq') return null;
                 if (t === 'field_profiling') return null;
                 if (t === 'executive_agency') return null;
                 if (t === 'directorate') return null;
+                if (t === 'stewardship') return null;
                 const schema = SCHEMA[t];
                 const count  = liveCounts[t] ?? 0;
                 return (
