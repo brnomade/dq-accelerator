@@ -722,20 +722,16 @@ function DashboardScreen() {
                 {isMaster ? 'No integrity issues found in the database.' : 'No integrity issues found in your scope.'}
               </div>
             ) : (
-              <div className="issue-list" style={{ margin: 0, borderRadius: 0 }}>
-                {displayIssues.slice(0, 50).map(function(iss, i) {
+              <div className="issue-list" style={{ margin: 0, borderRadius: 0, maxHeight: 320, overflowY: 'auto' }}>
+                {displayIssues.map(function(iss, i) {
                   return (
                     <div key={i} className="issue-item">
+                      <span style={{ color: 'var(--text3)', fontSize: 11, minWidth: 28, textAlign: 'right', paddingRight: 6, flexShrink: 0 }}>{i + 1}</span>
                       <span className="issue-badge">{iss.table}</span>
                       <span style={{ color: 'var(--amber)', fontSize: 11 }}>{iss.msg}</span>
                     </div>
                   );
                 })}
-                {displayIssues.length > 50 && (
-                  <div className="status-row status-warn">
-                    {'...and ' + (displayIssues.length - 50) + ' more'}
-                  </div>
-                )}
               </div>
             )}
           </div>
