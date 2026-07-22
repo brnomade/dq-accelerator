@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260722-1836 — Fix: Dashboard integrity issue list now fully scrollable
+
+**Date:** 2026-07-22
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Fix | 5 min | 0 min | 5 min | |
+| **Total** | **5 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/220_screen_dashboard.js`: Replaced `.slice(0,50)` + "and N more" footer with a `maxHeight: 320 / overflowY: auto` scrollable container; added row numbers to each issue row.
+- `documentation/user-guide/dashboard/understand-dashboard.html`: Updated Data Integrity section to describe scrollable panel with row numbers.
+
+---
+
 ## build-20260722-1810 — Feature: Single-Table CSV Import
 
 **Date:** 2026-07-22

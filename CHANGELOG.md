@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260722-1836 — Fix: Dashboard integrity issue list now fully scrollable
+
+### Changed
+- **Dashboard — Data Integrity section** — the issue list is now a fixed-height scrollable panel (approx. 10 rows visible at a time) showing all issues. Each row has a row number for easy reference. The previous hard cap of 50 items with a "...and N more" footer has been removed.
+
+---
+
 ## build-20260722-1810 — Feature: Single-Table CSV Import
 
 ### Added
