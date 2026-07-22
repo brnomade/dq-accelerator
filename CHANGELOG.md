@@ -4,6 +4,21 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260722-1810 — Feature: Single-Table CSV Import
+
+### Added
+- **Import — Single Table CSV tab** (master only) — new third tab on the Import screen allowing a master steward to replace the contents of any single table by uploading a CSV backup file. The table is fully flushed and repopulated from the file; no upsert or merge.
+- **Import — Table detection from filename** — the table is identified automatically from the CSV filename (must match a SCHEMA table name, e.g. `critical_data_element.csv`). An error is shown if the filename does not match.
+- **Import — Pre-commit preview panel** — before replacing, a panel shows the table label, current row count, incoming row count with a delta badge, and any FK integrity warnings in both directions (outbound: incoming rows reference non-existent PKs in other tables; inbound: existing rows in other tables will be orphaned after the replace). Warnings are informational and do not block the import.
+- **`validateCsvReplace()` utility** (`20_data_utils.js`) — new function that cross-validates a set of incoming rows against the current in-memory data in both FK directions. Returns an array of warning objects consumed by the preview panel.
+
+### Behaviour
+- CSV parsing reuses the existing `importSheet()` and `coerceValue()` pipeline via SheetJS (`XLSX.read(text, { type: 'string' })`); no new parsing code was required.
+- After replace, `onImport()` is called with the patched data object (all other tables unchanged), which triggers `buildLookups()` and localStorage save through the existing context machinery.
+- The tab is only rendered for master users (`isMaster === true`); stewards do not see it.
+
+---
+
 ## build-20260721-2211 — Feature: Dashboard Data Integrity improvements
 
 ### Added

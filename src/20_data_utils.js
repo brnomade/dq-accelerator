@@ -284,5 +284,63 @@ function useMyDataScope(data, stewardIdentity, isMaster, cdSets, dirs, storageKe
 }
 
 // ===============================================================================
+// CSV TABLE REPLACE -- FK VALIDATION
+// Checks FK integrity in both directions before a single-table CSV replace.
+// Returns array of warning objects (empty = no issues).
+// ===============================================================================
+function validateCsvReplace(tableName, newRows, currentData) {
+  var warnings = [];
+  var schema = SCHEMA[tableName];
+  var newPkSet = new Set(newRows.map(function(r) { return r[schema.pk]; }));
+
+  // Outbound: new rows' FK values must exist as PKs in the referenced table
+  (schema.cols || []).forEach(function(col) {
+    if (!col.fk) return;
+    var targetSchema = SCHEMA[col.fk.table];
+    if (!targetSchema) return;
+    var targetData = currentData[col.fk.table] || [];
+    var targetPks = new Set(targetData.map(function(r) { return r[targetSchema.pk]; }));
+    var brokenCount = newRows.filter(function(r) {
+      return r[col.name] != null && !targetPks.has(r[col.name]);
+    }).length;
+    if (brokenCount > 0) {
+      warnings.push({
+        direction: 'outbound',
+        field: col.name,
+        label: col.label,
+        targetTable: col.fk.table,
+        targetLabel: targetSchema.label,
+        count: brokenCount,
+      });
+    }
+  });
+
+  // Inbound: existing rows in other tables that FK into this table and will be orphaned
+  Object.keys(SCHEMA).forEach(function(otherTable) {
+    if (otherTable === tableName) return;
+    var otherSchema = SCHEMA[otherTable];
+    (otherSchema.cols || []).forEach(function(col) {
+      if (!col.fk || col.fk.table !== tableName) return;
+      var otherData = currentData[otherTable] || [];
+      var orphanCount = otherData.filter(function(r) {
+        return r[col.name] != null && !newPkSet.has(r[col.name]);
+      }).length;
+      if (orphanCount > 0) {
+        warnings.push({
+          direction: 'inbound',
+          sourceTable: otherTable,
+          sourceLabel: otherSchema.label,
+          sourceField: col.name,
+          sourceFieldLabel: col.label,
+          count: orphanCount,
+        });
+      }
+    });
+  });
+
+  return warnings;
+}
+
+// ===============================================================================
 // TASK 4 -- LOCALSTORAGE PERSISTENCE
 // ===============================================================================

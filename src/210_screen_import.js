@@ -282,6 +282,10 @@ function ImportScreen({ onImport, onMerge }) {
   const [mergeReport,         setMergeReport]         = useState(null);
   const [pendingMasterImport, setPendingMasterImport] = useState(null);
   const [tab,                 setTab]                 = useState('standard');
+  const [csvFile,             setCsvFile]             = useState(null);
+  const [csvError,            setCsvError]            = useState(null);
+  const [csvConfirming,       setCsvConfirming]       = useState(false);
+  const [csvSuccess,          setCsvSuccess]          = useState(null);
 
   const handleFile = useCallback(async (file) => {
     if (!file) return;
@@ -384,6 +388,46 @@ function ImportScreen({ onImport, onMerge }) {
     setDeltaResult(null);
     setResolutions({});
   }, []);
+
+  const handleCsvFile = useCallback(async function(file) {
+    setCsvError(null);
+    setCsvFile(null);
+    setCsvConfirming(false);
+    setCsvSuccess(null);
+
+    var rawName = file.name.replace(/\.csv$/i, '');
+    if (!SCHEMA[rawName]) {
+      setCsvError('Cannot identify table from filename. Rename the file to match a table name (e.g. critical_data_element.csv).');
+      return;
+    }
+    var tableName = rawName;
+    try {
+      var text = await file.text();
+      var wb = XLSX.read(text, { type: 'string' });
+      var ws = wb.Sheets[wb.SheetNames[0]];
+
+      // Check header contains the PK column before full parse
+      var headerRow = (XLSX.utils.sheet_to_json(ws, { header: 1 })[0]) || [];
+      var pk = SCHEMA[tableName].pk;
+      if (!headerRow.includes(pk)) {
+        setCsvError('CSV is missing required column "' + pk + '". This file may not belong to the selected table.');
+        return;
+      }
+
+      var rows = importSheet(ws, tableName);
+      if (rows.length === 0) {
+        setCsvError('The CSV contains no data rows.');
+        return;
+      }
+
+      var warnings = validateCsvReplace(tableName, rows, data);
+      var currentCount = (data[tableName] || []).length;
+      setCsvFile({ name: file.name, tableName: tableName, rows: rows, warnings: warnings, currentCount: currentCount });
+      setCsvConfirming(true);
+    } catch(e) {
+      setCsvError('Failed to parse CSV: ' + e.message);
+    }
+  }, [data]);
 
   const baseVersion = loadBaseVersion();
 
@@ -494,7 +538,7 @@ function ImportScreen({ onImport, onMerge }) {
   const tabs = [
     { id:'standard',  label:'Full Dataset / Delta' },
     { id:'shortlist', label:'CDE Shortlist Assessment' },
-  ];
+  ].concat(isMaster ? [{ id:'csv', label:'Single Table CSV' }] : []);
 
   return (
     <div className="fade-in">
@@ -505,7 +549,10 @@ function ImportScreen({ onImport, onMerge }) {
         {tabs.map(function(t) {
           const active = tab === t.id;
           return (
-            <button key={t.id} onClick={function() { setTab(t.id); }} style={{
+            <button key={t.id} onClick={function() {
+              setTab(t.id);
+              if (t.id !== 'csv') { setCsvFile(null); setCsvError(null); setCsvConfirming(false); setCsvSuccess(null); }
+            }} style={{
               padding:'8px 20px', fontSize:13, fontWeight: active ? 700 : 400,
               color: active ? 'var(--green)' : 'var(--text3)',
               background:'transparent', border:'none', borderBottom: active ? '2px solid var(--green)' : '2px solid transparent',
@@ -583,6 +630,133 @@ function ImportScreen({ onImport, onMerge }) {
       {/* Tab: CDE Shortlist */}
       {tab === 'shortlist' && (
         <ShortlistImportTab onImport={onMerge} />
+      )}
+
+      {/* Tab: Single Table CSV (master only) */}
+      {tab === 'csv' && (
+        <div>
+          <div className="page-sub" style={{ marginBottom:14 }}>
+            Replace the contents of a single table from a CSV backup file. The table is fully flushed and repopulated from the file.
+          </div>
+
+          {/* Drop zone - hidden once preview is showing */}
+          {!csvConfirming && (
+            <div className={`upload-zone ${(dragging && tab === 'csv') ? 'drag-over' : ''}`}
+              onDragOver={function(e) { e.preventDefault(); setDragging(true); }}
+              onDragLeave={function() { setDragging(false); }}
+              onDrop={function(e) {
+                e.preventDefault();
+                setDragging(false);
+                var f = e.dataTransfer.files[0];
+                if (f) handleCsvFile(f);
+              }}>
+              <input type="file" accept=".csv" onChange={function(e) {
+                if (e.target.files[0]) handleCsvFile(e.target.files[0]);
+              }}/>
+              <svg className="upload-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <rect x="8" y="4" width="28" height="40" rx="3"/>
+                <path d="M28 4v12h12M18 28l6-6 6 6M24 22v14"/>
+              </svg>
+              <div className="upload-title">Drop a CSV file here</div>
+              <div className="upload-sub">File must be named {'<'}table_name{'>'}.csv</div>
+            </div>
+          )}
+
+          {/* Error banner */}
+          {csvError && (
+            <div style={{ marginTop:12, padding:'10px 14px',
+              background:'rgba(192,57,43,0.12)', border:'1px solid rgba(192,57,43,0.45)',
+              borderRadius:'var(--radius)', fontSize:12, color:'#e07070' }}>
+              {csvError}
+            </div>
+          )}
+
+          {/* Success banner */}
+          {csvSuccess && !csvConfirming && (
+            <div style={{ marginTop:12, padding:'10px 14px',
+              background:'rgba(34,201,142,0.08)', border:'1px solid rgba(34,201,142,0.3)',
+              borderRadius:'var(--radius)', fontSize:12, color:'var(--green)' }}>
+              {csvSuccess}
+            </div>
+          )}
+
+          {/* Preview / confirmation panel */}
+          {csvConfirming && csvFile && (
+            <div style={{ marginTop:12, background:'var(--bg2)', border:'1px solid var(--border)',
+              borderRadius:'var(--radius)', overflow:'hidden' }}>
+
+              {/* Header */}
+              <div style={{ padding:'10px 16px', borderBottom:'1px solid var(--border)',
+                background:'var(--bg3)', display:'flex', alignItems:'baseline', gap:10 }}>
+                <span style={{ fontSize:13, fontWeight:600, color:'var(--text1)' }}>
+                  {SCHEMA[csvFile.tableName].label}
+                </span>
+                <span style={{ fontSize:11, color:'var(--text3)', fontFamily:'var(--mono)' }}>
+                  {csvFile.name}
+                </span>
+              </div>
+
+              {/* Row count delta */}
+              <div style={{ padding:'12px 16px', borderBottom:'1px solid var(--border)',
+                display:'flex', alignItems:'center', gap:10, fontSize:13, color:'var(--text2)' }}>
+                <span>Current: <strong style={{ color:'var(--text1)' }}>{csvFile.currentCount}</strong></span>
+                <span style={{ color:'var(--text3)' }}>{String.fromCharCode(8594)}</span>
+                <span>Incoming: <strong style={{ color:'var(--text1)' }}>{csvFile.rows.length}</strong></span>
+                {csvFile.rows.length !== csvFile.currentCount && (
+                  <span style={{
+                    fontSize:11, fontWeight:600, padding:'1px 6px', borderRadius:3,
+                    background: csvFile.rows.length < csvFile.currentCount ? 'rgba(192,57,43,0.12)' : 'rgba(34,201,142,0.1)',
+                    color:      csvFile.rows.length < csvFile.currentCount ? '#e07070' : 'var(--green)',
+                    border:     '1px solid ' + (csvFile.rows.length < csvFile.currentCount ? 'rgba(192,57,43,0.3)' : 'rgba(34,201,142,0.25)'),
+                  }}>
+                    {(csvFile.rows.length > csvFile.currentCount ? '+' : '') + (csvFile.rows.length - csvFile.currentCount) + ' rows'}
+                  </span>
+                )}
+              </div>
+
+              {/* FK warnings */}
+              {csvFile.warnings.length > 0 && (
+                <div style={{ padding:'12px 16px', borderBottom:'1px solid var(--border)',
+                  background:'rgba(245,166,35,0.04)' }}>
+                  <div style={{ fontSize:12, fontWeight:600, color:'var(--amber)', marginBottom:8 }}>
+                    {String.fromCharCode(9888)} FK Warnings ({csvFile.warnings.length})
+                  </div>
+                  {csvFile.warnings.map(function(w, i) {
+                    var msg = w.direction === 'inbound'
+                      ? w.count + ' row' + (w.count !== 1 ? 's' : '') + ' in "' + w.sourceLabel + '" will be orphaned after this replace.'
+                      : w.count + ' incoming row' + (w.count !== 1 ? 's' : '') + ' reference ' + w.targetLabel + ' values that do not exist in this database.';
+                    return (
+                      <div key={i} style={{ fontSize:11, color:'#c8a06a', paddingLeft:10, marginBottom:4 }}>
+                        {String.fromCharCode(8226) + ' '}{msg}
+                      </div>
+                    );
+                  })}
+                  <div style={{ fontSize:10, color:'var(--text3)', marginTop:6 }}>
+                    Warnings are informational. You may still proceed.
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div style={{ padding:'12px 16px', display:'flex', gap:10, justifyContent:'flex-end' }}>
+                <button className="btn btn-ghost" style={{ fontSize:12 }} onClick={function() {
+                  setCsvConfirming(false);
+                  setCsvFile(null);
+                  setCsvError(null);
+                }}>Cancel</button>
+                <button className="btn btn-danger" style={{ fontSize:12 }} onClick={function() {
+                  var newData = Object.assign({}, data, { [csvFile.tableName]: csvFile.rows });
+                  var label = SCHEMA[csvFile.tableName].label;
+                  var count = csvFile.rows.length;
+                  onImport(newData, []);
+                  setCsvSuccess('Replaced ' + label + ': ' + count + ' row' + (count !== 1 ? 's' : '') + ' loaded.');
+                  setCsvConfirming(false);
+                  setCsvFile(null);
+                }}>Replace Table</button>
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
     </div>

@@ -5,6 +5,24 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260722-1810 — Feature: Single-Table CSV Import
+
+**Date:** 2026-07-22
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Feature | 20 min | 20 min | 25 min | |
+| **Total** | **20 min** | **20 min** | **25 min** | |
+
+### Changes delivered
+- `src/20_data_utils.js`: Added `validateCsvReplace()` — bidirectional FK validation for single-table replace.
+- `src/210_screen_import.js`: Added `csvFile`, `csvError`, `csvConfirming`, `csvSuccess` state; `handleCsvFile()` handler; Single Table CSV tab (master-only) with drop zone, error banner, success banner, and preview/confirmation panel.
+- `documentation/user-guide/import-export/fix-table-data-csv.html`: New guide page.
+- `documentation/user-guide/index.html`: Added link to new guide under Import &amp; Export.
+- `designs/DESIGN_CSV_TABLE_IMPORT.md`, `plans/PLAN_CSV_TABLE_IMPORT.md`: Design and plan documents.
+
+---
+
 ## build-20260721-2211 — Feature: Dashboard Data Integrity improvements
 
 **Date:** 2026-07-21
