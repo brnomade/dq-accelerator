@@ -112,29 +112,6 @@ function Sidebar({ route, onNavigate, data, onToggle, isMaster }) {
           )}
         </div>
 
-        {/* Export */}
-        <div className={`nav-item ${isActive('export') ? 'active' : ''}`}
-          onClick={() => onNavigate({ screen: 'export', table: null })}>
-          <span className="nav-item-icon"><Icon.Download/></span>
-          {!collapsed && <span className="nav-item-label">Export</span>}
-        </div>
-
-        {/* Import */}
-        <div className={`nav-item ${isActive('import') ? 'active' : ''}`}
-          onClick={() => onNavigate({ screen: 'import', table: null })}>
-          <span className="nav-item-icon"><Icon.Upload/></span>
-          {!collapsed && <span className="nav-item-label">Import</span>}
-        </div>
-
-        {/* Data Browser -- master only */}
-        {isMaster && (
-          <div className={`nav-item ${isActive('databrowser') ? 'active' : ''}`}
-            onClick={() => onNavigate({ screen: 'databrowser', table: null })}>
-            <span className="nav-item-icon"><Icon.Database/></span>
-            {!collapsed && <span className="nav-item-label">Data Browser</span>}
-          </div>
-        )}
-
         <div style={{ height:8, borderBottom:'1px solid var(--border)', marginBottom:8 }}/>
 
         {/* TABLE GROUPS */}
@@ -227,11 +204,48 @@ function Sidebar({ route, onNavigate, data, onToggle, isMaster }) {
                   </span>
                 </div>
               )}
+              {open && group.id === 'dbactions' && (
+                <div
+                  className={`nav-table-item ${isActive('export') ? 'active' : ''}`}
+                  onClick={() => onNavigate({ screen: 'export', table: null })}>
+                  <span style={{ width: 3, height: 10, borderRadius: 1,
+                    background: group.accent, opacity: 0.8, flexShrink: 0 }}/>
+                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis',
+                    color: isActive('export') ? 'var(--text)' : 'var(--text2)' }}>
+                    Export
+                  </span>
+                </div>
+              )}
+              {open && group.id === 'dbactions' && (
+                <div
+                  className={`nav-table-item ${isActive('import') ? 'active' : ''}`}
+                  onClick={() => onNavigate({ screen: 'import', table: null })}>
+                  <span style={{ width: 3, height: 10, borderRadius: 1,
+                    background: group.accent, opacity: 0.8, flexShrink: 0 }}/>
+                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis',
+                    color: isActive('import') ? 'var(--text)' : 'var(--text2)' }}>
+                    Import
+                  </span>
+                </div>
+              )}
+              {open && group.id === 'dbactions' && isMaster && (
+                <div
+                  className={`nav-table-item ${isActive('databrowser') ? 'active' : ''}`}
+                  onClick={() => onNavigate({ screen: 'databrowser', table: null })}>
+                  <span style={{ width: 3, height: 10, borderRadius: 1,
+                    background: group.accent, opacity: 0.8, flexShrink: 0 }}/>
+                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis',
+                    color: isActive('databrowser') ? 'var(--text)' : 'var(--text2)' }}>
+                    Data Browser
+                  </span>
+                </div>
+              )}
               {open && group.tables.map(t => {
                 if (group.id === 'dq') return null;
                 if (t === 'field_profiling') return null;
                 if (t === 'executive_agency') return null;
                 if (t === 'directorate') return null;
+                if (t === 'stewardship') return null;
                 const schema = SCHEMA[t];
                 const count  = liveCounts[t] ?? 0;
                 return (

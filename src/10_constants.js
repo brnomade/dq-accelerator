@@ -318,9 +318,9 @@ const TABLE_GROUPS = [
     ],
   },
   {
-    id: 'profiling',
-    label: 'Profiling',
-    description: 'Table DDL definitions and field-level profiling statistics',
+    id: 'dbactions',
+    label: 'Database Actions',
+    description: 'Data import, export, browsing and table DDL definitions with field-level profiling statistics',
     color: '--green',
     accent: 'var(--green)',
     tables: [

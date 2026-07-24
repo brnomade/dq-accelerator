@@ -5,6 +5,35 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260722-2038 — Fix: Hide Stewardship from sidebar
+
+**Date:** 2026-07-22
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Fix | 1 min | 0 min | 1 min | |
+| **Total** | **1 min** | **0 min** | **1 min** | |
+
+### Changes delivered
+- `src/80_sidebar.js`: Added `if (t === 'stewardship') return null;` to the ownership group table filter.
+
+---
+
+## build-20260722-2031 — Enhancement: Sidebar — Database Actions group
+
+**Date:** 2026-07-22
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Enhancement | 2 min | 0 min | 5 min | |
+| **Total** | **2 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/10_constants.js`: Renamed `'profiling'` group `id` to `'dbactions'` and `label` to `'Database Actions'`.
+- `src/80_sidebar.js`: Removed standalone Export, Import, Data Browser nav items; added them as special items inside the `'dbactions'` group render block.
+
+---
+
 ## build-20260722-2023 — Fix: Master designation moved to localStorage
 
 **Date:** 2026-07-22

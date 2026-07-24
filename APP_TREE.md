@@ -12,9 +12,6 @@ Items appear in this order. Route format is `{ screen, table }`.
 |---|---|---|---|
 | Dashboard | `screen:dashboard` | `DashboardScreen` | `220_screen_dashboard.js` |
 | DQ Assistant | `screen:assistant` | `AssistantScreen` | `250_screen_assistant.js` |
-| Export | `screen:export` | `ExportScreen` | `230_screen_export.js` |
-| Import | `screen:import` | `ImportScreen` | `210_screen_import.js` |
-| Data Browser _(master only)_ | `screen:databrowser` | `DataBrowserScreen` | `215_screen_databrowser.js` |
 
 ---
 
@@ -28,7 +25,6 @@ Items appear in this order. Route format is `{ screen, table }`.
 | RAG Simulator | `screen:simulator` | `DQSimulatorScreen` | `170_screen_simulator.js` |
 | Rule Generator | `screen:rulegenerator` | `DataRuleGeneratorScreen` | `180_screen_generator.js` |
 | Rules Explorer | `screen:rulenav` | `RuleExplorerView` | `145_view_rules.js` |
-| Profiling | `screen:table / source_table_ddl` | `DDLLibraryView` | `200_screen_ddl.js` |
 | _(Field Profiling -- hidden from sidebar)_ | `screen:table / field_profiling` | `FieldProfilingScreen` | `200_screen_ddl.js` |
 
 ### Ownership Hierarchy (blue, `#18b4d4`)
@@ -48,6 +44,15 @@ Items appear in this order. Route format is `{ screen, table }`.
 |---|---|---|---|
 | Criticality Group Weight | `screen:table / criticality_group_weight` | `AggregatedWeightView` | `100_view_weights_org.js` |
 | Quality Dimension Weight | `screen:table / quality_dimension_weight` | `AggregatedWeightView` | `100_view_weights_org.js` |
+
+### Database Actions (green, `var(--green)`)
+
+| Sidebar label | Route | View component | Source file |
+|---|---|---|---|
+| Export | `screen:export` | `ExportScreen` | `230_screen_export.js` |
+| Import | `screen:import` | `ImportScreen` | `210_screen_import.js` |
+| Data Browser _(master only)_ | `screen:databrowser` | `DataBrowserScreen` | `215_screen_databrowser.js` |
+| Profiling | `screen:table / source_table_ddl` | `DDLLibraryView` | `200_screen_ddl.js` |
 
 ### Core Settings (grey, `#5f7294`) -- read-only reference tables
 

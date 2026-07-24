@@ -4,6 +4,20 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260722-2038 — Fix: Hide Stewardship from sidebar
+
+### Changed
+- **Sidebar — Stewardship hidden** — the Stewardship entry is no longer visible under the Ownership Hierarchy group. The table remains intact; import and export are unaffected.
+
+---
+
+## build-20260722-2031 — Enhancement: Sidebar — Database Actions group
+
+### Changed
+- **Sidebar — new "Database Actions" group** — the standalone Export, Import, and Data Browser items have been moved into a collapsible group called "Database Actions" (formerly the "Profiling" group). The group now contains Export, Import, Data Browser (master only), and Profiling, keeping all database-facing actions together.
+
+---
+
 ## build-20260722-2023 — Fix: Master designation moved to localStorage
 
 ### Fixed
