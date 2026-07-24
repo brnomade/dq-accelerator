@@ -3,7 +3,7 @@
 build.py  --  assembles dist/dq-accelerator.html from src/ modules
 Usage:  python build.py
 Output: dist/dq-accelerator.html
-        dist/dq-accelerator-<build-number>.zip  (HTML + CHANGELOG.md + KNOWN_ISSUES.md)
+        dist/dq-accelerator-<build-number>.zip  (HTML + CHANGELOG.md + KNOWN_ISSUES.md + README.md + EXECUTIVE_SUMMARY.md + user-guide/)
 """
 
 import glob, os, re, sys, hashlib, datetime, zipfile
@@ -14,9 +14,11 @@ SRC          = ROOT / 'src'
 DIST         = ROOT / 'dist'
 TEMPLATE     = ROOT / 'build' / 'template.html'
 OUT          = DIST / 'dq-accelerator.html'
-CHANGELOG    = ROOT / 'CHANGELOG.md'
-KNOWN_ISSUES = ROOT / 'KNOWN_ISSUES.md'
-USER_GUIDE   = ROOT / 'documentation' / 'user-guide'
+CHANGELOG         = ROOT / 'CHANGELOG.md'
+KNOWN_ISSUES      = ROOT / 'KNOWN_ISSUES.md'
+README            = ROOT / 'README.md'
+EXECUTIVE_SUMMARY = ROOT / 'EXECUTIVE_SUMMARY.md'
+USER_GUIDE        = ROOT / 'documentation' / 'user-guide'
 
 DIST.mkdir(exist_ok=True)
 
@@ -125,6 +127,10 @@ with zipfile.ZipFile(zip_path, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
         zf.write(CHANGELOG, arcname='CHANGELOG.md')
     if KNOWN_ISSUES.exists():
         zf.write(KNOWN_ISSUES, arcname='KNOWN_ISSUES.md')
+    if README.exists():
+        zf.write(README, arcname='README.md')
+    if EXECUTIVE_SUMMARY.exists():
+        zf.write(EXECUTIVE_SUMMARY, arcname='EXECUTIVE_SUMMARY.md')
     for gf in guide_files:
         rel = gf.relative_to(USER_GUIDE).as_posix()
         zf.write(gf, arcname=f'user-guide/{rel}')
@@ -132,10 +138,12 @@ with zipfile.ZipFile(zip_path, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
 zip_size = zip_path.stat().st_size
 
 bundled = ['dq-accelerator.html']
-if CHANGELOG.exists():    bundled.append('CHANGELOG.md')
-if KNOWN_ISSUES.exists(): bundled.append('KNOWN_ISSUES.md')
-if guide_files:           bundled.append(f'user-guide/ ({len(guide_files)} files)')
-else:                     print('  Note   : user-guide/ is empty -- skipped from zip')
+if CHANGELOG.exists():         bundled.append('CHANGELOG.md')
+if KNOWN_ISSUES.exists():      bundled.append('KNOWN_ISSUES.md')
+if README.exists():            bundled.append('README.md')
+if EXECUTIVE_SUMMARY.exists(): bundled.append('EXECUTIVE_SUMMARY.md')
+if guide_files:                bundled.append(f'user-guide/ ({len(guide_files)} files)')
+else:                          print('  Note   : user-guide/ is empty -- skipped from zip')
 
 print(f'\nBuild OK')
 print(f'  Build  : {build_number}')
