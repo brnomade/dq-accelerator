@@ -38,6 +38,8 @@ function RuleAllocationFormPanel({ record, isEdit, onSave, onClose, data }) {
     return cde?.critical_data_set_id ?? null;
   });
 
+  const [contextFilter, setContextFilter] = useState(true);
+
   const [values, setValues] = useState({
     [schema.pk]:               record?.[schema.pk] ?? nextPk('data_quality_rule_allocation'),
     critical_data_element_id:  record?.critical_data_element_id  ?? null,
@@ -70,11 +72,12 @@ function RuleAllocationFormPanel({ record, isEdit, onSave, onClose, data }) {
     [...cdes].filter(c => !c.retiring_timestamp && c.critical_data_set_id === filterCdsId)
       .sort((a,b) => (a.source_field_name||'').localeCompare(b.source_field_name||'')), [cdes, filterCdsId]);
 
-  // Show generic rules (no prefix, or "Generic - " prefix) plus rules whose prefix exactly
-  // matches the selected CDS name. Any other "OtherCDS - rule" is hidden.
+  // When contextFilter is ON: show generic rules (no prefix, or "Generic - " prefix) plus rules
+  // whose prefix exactly matches the selected CDS name. Any other CDS-prefixed rule is hidden.
+  // When contextFilter is OFF: bypass filtering and show all active rules.
   const ruleOpts = useMemo(() => {
     const base = [...rules].filter(r => !r.retiring_timestamp);
-    if (!filterCdsId) return base.sort((a,b) => (a.rule_name||'').localeCompare(b.rule_name||''));
+    if (!filterCdsId || !contextFilter) return base.sort((a,b) => (a.rule_name||'').localeCompare(b.rule_name||''));
     const cdsName = cdsById[filterCdsId]?.data_set_name || '';
     return base
       .filter(r => {
@@ -86,7 +89,7 @@ function RuleAllocationFormPanel({ record, isEdit, onSave, onClose, data }) {
         return prefix === cdsName;                            // hide all other CDS rules
       })
       .sort((a,b) => (a.rule_name||'').localeCompare(b.rule_name||''));
-  }, [rules, filterCdsId, cdsById]);
+  }, [rules, filterCdsId, cdsById, contextFilter]);
   const dimOpts = useMemo(() =>
     [...dimensions].filter(d => !d.retiring_timestamp)
       .sort((a,b) => (a.dimension_name||'').localeCompare(b.dimension_name||'')), [dimensions]);
@@ -219,6 +222,7 @@ function RuleAllocationFormPanel({ record, isEdit, onSave, onClose, data }) {
                 <select value={filterAgencyId ?? ''} style={{ ...inputBase, cursor:'pointer', border:'1px solid var(--border)' }}
                   onChange={e => { const v = e.target.value ? parseInt(e.target.value) : null;
                     setFilterAgencyId(v); setFilterDirId(null); setFilterCdsId(null);
+                    setContextFilter(true);
                     set('critical_data_element_id', null); set('data_quality_rule_id', null); }}>
                   <option value="">-- select agency --</option>
                   {agencyOpts.map(a => <option key={a.executive_agency_id} value={a.executive_agency_id}>{a.agency_acronymn} - {a.agency_name}</option>)}
@@ -226,7 +230,8 @@ function RuleAllocationFormPanel({ record, isEdit, onSave, onClose, data }) {
                 <select value={filterDirId ?? ''} disabled={!filterAgencyId}
                   style={{ ...inputBase, cursor: filterAgencyId ? 'pointer' : 'not-allowed', opacity: filterAgencyId ? 1 : 0.5, border:'1px solid var(--border)' }}
                   onChange={e => { const v = e.target.value ? parseInt(e.target.value) : null;
-                    setFilterDirId(v); setFilterCdsId(null); set('critical_data_element_id', null); set('data_quality_rule_id', null); }}>
+                    setFilterDirId(v); setFilterCdsId(null); setContextFilter(true);
+                    set('critical_data_element_id', null); set('data_quality_rule_id', null); }}>
                   <option value="">{filterAgencyId ? '-- select directorate --' : '-- select agency first --'}</option>
                   {dirOpts.map(d => <option key={d.directorate_id} value={d.directorate_id}>{d.directorate_name}</option>)}
                 </select>
@@ -241,7 +246,8 @@ function RuleAllocationFormPanel({ record, isEdit, onSave, onClose, data }) {
                   <select value={filterCdsId ?? ''} disabled={!filterDirId}
                     style={{ ...inputBase, cursor: filterDirId ? 'pointer' : 'not-allowed', opacity: filterDirId ? 1 : 0.5, border:'1px solid var(--border)' }}
                     onChange={e => { const v = e.target.value ? parseInt(e.target.value) : null;
-                      setFilterCdsId(v); set('critical_data_element_id', null); set('data_quality_rule_id', null); }}>
+                      setFilterCdsId(v); setContextFilter(true);
+                      set('critical_data_element_id', null); set('data_quality_rule_id', null); }}>
                     <option value="">{filterDirId ? '-- select data set --' : '-- select directorate first --'}</option>
                     {cdsOpts.map(d => <option key={d.critical_data_set_id} value={d.critical_data_set_id}>{d.data_set_name}</option>)}
                   </select>
@@ -260,10 +266,24 @@ function RuleAllocationFormPanel({ record, isEdit, onSave, onClose, data }) {
 
           {/* Rule */}
           <div style={{ marginBottom:14 }}>
-            <label style={{ display:'block', fontSize:11, fontWeight:600,
-              color: errors.data_quality_rule_id ? 'var(--red)' : 'var(--text2)', marginBottom:4 }}>
-              Rule <span style={{ color:'var(--red)' }}>*</span>
-            </label>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:4 }}>
+              <label style={{ fontSize:11, fontWeight:600,
+                color: errors.data_quality_rule_id ? 'var(--red)' : 'var(--text2)' }}>
+                Rule <span style={{ color:'var(--red)' }}>*</span>
+              </label>
+              {!isEdit && filterCdsId && (
+                <button onClick={() => setContextFilter(v => !v)} style={{
+                  fontSize:10, fontWeight:600, letterSpacing:'0.04em',
+                  padding:'2px 8px', borderRadius:10, cursor:'pointer', border:'none',
+                  background: contextFilter ? accent : 'var(--bg3)',
+                  color: contextFilter ? '#fff' : 'var(--text3)',
+                  outline: contextFilter ? 'none' : ('1px solid var(--border)'),
+                  transition:'background 0.15s, color 0.15s',
+                }}>
+                  Context Filter
+                </button>
+              )}
+            </div>
             {isEdit ? (
               <div style={{ padding:'7px 10px', background:'var(--bg3)',
                 border:'1px solid var(--border)', borderRadius:'var(--radius)',
@@ -291,11 +311,16 @@ function RuleAllocationFormPanel({ record, isEdit, onSave, onClose, data }) {
                 )}
                 {filterCdsId && (() => {
                   const totalActive = rules.filter(r => !r.retiring_timestamp).length;
+                  if (!contextFilter) return (
+                    <div style={{ fontSize:11, color:'var(--text3)', marginTop:3 }}>
+                      Showing all available rules
+                    </div>
+                  );
                   if (ruleOpts.length >= totalActive) return null;
                   const cdsName = cdsById[filterCdsId]?.data_set_name || '';
                   return (
                     <div style={{ fontSize:11, color:'var(--text3)', marginTop:3 }}>
-                      Showing {ruleOpts.length} of {totalActive} rules -- generic + {cdsName} rules only
+                      Showing {ruleOpts.length} of {totalActive} rules. Rules prefixed with {'"'}Generic - {'"'} or {'"'}{cdsName} - {'"'} are shown.
                     </div>
                   );
                 })()}
