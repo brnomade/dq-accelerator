@@ -5,6 +5,50 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260825-2103 — Enhancement: SQL validation notices shown in edit mode as well
+
+**Date:** 2026-08-25
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Enhancement | 3 min | 0 min | 3 min | |
+| **Total** | **3 min** | **0 min** | **3 min** | |
+
+### Changes delivered
+- `src/130_view_rule_allocation.js`: Removed `isEdit` guard from `ruleSqlWarnings` useMemo and JSX block.
+- `src/141_view_cde_list.js`: Same removal.
+
+---
+
+## build-20260825-2100 — Fix: SQL validation notices applied to both allocation panels
+
+**Date:** 2026-08-25
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Fix | 2 min | 0 min | 5 min | |
+| **Total** | **2 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/141_view_cde_list.js`: Added `ruleSqlWarnings` useMemo and JSX notices block (identical to 130_view_rule_allocation.js) to `CdeAllocFormPanel`.
+
+---
+
+## build-20260825-2055 — Enhancement: SQL validation notices on Add Allocation panel
+
+**Date:** 2026-08-25
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Enhancement | 15 min | 10 min | 15 min | |
+| **Total** | **15 min** | **10 min** | **15 min** | |
+
+### Changes delivered
+- `src/130_view_rule_allocation.js`: Added `ruleSqlWarnings` useMemo; added SQL validation notices block in JSX (add mode only, renders after Bumper value field).
+- `documentation/user-guide/data-stewardship/rule-allocate.html`: Added "SQL validation notices" section documenting both severity levels and all individual checks.
+
+---
+
 ## build-20260825-2006 — Enhancement: Context Filter on Add Allocation rule dropdown
 
 **Date:** 2026-08-25

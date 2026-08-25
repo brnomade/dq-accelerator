@@ -122,6 +122,43 @@ function RuleAllocationFormPanel({ record, isEdit, onSave, onClose, data }) {
     }
   }, [values.critical_data_element_id, values.data_quality_rule_id]);
 
+  const ruleSqlWarnings = useMemo(() => {
+    if (!values.data_quality_rule_id) return [];
+    const rule = ruleById[values.data_quality_rule_id];
+    if (!rule) return [];
+    const sql    = (rule.sql_code        || '').trim();
+    const sample = (rule.sql_code_sample || '').trim();
+    const warns  = [];
+    if (!sql) {
+      warns.push({ level: 'SEVERE', msg: 'Rule has no SQL code defined.' });
+      return warns;
+    }
+    if (!/\bWHERE\b/i.test(sql))
+      warns.push({ level: 'CRITICAL', msg: 'Rule SQL has no WHERE clause. The engine appends AND <snapshot_filter> to sql_code at run time, which requires a WHERE clause to be present.' });
+    if (sql.endsWith(';'))
+      warns.push({ level: 'CRITICAL', msg: 'Rule SQL ends with a semicolon. The engine appends AND <snapshot_filter> after it, producing invalid SQL.' });
+    if (/\bCAST\s*\(/i.test(sql))
+      warns.push({ level: 'SEVERE', msg: 'Rule SQL uses CAST(). TRY_CAST() is required to avoid runtime data conversion errors in Athena.' });
+    const hasIsNull      = /\bIS\s+NULL\b/i.test(sql);
+    const hasNullif      = /\bNULLIF\b/i.test(sql);
+    const hasEmptyStrCmp = /=\s*''/.test(sql) || /=\s*""/.test(sql);
+    if ((hasIsNull && !hasNullif) || hasEmptyStrCmp)
+      warns.push({ level: 'SEVERE', msg: "Rule SQL uses a bare IS NULL or empty-string check (= ''). Use NULLIF(TRIM(field), '') IS NULL to correctly handle NULL, empty, and whitespace-only values." });
+    if (sql.indexOf('{SOURCE_DATABASE_NAME}') === -1)
+      warns.push({ level: 'SEVERE', msg: 'Rule SQL is missing the {SOURCE_DATABASE_NAME} placeholder. The engine substitutes this with the actual database name at run time.' });
+    if (sql.indexOf('{SOURCE_TABLE_NAME}') === -1)
+      warns.push({ level: 'SEVERE', msg: 'Rule SQL is missing the {SOURCE_TABLE_NAME} placeholder. The engine substitutes this with the actual table name at run time.' });
+    if (sql.indexOf('{SOURCE_FIELD_NAME}') === -1)
+      warns.push({ level: 'SEVERE', msg: 'Rule SQL is missing the {SOURCE_FIELD_NAME} placeholder. The engine substitutes this with the actual field name at run time.' });
+    if (sample) {
+      if (/\bWHERE\b/i.test(sample))
+        warns.push({ level: 'CRITICAL', msg: 'Sample SQL contains a WHERE clause. The engine appends WHERE <snapshot_filter> to sql_code_sample, which would produce a duplicate WHERE clause.' });
+      if (sample.endsWith(';'))
+        warns.push({ level: 'CRITICAL', msg: 'Sample SQL ends with a semicolon. The engine appends WHERE <snapshot_filter> after it, producing invalid SQL.' });
+    }
+    return warns;
+  }, [values.data_quality_rule_id, ruleById]);
+
   const validate = () => {
     const errs = {};
     if (!values.critical_data_element_id) errs.critical_data_element_id = 'Required';
@@ -301,7 +338,7 @@ function RuleAllocationFormPanel({ record, isEdit, onSave, onClose, data }) {
                   const hint = !contextFilter
                     ? 'Showing all available rules'
                     : ruleOpts.length < totalActive
-                      ? ('Showing ' + ruleOpts.length + ' of ' + totalActive + ' rules. Rules prefixed with "Generic - " or "' + cdsName + ' - " are shown.')
+                      ? ('Showing ' + ruleOpts.length + ' of ' + totalActive + ' rules. Rules withou prefix or prefixed with "Generic - " or "' + cdsName + ' - " listed.')
                       : null;
                   return (
                     <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:4 }}>
@@ -378,6 +415,40 @@ function RuleAllocationFormPanel({ record, isEdit, onSave, onClose, data }) {
             </select>
             {errors.bumper_value && <div style={{ fontSize:11, color:'var(--red)', marginTop:2 }}>{errors.bumper_value}</div>}
           </div>
+
+          {ruleSqlWarnings.length > 0 && (
+            <div style={{ marginBottom:14 }}>
+              <div style={{ display:'flex', flexDirection:'column', gap:4, marginBottom:6 }}>
+                {ruleSqlWarnings.map((w, i) => (
+                  <div key={i} style={{
+                    display:'flex', gap:8, alignItems:'flex-start',
+                    padding:'6px 10px',
+                    background: w.level === 'CRITICAL' ? 'rgba(224,82,82,0.08)' : 'rgba(245,166,35,0.08)',
+                    border: '1px solid ' + (w.level === 'CRITICAL' ? 'rgba(224,82,82,0.3)' : 'rgba(245,166,35,0.3)'),
+                    borderRadius:'var(--radius)',
+                  }}>
+                    <span style={{
+                      fontSize:9, fontWeight:700, fontFamily:'var(--mono)',
+                      letterSpacing:'0.06em', textTransform:'uppercase',
+                      padding:'2px 6px', borderRadius:3, flexShrink:0, marginTop:1,
+                      color: w.level === 'CRITICAL' ? 'var(--red)' : 'var(--amber)',
+                      background: w.level === 'CRITICAL' ? 'rgba(224,82,82,0.15)' : 'rgba(245,166,35,0.15)',
+                      border: '1px solid ' + (w.level === 'CRITICAL' ? 'rgba(224,82,82,0.4)' : 'rgba(245,166,35,0.4)'),
+                    }}>
+                      {w.level}
+                    </span>
+                    <span style={{ fontSize:11, lineHeight:1.5,
+                      color: w.level === 'CRITICAL' ? 'var(--red)' : 'var(--amber)' }}>
+                      {w.msg}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize:11, color:'var(--text3)', fontStyle:'italic' }}>
+                Review and correct this rule in the Rules Explorer page.
+              </div>
+            </div>
+          )}
 
           {/* Inline SQL preview -- auto-shown when CDE + Rule selected */}
           {inlineSql && (

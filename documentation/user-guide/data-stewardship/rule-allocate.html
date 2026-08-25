@@ -66,8 +66,8 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
     <li>
       <div class="snum">3</div>
       <div class="sbody">Select a <span class="f">Rule</span> from the dropdown.
-        <div class="sub">By default, the <span class="f">Context Filter</span> is on and the list shows only rules relevant to this data set: rules with no CDS prefix (generic rules) and rules prefixed with the name of the current data set. The hint below the dropdown shows how many rules are visible and why.</div>
-        <div class="sub">If the rule you need is not listed, click the <span class="f">Context Filter</span> pill in the top-right of the Rule section to turn the filter off. The dropdown then shows all active rules regardless of naming. The hint changes to &ldquo;Showing all available rules&rdquo;.</div>
+        <div class="sub">By default, the <span class="f">Filter</span> is on and the list shows only rules relevant to this data set: rules with no CDS prefix (generic rules) and rules prefixed with the name of the current data set. The hint below the dropdown shows how many rules are visible and why.</div>
+        <div class="sub">If the rule you need is not listed, click the <span class="f">Filter</span> pill in the top-right of the Rule section to turn the filter off. The dropdown then shows all active rules regardless of naming. The hint changes to &ldquo;Showing all available rules&rdquo;.</div>
         <div class="sub">The filter resets to on each time you open a new allocation panel.</div>
       </div>
     </li>
@@ -86,6 +86,44 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
       <div class="sbody">Click <span class="f">Add</span>. The allocation is saved and the CDE row updates to show the new rule and metric counts. The CDE row now shows a chevron button to expand and view all allocations.</div>
     </li>
   </ol>
+
+  <h2>SQL validation notices</h2>
+
+  <p style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:16px">After you select a rule, the panel automatically checks the rule&rsquo;s SQL against the standards required by the DQ execution engine. If any issues are detected, notices appear below the Bumper value field. Saving is not blocked &mdash; proceeding is at the data steward&rsquo;s discretion.</p>
+
+  <table class="field-table">
+    <thead><tr><th>Level</th><th>What it means</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>CRITICAL</td>
+        <td>The rule SQL has a structural problem that will produce invalid SQL when the engine appends its snapshot filter at run time. Allocating a rule with a CRITICAL notice will cause the executed query to fail.</td>
+      </tr>
+      <tr>
+        <td>SEVERE</td>
+        <td>The rule SQL violates a coding standard. The query may run but could return incorrect results or cause runtime errors in Athena.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:13px;color:var(--text2);margin:12px 0 6px;font-weight:600">CRITICAL checks</p>
+  <ul style="margin:0 0 16px 18px;font-size:13px;color:var(--text2);line-height:1.8">
+    <li>Rule SQL has no WHERE clause &mdash; the engine appends <code style="font-family:var(--mono);font-size:12px">AND &lt;snapshot_filter&gt;</code> to the SQL, which requires a WHERE clause to already be present.</li>
+    <li>Rule SQL ends with a semicolon &mdash; the engine appends the snapshot filter after the final character.</li>
+    <li>Sample SQL contains a WHERE clause &mdash; the engine appends <code style="font-family:var(--mono);font-size:12px">WHERE &lt;snapshot_filter&gt;</code> to the sample SQL, which must not already contain one.</li>
+    <li>Sample SQL ends with a semicolon.</li>
+  </ul>
+
+  <p style="font-size:13px;color:var(--text2);margin:0 0 6px;font-weight:600">SEVERE checks</p>
+  <ul style="margin:0 0 20px 18px;font-size:13px;color:var(--text2);line-height:1.8">
+    <li>Rule SQL uses <code style="font-family:var(--mono);font-size:12px">CAST()</code> &mdash; <code style="font-family:var(--mono);font-size:12px">TRY_CAST()</code> is required to avoid runtime data conversion errors.</li>
+    <li>Rule SQL uses a bare <code style="font-family:var(--mono);font-size:12px">IS NULL</code> or <code style="font-family:var(--mono);font-size:12px">= &apos;&apos;</code> check &mdash; <code style="font-family:var(--mono);font-size:12px">NULLIF(TRIM(field), &apos;&apos;) IS NULL</code> is required to handle NULL, empty, and whitespace-only values correctly.</li>
+    <li>Rule SQL is missing the <code style="font-family:var(--mono);font-size:12px">{SOURCE_DATABASE_NAME}</code> placeholder.</li>
+    <li>Rule SQL is missing the <code style="font-family:var(--mono);font-size:12px">{SOURCE_TABLE_NAME}</code> placeholder.</li>
+    <li>Rule SQL is missing the <code style="font-family:var(--mono);font-size:12px">{SOURCE_FIELD_NAME}</code> placeholder.</li>
+    <li>Rule has no SQL code defined.</li>
+  </ul>
+
+  <div class="note">When notices appear, a message at the foot of the block reads &ldquo;Review and correct this rule in the Rules Explorer page.&rdquo; Navigate to the Rules Explorer, find the rule by name, and edit its SQL to fix the issue before completing the allocation.</div>
 
   <h2>View allocations on a CDE</h2>
 
