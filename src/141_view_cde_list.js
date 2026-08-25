@@ -957,6 +957,8 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
   const cde = cdeById[record.critical_data_element_id];
   const cds = cde ? cdsById[cde.critical_data_set_id] : null;
 
+  const [contextFilter, setContextFilter] = useState(true);
+
   const [values, setValues] = useState({
     data_quality_rule_allocation_id: record?.data_quality_rule_allocation_id ?? nextPk('data_quality_rule_allocation'),
     critical_data_element_id:        record.critical_data_element_id,
@@ -975,12 +977,13 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
     setWarnings(prev => ({ ...prev, [field]: null }));
   };
 
-  // Show generic rules (no prefix, or "Generic - " prefix) plus rules whose prefix exactly
-  // matches the current CDS name. Any other "OtherCDS - rule" is hidden.
+  // When contextFilter is ON: show generic rules (no prefix, or "Generic - " prefix) plus rules
+  // whose prefix exactly matches the current CDS name. Any other CDS-prefixed rule is hidden.
+  // When contextFilter is OFF: bypass filtering and show all active rules.
   const ruleOpts = useMemo(() => {
     const base = [...rules].filter(r => !r.retiring_timestamp);
     const cdsName = cds?.data_set_name || '';
-    if (!cdsName) return base.sort((a,b) => (a.rule_name||'').localeCompare(b.rule_name||''));
+    if (!cdsName || !contextFilter) return base.sort((a,b) => (a.rule_name||'').localeCompare(b.rule_name||''));
     return base
       .filter(r => {
         const name = r.rule_name || '';
@@ -991,7 +994,7 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
         return prefix === cdsName;                                     // hide all other CDS rules
       })
       .sort((a,b) => (a.rule_name||'').localeCompare(b.rule_name||''));
-  }, [rules, cds]);
+  }, [rules, cds, contextFilter]);
   const dimOpts = useMemo(() =>
     [...dimensions].filter(d => !d.retiring_timestamp)
       .sort((a,b) => (a.dimension_name||'').localeCompare(b.dimension_name||'')), [dimensions]);
@@ -1097,10 +1100,24 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
 
           {/* Rule */}
           <div style={{ marginBottom:14 }}>
-            <label style={{ display:'block', fontSize:11, fontWeight:600,
-              color: errors.data_quality_rule_id ? 'var(--red)' : 'var(--text2)', marginBottom:4 }}>
-              Rule <span style={{ color:'var(--red)' }}>*</span>
-            </label>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:4 }}>
+              <label style={{ fontSize:11, fontWeight:600,
+                color: errors.data_quality_rule_id ? 'var(--red)' : 'var(--text2)' }}>
+                Rule <span style={{ color:'var(--red)' }}>*</span>
+              </label>
+              {!isEdit && (
+                <button onClick={() => setContextFilter(v => !v)} style={{
+                  fontSize:10, fontWeight:600, letterSpacing:'0.04em',
+                  padding:'2px 8px', borderRadius:10, cursor:'pointer', border:'none',
+                  background: contextFilter ? accent : 'var(--bg3)',
+                  color: contextFilter ? '#fff' : 'var(--text3)',
+                  outline: contextFilter ? 'none' : ('1px solid var(--border)'),
+                  transition:'background 0.15s, color 0.15s',
+                }}>
+                  Context Filter
+                </button>
+              )}
+            </div>
             {isEdit ? (
               <div style={{ padding:'7px 10px', background:'var(--bg3)',
                 border:'1px solid var(--border)', borderRadius:'var(--radius)',
@@ -1128,10 +1145,15 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
                 )}
                 {!isEdit && cds && (() => {
                   const totalActive = rules.filter(r => !r.retiring_timestamp).length;
+                  if (!contextFilter) return (
+                    <div style={{ fontSize:11, color:'var(--text3)', marginTop:3 }}>
+                      Showing all available rules
+                    </div>
+                  );
                   if (ruleOpts.length >= totalActive) return null;
                   return (
                     <div style={{ fontSize:11, color:'var(--text3)', marginTop:3 }}>
-                      Showing {ruleOpts.length} of {totalActive} rules -- generic + {cds.data_set_name} rules only
+                      Showing {ruleOpts.length} of {totalActive} rules. Rules prefixed with {'"'}Generic - {'"'} or {'"'}{cds.data_set_name} - {'"'} are shown.
                     </div>
                   );
                 })()}

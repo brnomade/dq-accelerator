@@ -65,7 +65,11 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
     </li>
     <li>
       <div class="snum">3</div>
-      <div class="sbody">Select a <span class="f">Rule</span> from the dropdown. All active data quality rules are listed.</div>
+      <div class="sbody">Select a <span class="f">Rule</span> from the dropdown.
+        <div class="sub">By default, the <span class="f">Context Filter</span> is on and the list shows only rules relevant to this data set: rules with no CDS prefix (generic rules) and rules prefixed with the name of the current data set. The hint below the dropdown shows how many rules are visible and why.</div>
+        <div class="sub">If the rule you need is not listed, click the <span class="f">Context Filter</span> pill in the top-right of the Rule section to turn the filter off. The dropdown then shows all active rules regardless of naming. The hint changes to &ldquo;Showing all available rules&rdquo;.</div>
+        <div class="sub">The filter resets to on each time you open a new allocation panel.</div>
+      </div>
     </li>
     <li>
       <div class="snum">4</div>
