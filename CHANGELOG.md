@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260825-2205 — UI: AI Assistant hint and button on same row in Rule form panel
+
+### Changed
+- **RuleFormPanel (166_form_panel_rule.js)** -- The SQL validation hint and AI Assistant button are now on the same line. Hint text appears on the left; button stays on the right. Hint is context-aware: shows "Correct the issues above before running the DQ Engine. Get help from the AI Assistant." when warnings are present, and "Optimise the SQL code by using the AI Assistant." when SQL is clean. Hint font increased from 11px to 13px. The `hint` prop is no longer passed to `RuleSqlWarningNotices`.
+
+---
+
 ## build-20260825-2157 — Feature: AI Assistant button in Add/Edit Rule panel; prompt helper refactor
 
 ### Added

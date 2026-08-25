@@ -158,10 +158,17 @@ function RuleFormPanel({ record, onSave, onClose, data }) {
             fontFamily: 'var(--mono)', fontSize: 12 }}/>
       </div>
 
-      <RuleSqlWarningNotices warnings={ruleSqlWarnings} hint="Correct the issues above before running the DQ Engine." />
+      <RuleSqlWarningNotices warnings={ruleSqlWarnings} />
 
       {!!(values.sql_code || values.rule_name) && (
-        <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: 13, color: 'var(--text3)', fontStyle: 'italic', lineHeight: 1.5, flex: 1 }}>
+            {ruleSqlWarnings.length > 0
+              ? 'Correct the issues above before running the DQ Engine. Get help from the AI Assistant.'
+              : values.sql_code
+                ? 'Optimise the SQL code by using the AI Assistant.'
+                : ''}
+          </span>
           <button
             onClick={() => {
               navigator.clipboard.writeText(
@@ -175,7 +182,7 @@ function RuleFormPanel({ record, onSave, onClose, data }) {
               fontSize: 10, padding: '4px 12px', cursor: 'pointer',
               background: 'var(--bg3)', border: '1px solid var(--green)',
               borderRadius: 'var(--radius)', color: 'var(--green)',
-              fontWeight: 600, fontFamily: 'var(--mono)',
+              fontWeight: 600, fontFamily: 'var(--mono)', flexShrink: 0,
             }}>
             {aiBtnCopied ? 'Copied!' : 'AI Assistant'}
           </button>

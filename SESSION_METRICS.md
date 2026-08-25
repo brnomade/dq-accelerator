@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260825-2205 — UI: AI Assistant hint and button on same row in Rule form panel
+
+**Date:** 2026-08-25
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| UI adjustment | 2 min | 0 min | 3 min | |
+| **Total** | **2 min** | **0 min** | **3 min** | |
+
+### Changes delivered
+- `src/166_form_panel_rule.js`: Hint and AI Assistant button combined into one flex row; context-aware hint text; font size 13px.
+
+---
+
 ## build-20260825-2157 — Feature: AI Assistant button in Add/Edit Rule panel; prompt helper refactor
 
 **Date:** 2026-08-25
