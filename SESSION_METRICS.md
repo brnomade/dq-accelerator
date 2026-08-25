@@ -5,7 +5,7 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
-## build-20260825-1956 — Enhancement: Context Filter on Add Allocation rule dropdown
+## build-20260825-2006 — Enhancement: Context Filter on Add Allocation rule dropdown
 
 **Date:** 2026-08-25
 
@@ -15,6 +15,7 @@ Testing time is filled in manually by the user after browser validation.
 | **Total** | **10 min** | **0 min** | **10 min** | |
 
 ### Changes delivered
+- `src/141_view_cde_list.js`: Same changes applied to `CdeAllocFormPanel` — the panel opened from the Data and Stewardship page.
 - `src/130_view_rule_allocation.js`: Added `contextFilter` state; updated `ruleOpts` to bypass prefix filtering when OFF; added Context Filter pill next to Rule label (visible only when CDS selected, in Add mode); updated hint line text; reset filter on agency/directorate/CDS change.
 
 ---

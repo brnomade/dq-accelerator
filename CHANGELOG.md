@@ -4,11 +4,11 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
-## build-20260825-1956 — Enhancement: Context Filter on Add Allocation rule dropdown
+## build-20260825-2006 — Enhancement: Context Filter on Add Allocation rule dropdown
 
 ### Changed
-- **Add Allocation — rule dropdown hint text** — the counter below the rule list now reads "Showing N of total rules. Rules prefixed with "Generic - " or "{CDS name} - " are shown." instead of the previous terse format.
-- **Add Allocation — Context Filter pill** — a "Context Filter" pill appears to the right of the Rule label whenever a data set is selected. When ON (default, accent-coloured), only generic and CDS-matched rules are listed. When OFF (muted), all active rules are shown and the hint reads "Showing all available rules". The filter resets to ON each time the data set selection changes.
+- **Add Allocation — rule dropdown hint text** — the counter below the rule list now reads "Showing N of total rules. Rules prefixed with 'Generic - ' or '{CDS name} - ' are shown." instead of the previous terse format.
+- **Add Allocation — Context Filter pill** — a "Context Filter" pill appears to the right of the Rule label in Add mode. When ON (default, accent-coloured), only generic and CDS-matched rules are listed. When OFF (muted), all active rules are shown and the hint reads "Showing all available rules". Applied to both the CDE-contextual panel (141_view_cde_list.js) and the standalone allocation panel (130_view_rule_allocation.js).
 
 ---
 
