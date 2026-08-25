@@ -151,6 +151,35 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
 
   <p style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:0">Notices also appear when editing existing rules. If a saved rule has issues, open the edit panel and correct them before the rule is run by the DQ engine.</p>
 
+  <h2>AI Assistant</h2>
+
+  <p style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:16px">Once a rule name or SQL code is entered, an <strong style="color:var(--green)">AI Assistant</strong> button appears at the bottom of the notices area. It builds a prompt based on the current panel content and copies it to your clipboard so you can paste it into any AI tool (Claude, Copilot, ChatGPT, or similar).</p>
+
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody">Fill in the rule name, SQL code, and optionally the SQL sample field.</div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody">Click <span class="f">AI Assistant</span>. The button label changes to <span class="f">Copied!</span> briefly to confirm the prompt is on your clipboard.</div>
+    </li>
+    <li>
+      <div class="snum">3</div>
+      <div class="sbody">Paste the prompt into your preferred AI tool and send it.
+        <div class="sub">If warnings are present, the prompt asks the AI to pose clarifying questions and then provide corrected SQL to paste back. If the SQL is already clean, the AI is asked to confirm correctness and suggest any optimisations.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">4</div>
+      <div class="sbody">Copy the corrected SQL from the AI response and paste it back into the <span class="f">SQL code</span> or <span class="f">SQL sample</span> fields in the panel.
+        <div class="sub">The AI may also recommend a corrected rule name if the current name does not follow the naming convention. Update the <span class="f">Name</span> field manually if you agree with the recommendation.</div>
+      </div>
+    </li>
+  </ol>
+
+  <div class="note">The prompt includes the rule name, explanation, both SQL fields, all current validation warnings, the DQ engine SQL standards, and the rule naming convention. No data leaves the application automatically &mdash; you control what you paste and where.</div>
+
   <div class="related">
     <div class="rtitle">Related guides</div>
     <ul class="rlist">

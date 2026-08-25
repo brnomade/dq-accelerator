@@ -4,6 +4,17 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260825-2157 — Feature: AI Assistant button in Add/Edit Rule panel; prompt helper refactor
+
+### Added
+- **AI Assistant button (166_form_panel_rule.js)** -- A small "AI Assistant" button appears below the SQL validation notices in the Add/Edit Rule panel whenever a rule name or SQL code is present. Clicking it builds a context-aware prompt covering the rule's name, explanation, SQL code, SQL sample, SQL coding standards, naming conventions, and any current validation warnings, then copies it to the clipboard. The button label changes to "Copied!" for 1.8 seconds as feedback. The prompt adapts its task instruction: when warnings are present it asks the AI to pose clarifying questions and provide corrected SQL; when SQL is clean it asks the AI to confirm correctness and suggest optimisations. In both cases the AI is asked to assess the rule name against the naming convention and recommend a correction if needed, without applying it directly.
+- **`src/46_prompt_helpers.js`** -- New shared utility file with two functions: `buildSqlStandardsPrompt()` (DQ engine snapshot filter rules + SQL coding standards) and `buildNamingConventionsPrompt(opts)` (assertive naming rule + Generic/CDS/CDE prefix rules, with optional `cdsName` and `fieldName` parameters). Both are globals available to all components in the bundle.
+
+### Changed
+- **Rule Generator prompt (180_screen_generator.js)** -- The SQL standards block (24 lines) and naming conventions block (10 lines) replaced with calls to `buildSqlStandardsPrompt()` and `buildNamingConventionsPrompt({ cdsName, fieldName })`. Prompt output is identical; no behaviour change.
+
+---
+
 ## build-20260825-2137 — Docs: update user guides for rule form and SQL validation changes
 
 ### Changed

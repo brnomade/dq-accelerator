@@ -2,12 +2,66 @@
 // RULE FORM PANEL -- Add / Edit Data Quality Rule
 // SQL validation: sql_code must contain a SELECT statement.
 // ===============================================================================
+
+function buildRuleAssistantPrompt(values, warnings) {
+  var lines = [
+    'You are a data quality expert reviewing a Data Quality rule.',
+    '',
+    'RULE DETAILS:',
+  ];
+  lines.push('  Name: ' + (values.rule_name || '(not set)'));
+  if (values.rule_explanation && values.rule_explanation.trim()) {
+    lines.push('  Explanation: ' + values.rule_explanation.trim());
+  }
+  if (values.sql_code && values.sql_code.trim()) {
+    lines.push('');
+    lines.push('SQL CODE:');
+    lines.push(values.sql_code.trim());
+  }
+  if (values.sql_code_sample && values.sql_code_sample.trim()) {
+    lines.push('');
+    lines.push('SQL SAMPLE:');
+    lines.push(values.sql_code_sample.trim());
+  }
+  lines.push('');
+  lines.push(buildSqlStandardsPrompt());
+  lines.push('');
+  lines.push(buildNamingConventionsPrompt());
+  lines.push('Note: without a specific CDE or CDS in context, the applicable prefixes are');
+  lines.push('"Generic -" for rules reusable across any field, or "CDE [field_name] -" for field-specific rules.');
+  if (warnings && warnings.length > 0) {
+    lines.push('');
+    lines.push('CURRENT VALIDATION WARNINGS:');
+    warnings.forEach(function(w) {
+      lines.push('  [' + w.level + '] ' + w.msg);
+    });
+    lines.push('');
+    lines.push('TASK:');
+    lines.push('Ask clarifying questions about the intent of this rule and the data it checks.');
+    lines.push('Then provide corrected versions of sql_code and/or sql_code_sample that resolve');
+    lines.push('all warnings listed above, ready to paste back into the form.');
+    lines.push('Also assess whether the rule name follows the naming convention above. If it');
+    lines.push('does not, state what is wrong and recommend a corrected name -- but do not');
+    lines.push('apply it. The user will update the Name field manually.');
+  } else {
+    lines.push('');
+    lines.push('TASK:');
+    lines.push('The SQL passes all automated validation checks. Confirm it is correct and follows');
+    lines.push('all standards above. Suggest any optimisations if relevant.');
+    lines.push('Also assess whether the rule name follows the naming convention above. If it');
+    lines.push('does not, state what is wrong and recommend a corrected name -- but do not');
+    lines.push('apply it. The user will update the Name field manually.');
+  }
+  return lines.join('\n');
+}
+
 function RuleFormPanel({ record, onSave, onClose, data }) {
   const isEdit = (data?.data_quality_rule || []).some(r => r.data_quality_rule_id === record?.data_quality_rule_id);
   const accent = 'var(--green)';
 
   const [values, setValues] = useState({ ...record });
   const [errors, setErrors] = useState({});
+  const [aiBtnCopied, setAiBtnCopied] = useState(false);
 
   const set = (field, val) => {
     setValues(prev => ({ ...prev, [field]: val }));
@@ -105,6 +159,28 @@ function RuleFormPanel({ record, onSave, onClose, data }) {
       </div>
 
       <RuleSqlWarningNotices warnings={ruleSqlWarnings} hint="Correct the issues above before running the DQ Engine." />
+
+      {!!(values.sql_code || values.rule_name) && (
+        <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(
+                buildRuleAssistantPrompt(values, ruleSqlWarnings)
+              ).then(() => {
+                setAiBtnCopied(true);
+                setTimeout(() => setAiBtnCopied(false), 1800);
+              });
+            }}
+            style={{
+              fontSize: 10, padding: '4px 12px', cursor: 'pointer',
+              background: 'var(--bg3)', border: '1px solid var(--green)',
+              borderRadius: 'var(--radius)', color: 'var(--green)',
+              fontWeight: 600, fontFamily: 'var(--mono)',
+            }}>
+            {aiBtnCopied ? 'Copied!' : 'AI Assistant'}
+          </button>
+        </div>
+      )}
 
       <div style={{ marginBottom: 12 }}>
         <Lbl text="Automated" required={false} err={false}/>

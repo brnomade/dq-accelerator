@@ -5,6 +5,23 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260825-2157 — Feature: AI Assistant button in Add/Edit Rule panel; prompt helper refactor
+
+**Date:** 2026-08-25
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Feature + refactor | 10 min | 10 min | 15 min | |
+| **Total** | **10 min** | **10 min** | **15 min** | |
+
+### Changes delivered
+- `src/46_prompt_helpers.js`: New shared prompt helper file (`buildSqlStandardsPrompt`, `buildNamingConventionsPrompt`).
+- `src/166_form_panel_rule.js`: `buildRuleAssistantPrompt` function; `aiBtnCopied` state; AI Assistant copy button below warning notices.
+- `src/180_screen_generator.js`: Refactored to use shared prompt helpers; no output change.
+- `documentation/user-guide/rules-explorer/rule-add-edit.html`: Added AI Assistant section.
+
+---
+
 ## build-20260825-2137 — Docs: update user guides for rule form and SQL validation changes
 
 **Date:** 2026-08-25
