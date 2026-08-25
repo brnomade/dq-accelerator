@@ -123,15 +123,11 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
       </tr>
       <tr>
         <td>SQL code <span class="req">required</span></td>
-        <td>The SQL template for this rule. Must contain a SELECT statement. Tokens such as <span class="mono">&#123;table&#125;</span>, <span class="mono">&#123;field&#125;</span>, and <span class="mono">&#123;snapshot&#125;</span> are substituted at runtime when the SQL is composed for a specific CDE. See <a href="view-sql.html" style="color:var(--blue)">How to view rule SQL</a> for details on token substitution.</td>
+        <td>The SQL template for this rule. Must contain a SELECT statement and must include the placeholders <span class="mono">&#123;SOURCE_DATABASE_NAME&#125;</span>, <span class="mono">&#123;SOURCE_TABLE_NAME&#125;</span>, and <span class="mono">&#123;SOURCE_FIELD_NAME&#125;</span> &mdash; the engine substitutes these at run time. Must contain a WHERE clause (the engine appends <span class="mono">AND &lt;snapshot_filter&gt;</span> to it). Must not end with a semicolon. The panel checks the SQL as you type and shows notices for any issues. See <a href="view-sql.html" style="color:var(--blue)">How to view rule SQL</a>.</td>
       </tr>
       <tr>
         <td>SQL sample <span class="opt">optional</span></td>
-        <td>A custom denominator query used only when the rule counts failures within a bounded subset of rows rather than the full snapshot. Leave blank in the common case. See <a href="sql-sample-explained.html" style="color:var(--blue)">When to use the SQL sample field</a> for a full explanation.</td>
-      </tr>
-      <tr>
-        <td>Source link <span class="opt">optional</span></td>
-        <td>A URL or reference pointing to the rule definition in an external system (for example, a Confluence page or a code repository).</td>
+        <td>A sample query used when the rule needs a bounded denominator. The engine appends <span class="mono">WHERE &lt;snapshot_filter&gt;</span> to it at run time, so the query must have no WHERE clause of its own. Use the placeholders <span class="mono">&#123;SOURCE_DATABASE_NAME&#125;</span> and <span class="mono">&#123;SOURCE_TABLE_NAME&#125;</span>. Leave blank for rules that apply to every row in the snapshot. See <a href="sql-sample-explained.html" style="color:var(--blue)">When to use the SQL sample field</a>.</td>
       </tr>
       <tr>
         <td>Automated <span class="opt">optional</span></td>
@@ -141,6 +137,19 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
   </table>
 
   <div class="note">Changing a rule's SQL code affects every CDE it is already allocated to. The next time the composed SQL is viewed or exported, it will use the updated template.</div>
+
+  <h2>SQL validation notices</h2>
+
+  <p style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:14px">As you type in the SQL code and SQL sample fields, the panel checks the SQL against the DQ engine's coding standards and displays notices inline. Save is not blocked &mdash; you can proceed at your discretion, but unresolved notices will cause problems at run time.</p>
+
+  <p style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:8px">Two severity levels are used:</p>
+
+  <ul style="font-size:14px;color:var(--text2);line-height:1.7;margin:0 0 16px 24px">
+    <li><strong style="color:#e05252">CRITICAL</strong> &mdash; structural problems that will produce invalid SQL at run time: missing WHERE clause in sql_code; trailing semicolon in either field; a WHERE clause in sql_code_sample (the engine appends its own).</li>
+    <li><strong style="color:var(--amber)">SEVERE</strong> &mdash; coding-standards violations that produce incorrect or fragile SQL: using CAST() instead of TRY_CAST(); bare IS NULL or empty-string check instead of NULLIF(TRIM(...), '') IS NULL; a missing required placeholder.</li>
+  </ul>
+
+  <p style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:0">Notices also appear when editing existing rules. If a saved rule has issues, open the edit panel and correct them before the rule is run by the DQ engine.</p>
 
   <div class="related">
     <div class="rtitle">Related guides</div>

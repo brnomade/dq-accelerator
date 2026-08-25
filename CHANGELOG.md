@@ -4,6 +4,32 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260825-2137 — Docs: update user guides for rule form and SQL validation changes
+
+### Changed
+- **rules-explorer/rule-add-edit.html** &mdash; Removed Source link from the field reference table. Updated SQL code and SQL sample field descriptions to reflect current engine token names and behaviour. Added a new "SQL validation notices" section explaining CRITICAL and SEVERE levels and the specific checks performed.
+- **rules-explorer/sql-sample-explained.html** &mdash; Corrected the sample SQL example and rules to match actual engine behaviour: no WHERE clause in the query (engine appends its own), use `{SOURCE_DATABASE_NAME}` and `{SOURCE_TABLE_NAME}` placeholders, no trailing semicolon, no CAST().
+
+---
+
+## build-20260825-2132 — Enhancement: Additional SQL validation checks for sample SQL
+
+### Changed
+- **`computeRuleSqlWarnings` (45_rule_sql_warnings.js)** — three new SEVERE checks added for `sql_code_sample`: uses `CAST()` instead of `TRY_CAST()`; missing `{SOURCE_DATABASE_NAME}` placeholder; missing `{SOURCE_TABLE_NAME}` placeholder. These mirror the coding-standards constraints documented in the Rule Generator prompt. `{SOURCE_FIELD_NAME}` is intentionally not required for sample SQL (sample queries are table-level, not field-specific). All three call sites (130, 141, 166) benefit automatically.
+
+---
+
+## build-20260825-2124 — Enhancement: SQL validation in Add Rule panel; refactor to shared utility
+
+### Added
+- **RuleFormPanel (166_form_panel_rule.js)** — SQL validation notices now appear in the Add/Edit Rule panel as the user types `sql_code` and `sql_code_sample`. The same CRITICAL and SEVERE checks run against the live field values. Notices appear between the SQL sample field and the Automated toggle, with hint text "Correct the issues above before saving." The existing required/SELECT hard validation is unchanged.
+
+### Changed
+- **Source Link field removed from RuleFormPanel** — the `source_code_link` field is no longer shown in the Add/Edit Rule panel. The field remains in the data model and is preserved on save; it is simply not displayed.
+- **SQL validation refactored to shared utility (45_rule_sql_warnings.js)** — `computeRuleSqlWarnings(sql, sample)` is a new pure function containing the full check logic. `RuleSqlWarningNotices({ warnings, hint })` is a new shared display component. Both `RuleAllocationFormPanel` (130) and `CdeAllocFormPanel` (141) have had their inline `ruleSqlWarnings` useMemo bodies and notice JSX blocks replaced with calls to these shared artifacts. No logic change.
+
+---
+
 ## build-20260825-2103 — Enhancement: SQL validation notices shown in edit mode as well
 
 ### Changed
