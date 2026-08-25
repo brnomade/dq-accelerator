@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260825-2314 — Fix: remove undefined buildScopePrompt() call breaking AI Assistant button
+
+### Fixed
+- **`src/46_prompt_helpers.js`** -- `buildRuleAssistantPrompt` called `buildScopePrompt()` which was never defined, causing a `ReferenceError` on every button click. The clipboard write was silently swallowed by the promise chain, so the button appeared to do nothing. Call removed; prompt structure unchanged.
+
+---
+
 ## build-20260825-2221 — Refactor: centralise all AI prompts into 46_prompt_helpers.js
 
 ### Changed

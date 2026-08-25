@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260825-2314 — Fix: remove undefined buildScopePrompt() call breaking AI Assistant button
+
+**Date:** 2026-08-25
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Bug fix | 1 min | 0 min | 1 min | |
+| **Total** | **1 min** | **0 min** | **1 min** | |
+
+### Changes delivered
+- `src/46_prompt_helpers.js`: Removed `buildScopePrompt()` call that caused silent ReferenceError on button click.
+
+---
+
 ## build-20260825-2221 — Refactor: centralise all AI prompts into 46_prompt_helpers.js
 
 **Date:** 2026-08-25
