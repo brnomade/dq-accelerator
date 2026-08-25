@@ -38,6 +38,11 @@ function RuleFormPanel({ record, onSave, onClose, data }) {
     onSave(saved);
   };
 
+  const ruleSqlWarnings = useMemo(() => {
+    if (!values.sql_code) return [];
+    return computeRuleSqlWarnings(values.sql_code, values.sql_code_sample);
+  }, [values.sql_code, values.sql_code_sample]);
+
   const ibs = (err) => ({
     width: '100%', padding: '7px 10px', fontSize: 13, background: 'var(--bg3)',
     border: `1px solid ${err ? 'var(--red)' : 'var(--border)'}`,
@@ -99,11 +104,7 @@ function RuleFormPanel({ record, onSave, onClose, data }) {
             fontFamily: 'var(--mono)', fontSize: 12 }}/>
       </div>
 
-      <div style={{ marginBottom: 12 }}>
-        <Lbl text="Source link" required={false} err={false}/>
-        <input type="text" value={values.source_code_link ?? ''} style={ibs(false)}
-          onChange={e => set('source_code_link', e.target.value || null)}/>
-      </div>
+      <RuleSqlWarningNotices warnings={ruleSqlWarnings} hint="Correct the issues above before running the DQ Engine." />
 
       <div style={{ marginBottom: 12 }}>
         <Lbl text="Automated" required={false} err={false}/>

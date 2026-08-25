@@ -118,6 +118,7 @@ All panels render at App level (outside scroll container) to avoid `position:fix
 | `20_data_utils.js` | `buildLookups`, `getFkOptions`, `normalizeWhitespace`, misc data helpers |
 | `30_export_utils.js` | Excel / ZIP export helpers |
 | `40_storage.js` | localStorage read/write (`loadFromStorage`, `saveToStorage`, `loadStewardIdentity`) |
+| `45_rule_sql_warnings.js` | `computeRuleSqlWarnings(sql, sample)` pure function; `RuleSqlWarningNotices` display component |
 | `50_context.js` | `AppContext` definition + `useApp()` hook |
 | `60_icons.js` | `Icon.*` SVG components |
 | `70_header_footer.js` | `AppHeader`, `AppFooter`, settings panel |

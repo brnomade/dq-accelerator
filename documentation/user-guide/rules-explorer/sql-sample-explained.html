@@ -74,22 +74,22 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
 
   <h2>What to put in the SQL sample field</h2>
 
-  <p>The SQL sample field must contain a <code style="font-family:var(--mono);font-size:12px;color:var(--text2)">COUNT(*)</code> query that applies the same bounding condition as the rule SQL, in addition to the snapshot filter. It replaces the default full-table count as the denominator.</p>
+  <p>The SQL sample field must contain a query that applies the same bounding condition as the rule SQL. The DQ engine appends <code style="font-family:var(--mono);font-size:12px;color:var(--text2)">WHERE &lt;snapshot_filter&gt;</code> to it at run time, so the query must not contain its own WHERE clause. Use the placeholders <code style="font-family:var(--mono);font-size:12px;color:var(--text2)">{SOURCE_DATABASE_NAME}</code> and <code style="font-family:var(--mono);font-size:12px;color:var(--text2)">{SOURCE_TABLE_NAME}</code> so the engine can substitute the correct table at run time.</p>
 
   <div class="scenario ok">
     <div class="scenario-label">Correct sql_code_sample for the example above</div>
     <div class="code">SELECT COUNT(*)
-FROM {table}
-WHERE {snapshot}
-  AND created_date &gt;= DATEADD(day, -10, GETDATE())</div>
-    <p style="font-size:12px;color:var(--text3);margin-top:6px">The bounding condition matches the one in sql_code exactly. The snapshot token ensures both queries operate on the same base population.</p>
+FROM {SOURCE_DATABASE_NAME}.{SOURCE_TABLE_NAME}
+WHERE created_date &gt;= DATEADD(day, -10, GETDATE())</div>
+    <p style="font-size:12px;color:var(--text3);margin-top:6px">No WHERE clause precedes the bounding condition &mdash; the engine prepends its own snapshot filter. The placeholders are substituted with the actual database and table names at run time.</p>
   </div>
 
   <div class="note">
     <strong>Rules for the SQL sample field</strong><br>
-    &bull; Must be a <code style="font-family:var(--mono);font-size:11px">COUNT(*)</code> query &mdash; not a row-level SELECT.<br>
-    &bull; Must include the snapshot filter token (<code style="font-family:var(--mono);font-size:11px">{snapshot}</code>) plus the same bounding condition as sql_code.<br>
-    &bull; Never use LIMIT &mdash; this is a count of the universe, not a sample of rows.<br>
+    &bull; Must not contain a WHERE clause &mdash; the engine appends <code style="font-family:var(--mono);font-size:11px">WHERE &lt;snapshot_filter&gt;</code> automatically.<br>
+    &bull; Must not end with a semicolon &mdash; the engine appends content after it.<br>
+    &bull; Must include the placeholders <code style="font-family:var(--mono);font-size:11px">{SOURCE_DATABASE_NAME}</code> and <code style="font-family:var(--mono);font-size:11px">{SOURCE_TABLE_NAME}</code>.<br>
+    &bull; Must not use CAST() &mdash; use TRY_CAST() to avoid runtime conversion errors in Athena.<br>
     &bull; Leave blank for any rule that checks all rows in the snapshot. That is the common case.
   </div>
 

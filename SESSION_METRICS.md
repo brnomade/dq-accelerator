@@ -5,6 +5,52 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260825-2137 — Docs: update user guides for rule form and SQL validation changes
+
+**Date:** 2026-08-25
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Documentation | 2 min | 0 min | 8 min | |
+| **Total** | **2 min** | **0 min** | **8 min** | |
+
+### Changes delivered
+- `documentation/user-guide/rules-explorer/rule-add-edit.html`: Removed Source link row; updated SQL code and SQL sample field descriptions; added SQL validation notices section.
+- `documentation/user-guide/rules-explorer/sql-sample-explained.html`: Corrected sample SQL example and rules to match actual engine behaviour (no WHERE clause, correct placeholders).
+
+---
+
+## build-20260825-2132 — Enhancement: Additional SQL validation checks for sample SQL
+
+**Date:** 2026-08-25
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Enhancement | 3 min | 0 min | 2 min | |
+| **Total** | **3 min** | **0 min** | **2 min** | |
+
+### Changes delivered
+- `src/45_rule_sql_warnings.js`: Added CAST(), missing {SOURCE_DATABASE_NAME}, missing {SOURCE_TABLE_NAME} checks inside the `if (p)` sample block.
+
+---
+
+## build-20260825-2124 — Enhancement: SQL validation in Add Rule panel; refactor to shared utility
+
+**Date:** 2026-08-25
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Enhancement + Refactor | 10 min | 5 min | 15 min | |
+| **Total** | **10 min** | **5 min** | **15 min** | |
+
+### Changes delivered
+- `src/45_rule_sql_warnings.js`: New file — `computeRuleSqlWarnings(sql, sample)` pure function and `RuleSqlWarningNotices` display component.
+- `src/130_view_rule_allocation.js`: Replaced 36-line `ruleSqlWarnings` useMemo with 4-line call to `computeRuleSqlWarnings`; replaced 33-line notices JSX block with `<RuleSqlWarningNotices/>`.
+- `src/141_view_cde_list.js`: Same replacements.
+- `src/166_form_panel_rule.js`: Removed `source_code_link` field; added `ruleSqlWarnings` useMemo driven by live `values.sql_code`/`values.sql_code_sample`; added `<RuleSqlWarningNotices/>` after SQL sample field.
+
+---
+
 ## build-20260825-2103 — Enhancement: SQL validation notices shown in edit mode as well
 
 **Date:** 2026-08-25
