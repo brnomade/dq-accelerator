@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260825-2100 — Fix: SQL validation notices applied to both allocation panels
+
+**Date:** 2026-08-25
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Fix | 2 min | 0 min | 5 min | |
+| **Total** | **2 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/141_view_cde_list.js`: Added `ruleSqlWarnings` useMemo and JSX notices block (identical to 130_view_rule_allocation.js) to `CdeAllocFormPanel`.
+
+---
+
 ## build-20260825-2055 — Enhancement: SQL validation notices on Add Allocation panel
 
 **Date:** 2026-08-25

@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260825-2100 — Fix: SQL validation notices applied to both allocation panels
+
+### Changed
+- **CdeAllocFormPanel (141_view_cde_list.js)** — SQL validation notices added to the inline allocation panel opened from the Data and Stewardship page, matching the logic already present in the standalone allocation panel (130_view_rule_allocation.js). Both panels now show identical CRITICAL and SEVERE checks after a rule is selected.
+
+---
+
 ## build-20260825-2055 — Enhancement: SQL validation notices on Add Allocation panel
 
 ### Added
