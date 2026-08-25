@@ -11,23 +11,31 @@
 // Shared building blocks
 // ---------------------------------------------------------------------------
 
-function buildSqlStandardsPrompt() {
+function buildEngineMechanicsPrompt() {
   return [
-    'CRITICAL -- SNAPSHOT FILTER RULE (read carefully):',
-    'The DQ engine that executes these queries will append a snapshot/timestamp filter at run time.',
-    'DO NOT include any snapshot or timestamp filter condition in either query.',
+    'HOW THE DQ ENGINE EXECUTES THIS SQL (read before proposing any fix):',
+    'The DQ engine appends a snapshot/timestamp filter to both fields at run time. Your corrected',
+    'SQL must anticipate this -- do not add your own snapshot/timestamp condition.',
+    '',
     'The engine concatenates as follows:',
-    '  sql_code        -->  your query + " AND <timestamp_filter>"',
-    '  sql_code_sample -->  your query + " WHERE <timestamp_filter>"',
+    '  sql_code        --> your query + " AND <timestamp_filter>"',
+    '  sql_code_sample --> your query + " WHERE <timestamp_filter>"',
+    '',
     'This means:',
     '  - sql_code MUST contain a WHERE clause with only the business logic condition(s).',
     '    It must NOT include the snapshot filter. It must NOT end with a semicolon.',
-    '    Example: SELECT COUNT(*) FROM {SOURCE_DATABASE_NAME}.{SOURCE_TABLE_NAME} WHERE {SOURCE_FIELD_NAME} IS NULL',
+    '    Correct: SELECT COUNT(*) FROM {SOURCE_DATABASE_NAME}.{SOURCE_TABLE_NAME} WHERE {SOURCE_FIELD_NAME} IS NULL',
+    '    Do NOT do this: ...WHERE {SOURCE_FIELD_NAME} IS NULL AND snapshot_date = CURRENT_DATE',
+    '    (the engine appends its own AND <timestamp_filter>, producing a duplicated/conflicting condition)',
     '  - sql_code_sample MUST NOT contain any WHERE clause at all.',
     '    The engine will append WHERE <timestamp_filter> to it at test time.',
     '    It must NOT end with a semicolon.',
-    '    Example: SELECT * FROM {SOURCE_DATABASE_NAME}.{SOURCE_TABLE_NAME} LIMIT 100',
-    '',
+    '    Correct: SELECT * FROM {SOURCE_DATABASE_NAME}.{SOURCE_TABLE_NAME}'
+  ].join('\n');
+}
+
+function buildSqlStandardsPrompt() {
+  return [
     'SQL CODING STANDARDS (apply to every query):',
     '1. NEVER use CAST(). Always use TRY_CAST() to avoid runtime data conversion errors.',
     '   Example: TRY_CAST({SOURCE_FIELD_NAME} AS DATE) IS NULL instead of CAST(...) IS NULL',
@@ -41,28 +49,84 @@ function buildSqlStandardsPrompt() {
 function buildNamingConventionsPrompt(opts) {
   var cdsName   = (opts && opts.cdsName)   || null;
   var fieldName = (opts && opts.fieldName) || null;
-  var lines = [
+  return [
     'RULE NAMING CONVENTIONS (follow strictly):',
     'Rule names must be assertive -- they state what is enforced, not what is checked.',
     '  GOOD: "Values for this field cannot be null or empty"',
     '  BAD:  "Check if the value is null or empty" / "Validate null values"',
-    'Do not name a specific field or CDE directly in the rule name unless the rule',
-    'cannot possibly be parameterised. Rules are reusable templates; naming a field',
-    'directly signals it is a one-off and not reusable.',
-    'Apply one of these three prefixes based on scope:',
-    '  "Generic - "     : rule is universally applicable to any field (e.g. null check, uniqueness)',
-  ];
-  if (cdsName) {
-    var shortCds = cdsName.length > 30 ? cdsName.substring(0, 28).trim() + '..' : cdsName;
-    lines.push('  "' + shortCds + ' - " : rule is meaningful only in the context of this Critical Data Set');
-  }
-  if (fieldName) {
-    lines.push('  "CDE ' + fieldName + ' - " : rule is highly specific to this one field and cannot be generalised -- replace "' + fieldName + '" with the actual field name exactly as shown');
-  } else {
-    lines.push('  "CDE [field_name] - " : rule is highly specific to this one field and cannot be generalised -- replace [field_name] with the actual field name');
-  }
-  lines.push('If a CDS or CDE name is long, shorten it in a way that remains logical and recognisable.');
-  return lines.join('\n');
+    '',
+    'There are exactly four valid prefix forms:',
+    '  1. "GENERIC - "     : the rule is fully generic (applies to any field).',
+    '  2. "{CDE_NAME} - "  : the CDE\'s own name used directly as the prefix (e.g. "BUBLE - ").',
+    '                        Indicates the rule only works for that specific CDE. Use the actual',
+    '                        CDE name, not the literal word "CDE". If the name is long, shorten it',
+    '                        in a way that stays logical and recognisable.',
+    '  3. "{CDS_NAME} - "   : the CDS\'s own name used directly as the prefix (e.g. "BIG BUBLE - ").',
+    '                        Indicates the rule only works in the context of that specific CDS.',
+    '                        Use the actual CDS name, not the literal word "CDS". If the name is long, ',
+    '                        shorten it in a way that stays logical and recognisable.',
+    '  4. (no prefix)      : also denotes a generic rule, but is a legacy/alternative form.',
+    '',
+    'When authoring or correcting a name, ALWAYS use form 1 ("GENERIC - ") for generic rules.',
+    'NEVER recommend form 4 (no prefix) for a new or corrected name, even though it also means',
+    '"generic" -- only treat form 4 as acceptable if it already exists in a name you are assessing,',
+    'not one you are producing yourself.',
+    '',
+    'Do not name a specific field or CDE directly in the rule name unless the rule cannot possibly',
+    'be parameterised. Rules are reusable templates; naming a field directly signals it is a one-off',
+    'and not reusable.'
+  ].join('\n');
+}
+
+function buildWorkedExamplePrompt() {
+  return [
+    'WORKED EXAMPLE:',
+    'Input -- Name: "Check customer email" | Explanation: "Email field should not be blank" |',
+    'sql_code: "SELECT COUNT(*) FROM sales.customers WHERE email IS NULL;" | Warnings: missing',
+    '{SOURCE_DATABASE_NAME}, {SOURCE_TABLE_NAME}, and {SOURCE_FIELD_NAME} placeholders.',
+    '',
+    'Expected output:',
+    '### Clarifying Questions',
+    '(none -- intent is unambiguous)',
+    '',
+    '### Corrected sql_code',
+    'SELECT COUNT(*) FROM {SOURCE_DATABASE_NAME}.{SOURCE_TABLE_NAME} WHERE NULLIF(TRIM({SOURCE_FIELD_NAME}), \'\') IS NULL',
+    '',
+    '### Corrected sql_code_sample',
+    'No change needed',
+    '',
+    '### Additional Observations',
+    '(none)',
+    '',
+    '### Name Assessment',
+    'Compliant: No',
+    'Issue: names a specific field ("customer email") for a pattern that is fully generic',
+    '(null/empty check), and is phrased as a check rather than an assertion.',
+    'Recommended name: "GENERIC - Values for this field cannot be null or empty"'
+  ].join('\n');
+}
+
+function buildOutputFormatPromptForRuleAssistantPrompt() {
+  return [
+    'REQUIRED OUTPUT FORMAT:',
+    'Respond in exactly this structure, so the output can be parsed and pasted back into the form:',
+    '',
+    '### Clarifying Questions',
+    '(bullet list, max 3 -- omit this section entirely if none)',
+    '',
+    '### Corrected sql_code',
+    '(single SQL statement, or "No change needed")',
+    '',
+    '### Corrected sql_code_sample',
+    '(single SQL statement, or "No change needed")',
+    '',
+    '### Additional Observations',
+    '(bullet list of anything noticed outside the listed warnings -- omit if none)',
+    '',
+    '### Name Assessment',
+    'Compliant: Yes / No',
+    'If No: what is wrong + recommended replacement name'
+  ].join('\n');
 }
 
 
@@ -74,9 +138,10 @@ function buildNamingConventionsPrompt(opts) {
 
 function buildRuleAssistantPrompt(values, warnings) {
   var lines = [
-    'You are a data quality expert reviewing a Data Quality rule.',
+    'You are a data quality expert reviewing a Data Quality (DQ) rule authored by a Data Steward,',
+    'before it is finalised in the MoJ DQ Accelerator.',
     '',
-    'RULE DETAILS:',
+    'RULE UNDER REVIEW:',
   ];
   lines.push('  Name: ' + (values.rule_name || '(not set)'));
   if (values.rule_explanation && values.rule_explanation.trim()) {
@@ -84,20 +149,32 @@ function buildRuleAssistantPrompt(values, warnings) {
   }
   if (values.sql_code && values.sql_code.trim()) {
     lines.push('');
-    lines.push('SQL CODE:');
+    lines.push('sql_code:');
     lines.push(values.sql_code.trim());
   }
   if (values.sql_code_sample && values.sql_code_sample.trim()) {
     lines.push('');
-    lines.push('SQL SAMPLE:');
+    lines.push('sql_code_sample:');
     lines.push(values.sql_code_sample.trim());
   }
+
+  lines.push('');
+  lines.push('SQL DIALECT CONSTRAINT:');
+  lines.push('All SQL you write must be valid AWS Athena SQL (Presto/Trino engine) -- this is the only');
+  lines.push('engine the DQ Accelerator executes against. Do not use syntax, functions, or conventions');
+  lines.push('valid in other dialects (e.g. T-SQL, MySQL, PostgreSQL-only functions) if they are not also');
+  lines.push('valid in Athena. If a standard\'s example syntax is ever ambiguous between dialects, prefer');
+  lines.push('the Athena-valid form.');
+
+  lines.push('');
+  lines.push(buildEngineMechanicsPrompt());
   lines.push('');
   lines.push(buildSqlStandardsPrompt());
   lines.push('');
   lines.push(buildNamingConventionsPrompt());
-  lines.push('Note: without a specific CDE or CDS in context, the applicable prefixes are');
-  lines.push('"Generic -" for rules reusable across any field, or "CDE [field_name] -" for field-specific rules.');
+  lines.push('');
+  lines.push(buildWorkedExamplePrompt());
+
   if (warnings && warnings.length > 0) {
     lines.push('');
     lines.push('CURRENT VALIDATION WARNINGS:');
@@ -106,21 +183,37 @@ function buildRuleAssistantPrompt(values, warnings) {
     });
     lines.push('');
     lines.push('TASK:');
-    lines.push('Ask clarifying questions about the intent of this rule and the data it checks.');
-    lines.push('Then provide corrected versions of sql_code and/or sql_code_sample that resolve');
-    lines.push('all warnings listed above, ready to paste back into the form.');
-    lines.push('Also assess whether the rule name follows the naming convention above. If it');
-    lines.push('does not, state what is wrong and recommend a corrected name -- but do not');
-    lines.push('apply it. The user will update the Name field manually.');
+    lines.push('Work through these steps in order:');
+    lines.push('1. Check for real intent. If the Name or Explanation give no genuine business context');
+    lines.push('   (e.g. placeholder text, gibberish, or too vague to act on), do not invent a plausible-');
+    lines.push('   sounding fix -- ask what the rule is meant to check instead.');
+    lines.push('2. Clarify if genuinely needed. Ask at most 2-3 clarifying questions, and only where a');
+    lines.push('   fix cannot proceed without an answer. Do not ask questions you could reasonably infer.');
+    lines.push('3. Correct the SQL. Provide corrected sql_code and/or sql_code_sample that resolve every');
+    lines.push('   warning listed above, in Athena-valid SQL, following the engine mechanics, coding');
+    lines.push('   standards, and scope rules above.');
+    lines.push('4. Self-check before responding. Confirm silently: no trailing semicolon; no CAST();');
+    lines.push('   no snapshot/timestamp condition added by you; all three placeholders present where');
+    lines.push('   relevant; NULLIF(TRIM(...)) pattern used for null/empty checks; SQL is Athena-valid.');
+    lines.push('   Fix anything that fails before outputting.');
+    lines.push('5. Assess the name. Check the Name above against the naming convention above. If it');
+    lines.push('   does not comply, state what is wrong and recommend a corrected name -- but do not');
+    lines.push('   apply it. The user will update the Name field manually.');
   } else {
     lines.push('');
     lines.push('TASK:');
-    lines.push('The SQL passes all automated validation checks. Confirm it is correct and follows');
-    lines.push('all standards above. Suggest any optimisations if relevant.');
-    lines.push('Also assess whether the rule name follows the naming convention above. If it');
-    lines.push('does not, state what is wrong and recommend a corrected name -- but do not');
-    lines.push('apply it. The user will update the Name field manually.');
+    lines.push('The SQL passes all automated validation checks. Work through these steps in order:');
+    lines.push('1. Confirm the SQL is correct, is valid Athena SQL, and follows all standards above.');
+    lines.push('   Suggest any optimisations if relevant, but do not change the logic unless something');
+    lines.push('   above is actually violated.');
+    lines.push('2. Assess the name. Check the Name above against the naming convention above. If it');
+    lines.push('   does not comply, state what is wrong and recommend a corrected name -- but do not');
+    lines.push('   apply it. The user will update the Name field manually.');
   }
+
+  lines.push('');
+  lines.push(buildOutputFormatPromptForRuleAssistantPrompt());
+
   return lines.join('\n');
 }
 
