@@ -4,6 +4,15 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260825-2221 — Refactor: centralise all AI prompts into 46_prompt_helpers.js
+
+### Changed
+- **`src/46_prompt_helpers.js`** -- Promoted from a shared-blocks helper to the single source for all AI prompt construction in the application. Now contains: `buildSqlStandardsPrompt()`, `buildNamingConventionsPrompt(opts)` (shared building blocks); `buildRuleAssistantPrompt(values, warnings)` (Rule Form Panel prompt, moved from `166_form_panel_rule.js`); `buildSuggestionPrompt(cde, ddlCols, profRecord, cdsName, existingRulesCtx)` (Rule Generator prompt, moved from `180_screen_generator.js`). File header updated. To tune any AI prompt, edit this one file.
+- **`src/166_form_panel_rule.js`** -- `buildRuleAssistantPrompt` removed. Component code and clipboard mechanics unchanged.
+- **`src/180_screen_generator.js`** -- `buildSuggestionPrompt` removed. All generator UI logic unchanged. Template literals in the original moved to string concatenation for consistency with the no-template-literal style used elsewhere in the prompts file.
+
+---
+
 ## build-20260825-2205 — UI: AI Assistant hint and button on same row in Rule form panel
 
 ### Changed

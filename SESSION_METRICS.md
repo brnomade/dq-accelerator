@@ -5,6 +5,23 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260825-2221 — Refactor: centralise all AI prompts into 46_prompt_helpers.js
+
+**Date:** 2026-08-25
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Refactor | 5 min | 5 min | 10 min | |
+| **Total** | **5 min** | **5 min** | **10 min** | |
+
+### Changes delivered
+- `src/46_prompt_helpers.js`: All four prompt functions consolidated here.
+- `src/166_form_panel_rule.js`: `buildRuleAssistantPrompt` removed.
+- `src/180_screen_generator.js`: `buildSuggestionPrompt` removed.
+- `APP_TREE.md`: Entry for `46_prompt_helpers.js` updated.
+
+---
+
 ## build-20260825-2205 — UI: AI Assistant hint and button on same row in Rule form panel
 
 **Date:** 2026-08-25

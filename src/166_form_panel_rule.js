@@ -1,59 +1,8 @@
 // ===============================================================================
 // RULE FORM PANEL -- Add / Edit Data Quality Rule
 // SQL validation: sql_code must contain a SELECT statement.
+// AI prompt: see 46_prompt_helpers.js > buildRuleAssistantPrompt
 // ===============================================================================
-
-function buildRuleAssistantPrompt(values, warnings) {
-  var lines = [
-    'You are a data quality expert reviewing a Data Quality rule.',
-    '',
-    'RULE DETAILS:',
-  ];
-  lines.push('  Name: ' + (values.rule_name || '(not set)'));
-  if (values.rule_explanation && values.rule_explanation.trim()) {
-    lines.push('  Explanation: ' + values.rule_explanation.trim());
-  }
-  if (values.sql_code && values.sql_code.trim()) {
-    lines.push('');
-    lines.push('SQL CODE:');
-    lines.push(values.sql_code.trim());
-  }
-  if (values.sql_code_sample && values.sql_code_sample.trim()) {
-    lines.push('');
-    lines.push('SQL SAMPLE:');
-    lines.push(values.sql_code_sample.trim());
-  }
-  lines.push('');
-  lines.push(buildSqlStandardsPrompt());
-  lines.push('');
-  lines.push(buildNamingConventionsPrompt());
-  lines.push('Note: without a specific CDE or CDS in context, the applicable prefixes are');
-  lines.push('"Generic -" for rules reusable across any field, or "CDE [field_name] -" for field-specific rules.');
-  if (warnings && warnings.length > 0) {
-    lines.push('');
-    lines.push('CURRENT VALIDATION WARNINGS:');
-    warnings.forEach(function(w) {
-      lines.push('  [' + w.level + '] ' + w.msg);
-    });
-    lines.push('');
-    lines.push('TASK:');
-    lines.push('Ask clarifying questions about the intent of this rule and the data it checks.');
-    lines.push('Then provide corrected versions of sql_code and/or sql_code_sample that resolve');
-    lines.push('all warnings listed above, ready to paste back into the form.');
-    lines.push('Also assess whether the rule name follows the naming convention above. If it');
-    lines.push('does not, state what is wrong and recommend a corrected name -- but do not');
-    lines.push('apply it. The user will update the Name field manually.');
-  } else {
-    lines.push('');
-    lines.push('TASK:');
-    lines.push('The SQL passes all automated validation checks. Confirm it is correct and follows');
-    lines.push('all standards above. Suggest any optimisations if relevant.');
-    lines.push('Also assess whether the rule name follows the naming convention above. If it');
-    lines.push('does not, state what is wrong and recommend a corrected name -- but do not');
-    lines.push('apply it. The user will update the Name field manually.');
-  }
-  return lines.join('\n');
-}
 
 function RuleFormPanel({ record, onSave, onClose, data }) {
   const isEdit = (data?.data_quality_rule || []).some(r => r.data_quality_rule_id === record?.data_quality_rule_id);
@@ -164,9 +113,9 @@ function RuleFormPanel({ record, onSave, onClose, data }) {
         <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
           <span style={{ fontSize: 13, color: 'var(--text3)', fontStyle: 'italic', lineHeight: 1.5, flex: 1 }}>
             {ruleSqlWarnings.length > 0
-              ? 'Correct the issues above before running the DQ Engine. Get help from the AI Assistant.'
+              ? 'Correct the issues above with help from the AI Assistant.'
               : values.sql_code
-                ? 'Optimise the SQL code by using the AI Assistant.'
+                ? 'Try optimising the SQL code and SQL sample with help from the AI Assistant.'
                 : ''}
           </span>
           <button
