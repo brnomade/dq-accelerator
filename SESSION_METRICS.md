@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260825-2055 — Enhancement: SQL validation notices on Add Allocation panel
+
+**Date:** 2026-08-25
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Enhancement | 15 min | 10 min | 15 min | |
+| **Total** | **15 min** | **10 min** | **15 min** | |
+
+### Changes delivered
+- `src/130_view_rule_allocation.js`: Added `ruleSqlWarnings` useMemo; added SQL validation notices block in JSX (add mode only, renders after Bumper value field).
+- `documentation/user-guide/data-stewardship/rule-allocate.html`: Added "SQL validation notices" section documenting both severity levels and all individual checks.
+
+---
+
 ## build-20260825-2006 — Enhancement: Context Filter on Add Allocation rule dropdown
 
 **Date:** 2026-08-25

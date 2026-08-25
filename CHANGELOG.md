@@ -4,6 +4,17 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260825-2055 — Enhancement: SQL validation notices on Add Allocation panel
+
+### Added
+- **Add Allocation — SQL validation notices** — after selecting a rule, the panel checks the rule's `sql_code` and `sql_code_sample` against the DQ engine's SQL coding standards and displays notices below the Bumper value field. Two severity levels are used: CRITICAL (structural issues that will produce invalid SQL at run time) and SEVERE (coding standards violations that produce incorrect or fragile SQL). Save is not blocked — the data steward proceeds at their discretion. A note directs the steward to the Rules Explorer to correct the rule.
+
+### Checks performed
+- **CRITICAL:** `sql_code` has no WHERE clause; `sql_code` ends with a semicolon; `sql_code_sample` contains a WHERE clause; `sql_code_sample` ends with a semicolon.
+- **SEVERE:** `sql_code` uses `CAST()` instead of `TRY_CAST()`; `sql_code` uses bare `IS NULL` or `= ''` instead of `NULLIF(TRIM(field), '') IS NULL`; `sql_code` missing `{SOURCE_DATABASE_NAME}`, `{SOURCE_TABLE_NAME}`, or `{SOURCE_FIELD_NAME}` placeholder (one notice per missing placeholder); `sql_code` is empty.
+
+---
+
 ## build-20260825-2006 — Enhancement: Context Filter on Add Allocation rule dropdown
 
 ### Changed
