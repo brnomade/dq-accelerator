@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260825-2316 — Enhancement: refine AI Assistant prompt for Rule form panel
+
+**Date:** 2026-08-25
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Prompt refinement | 10 min | 0 min | 15 min | |
+| **Total** | **10 min** | **0 min** | **15 min** | |
+
+### Changes delivered
+- `src/46_prompt_helpers.js`: Naming conventions extended with CDE/CDS scope guidance; new `buildScopePromptForRuleAssistantPrompt`; output format and task steps refined for blocked-rule handling.
+
+---
+
 ## build-20260825-2314 — Fix: remove undefined buildScopePrompt() call breaking AI Assistant button
 
 **Date:** 2026-08-25

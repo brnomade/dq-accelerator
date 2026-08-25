@@ -4,6 +4,18 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260825-2316 — Enhancement: refine AI Assistant prompt for Rule form panel
+
+### Changed
+- **`src/46_prompt_helpers.js`** -- Multiple prompt refinements to `buildRuleAssistantPrompt` and its building blocks:
+  - `buildNamingConventionsPrompt`: added guidance on choosing between CDE-specific (form 2) and CDS-specific (form 3) prefixes -- AI must ask the Data Steward rather than guess; if a name already uses form 2 or 3, the existing scope choice is trusted and not re-litigated.
+  - `buildScopePromptForRuleAssistantPrompt` (new building block): defines scope of the review -- fix only listed warnings and standards violations; preserve the Steward's original logic; report anything extra under Additional Observations rather than silently fixing or ignoring it.
+  - `buildOutputFormatPromptForRuleAssistantPrompt`: output options for sql_code and sql_code_sample now include "Cannot be determined until Clarifying Questions are answered" for blocked rules; Name Assessment compliance now has a third value for the same case.
+  - TASK section (warnings present): "blocked rule" concept formalised across all five steps -- if intent is irrecoverable, AI stops after asking clarifying questions rather than inventing a fix.
+  - TASK section (no warnings): same blocked-rule check added as step 1 before the SQL confirmation step.
+
+---
+
 ## build-20260825-2314 — Fix: remove undefined buildScopePrompt() call breaking AI Assistant button
 
 ### Fixed

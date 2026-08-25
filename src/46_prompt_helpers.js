@@ -74,7 +74,21 @@ function buildNamingConventionsPrompt(opts) {
     '',
     'Do not name a specific field or CDE directly in the rule name unless the rule cannot possibly',
     'be parameterised. Rules are reusable templates; naming a field directly signals it is a one-off',
-    'and not reusable.'
+    'and not reusable.',
+    '',
+    'CHOOSING BETWEEN FORM 2 (CDE-specific) AND FORM 3 (CDS-specific):',
+    'This distinction depends on business intent that you cannot reliably infer from the SQL or a',
+    'short explanation alone. Do NOT decide this yourself. If a rule is not clearly generic AND its',
+    'current name does not already use form 2 or form 3, ask the Data Steward directly -- as one of',
+    'your Clarifying Questions -- whether the rule is scoped to this single CDE only, or to the CDS',
+    'as a whole (e.g. a relationship/consistency check spanning more than one CDE within it). Only',
+    'recommend form 2 or form 3 once the Steward has confirmed the scope; if they have not yet',
+    'confirmed it, ask rather than guess.',
+    '',
+    'If the rule\'s CURRENT name already uses form 2 or form 3, trust the Steward\'s existing scope',
+    'choice. Do not challenge, question, or re-litigate whether they picked the right one of the two',
+    '-- assess only whether the name is otherwise well-formed (assertive phrasing, correct CDE/CDS',
+    'name used, appropriately shortened if long).'
   ].join('\n');
 }
 
@@ -106,6 +120,20 @@ function buildWorkedExamplePrompt() {
   ].join('\n');
 }
 
+function buildScopePromptForRuleAssistantPrompt() {
+  return [
+    'SCOPE OF REVIEW:',
+    '- Fix every warning listed below, following the constraints and standards above.',
+    '- If you notice a problem NOT in the warnings list (e.g. a business-logic issue, a likely wrong',
+    '  comparison operator), report it separately under an "Additional Observations" heading -- do not',
+    '  silently fix it, and do not silently ignore it.',
+    '- Preserve the Data Steward\'s original logic. Change only what is needed to resolve a listed',
+    '  warning or a standards violation above. Do not restructure, simplify, or "improve" logic beyond',
+    '  that, even if you think a different approach is better -- note any such suggestion under',
+    '  Additional Observations instead of applying it.'
+  ].join('\n');
+}
+
 function buildOutputFormatPromptForRuleAssistantPrompt() {
   return [
     'REQUIRED OUTPUT FORMAT:',
@@ -115,16 +143,18 @@ function buildOutputFormatPromptForRuleAssistantPrompt() {
     '(bullet list, max 3 -- omit this section entirely if none)',
     '',
     '### Corrected sql_code',
-    '(single SQL statement, or "No change needed")',
+    '(single SQL statement, "No change needed", or -- if the rule is blocked per Step 1 --',
+    '"Cannot be determined until Clarifying Questions are answered")',
     '',
     '### Corrected sql_code_sample',
-    '(single SQL statement, or "No change needed")',
+    '(single SQL statement, "No change needed", or -- if the rule is blocked per Step 1 --',
+    '"Cannot be determined until Clarifying Questions are answered")',
     '',
     '### Additional Observations',
     '(bullet list of anything noticed outside the listed warnings -- omit if none)',
     '',
     '### Name Assessment',
-    'Compliant: Yes / No',
+    'Compliant: Yes / No / Cannot be determined until Clarifying Questions are answered',
     'If No: what is wrong + recommended replacement name'
   ].join('\n');
 }
@@ -174,6 +204,8 @@ function buildRuleAssistantPrompt(values, warnings) {
   lines.push(buildNamingConventionsPrompt());
   lines.push('');
   lines.push(buildWorkedExamplePrompt());
+  lines.push('');
+  lines.push(buildScopePromptForRuleAssistantPrompt());
 
   if (warnings && warnings.length > 0) {
     lines.push('');
@@ -184,18 +216,23 @@ function buildRuleAssistantPrompt(values, warnings) {
     lines.push('');
     lines.push('TASK:');
     lines.push('Work through these steps in order:');
-    lines.push('1. Check for real intent. If the Name or Explanation give no genuine business context');
-    lines.push('   (e.g. placeholder text, gibberish, or too vague to act on), do not invent a plausible-');
-    lines.push('   sounding fix -- ask what the rule is meant to check instead.');
-    lines.push('2. Clarify if genuinely needed. Ask at most 2-3 clarifying questions, and only where a');
-    lines.push('   fix cannot proceed without an answer. Do not ask questions you could reasonably infer.');
-    lines.push('3. Correct the SQL. Provide corrected sql_code and/or sql_code_sample that resolve every');
-    lines.push('   warning listed above, in Athena-valid SQL, following the engine mechanics, coding');
-    lines.push('   standards, and scope rules above.');
-    lines.push('4. Self-check before responding. Confirm silently: no trailing semicolon; no CAST();');
-    lines.push('   no snapshot/timestamp condition added by you; all three placeholders present where');
-    lines.push('   relevant; NULLIF(TRIM(...)) pattern used for null/empty checks; SQL is Athena-valid.');
-    lines.push('   Fix anything that fails before outputting.');
+    lines.push('1. Check for real intent, and decide if the rule is BLOCKED. If the Name, Explanation,');
+    lines.push('   and SQL together give no genuine business context to work from (e.g. placeholder');
+    lines.push('   text, gibberish, or a query with no recoverable logic), this rule is blocked: do not');
+    lines.push('   invent a plausible-sounding fix. Go straight to step 2 to ask what the rule is meant');
+    lines.push('   to check, then STOP -- do not attempt steps 3 and 4 in this turn. Still complete step');
+    lines.push('   5 if the name can be judged independently of the SQL\'s intent; if the name is equally');
+    lines.push('   meaningless, say so there instead of guessing. If the rule is not blocked, continue.');
+    lines.push('2. Clarify if genuinely needed. Ask at most 2-3 clarifying questions -- either because');
+    lines.push('   the rule is blocked per step 1, or because a fix cannot otherwise proceed without an');
+    lines.push('   answer. Do not ask questions you could reasonably infer.');
+    lines.push('3. Correct the SQL (skip entirely if step 1 found the rule blocked). Provide corrected');
+    lines.push('   sql_code and/or sql_code_sample that resolve every warning listed above, in Athena-');
+    lines.push('   valid SQL, following the engine mechanics, coding standards, and scope rules above.');
+    lines.push('4. Self-check before responding (skip if blocked). Confirm silently: no trailing');
+    lines.push('   semicolon; no CAST(); no snapshot/timestamp condition added by you; all three');
+    lines.push('   placeholders present where relevant; NULLIF(TRIM(...)) pattern used for null/empty');
+    lines.push('   checks; SQL is Athena-valid. Fix anything that fails before outputting.');
     lines.push('5. Assess the name. Check the Name above against the naming convention above. If it');
     lines.push('   does not comply, state what is wrong and recommend a corrected name -- but do not');
     lines.push('   apply it. The user will update the Name field manually.');
@@ -203,13 +240,20 @@ function buildRuleAssistantPrompt(values, warnings) {
     lines.push('');
     lines.push('TASK:');
     lines.push('The SQL passes all automated validation checks. Work through these steps in order:');
-    lines.push('1. Confirm the SQL is correct, is valid Athena SQL, and follows all standards above.');
+    lines.push('1. Check for real intent, and decide if the rule is BLOCKED. Automated checks only');
+    lines.push('   confirm structural correctness, not that the SQL is meaningful. If the Name,');
+    lines.push('   Explanation, and SQL together give no genuine business context (e.g. gibberish table,');
+    lines.push('   column, or field names with no recoverable logic), this rule is blocked: do not');
+    lines.push('   invent a plausible-sounding review -- ask what the rule is meant to check instead,');
+    lines.push('   then STOP. Still complete step 3 if the name can be judged independently; if it is');
+    lines.push('   equally meaningless, say so there instead of guessing. If not blocked, continue.');
+    lines.push('2. Confirm the SQL is correct, is valid Athena SQL, and follows all standards above.');
     lines.push('   Suggest any optimisations if relevant, but do not change the logic unless something');
     lines.push('   above is actually violated.');
-    lines.push('2. Assess the name. Check the Name above against the naming convention above. If it');
+    lines.push('3. Assess the name. Check the Name above against the naming convention above. If it');
     lines.push('   does not comply, state what is wrong and recommend a corrected name -- but do not');
     lines.push('   apply it. The user will update the Name field manually.');
-  }
+ }
 
   lines.push('');
   lines.push(buildOutputFormatPromptForRuleAssistantPrompt());
