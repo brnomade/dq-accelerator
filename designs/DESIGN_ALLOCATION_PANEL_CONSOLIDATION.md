@@ -15,7 +15,10 @@ There are currently two separate React components that render the Add/Edit Alloc
 | `CdeAllocFormPanel` | `141_view_cde_list.js` | Data and Stewardship CDE list, Rules Explorer |
 | `RuleAllocationFormPanel` | `130_view_rule_allocation.js` | Rule Allocation view (sidebar, no longer reachable) |
 
-The two components share identical logic for: rule dropdown filtering, Context Filter toggle, quality dimension selection, frequency selection, bumper value selection, duplicate check, SQL preview, and inline validation. Any change to shared logic must be applied twice — as demonstrated during the Context Filter feature, where the fix had to be applied to both files after the first deployment missed `CdeAllocFormPanel`.
+The two components share identical logic for: rule dropdown filtering, Context Filter toggle, quality dimension selection, frequency selection, bumper value selection, duplicate check, SQL preview, SQL validation notices, and inline validation. Any change to shared logic must be applied twice — as demonstrated twice in succession:
+
+- **Context Filter (2026-08-25):** the filter pill was implemented in `130` and only added to `141` in a follow-up fix commit after it was found missing.
+- **SQL validation notices (2026-08-25):** the `ruleSqlWarnings` useMemo and notices block were implemented in `130` and again had to be duplicated into `141` in a separate commit, then extended to edit mode in a third commit.
 
 Additionally, `RuleAllocationFormPanel` and the `RuleAllocationView` it lives in are unreachable — there is no sidebar entry for `data_quality_rule_allocation`. The `openAllocForm` context function and related app-level state (`allocFormRecord`, `allocFormIsEdit`) exist solely to serve this dead path.
 
@@ -40,7 +43,7 @@ The CDE `record.critical_data_element_id` is passed in when the panel opens. No 
 **`RuleAllocationFormPanel`** — CDE is picked by the user  
 No CDE is known on open. The panel renders four cascading dropdowns (Agency → Directorate → Data Set → Field) to let the user select a CDE. The header shows a generic "Rule Allocation" subtitle.
 
-All other fields — rule dropdown with Context Filter, quality dimension, frequency, bumper value, SQL preview, duplicate check — are identical in both.
+All other fields — rule dropdown with Context Filter, quality dimension, frequency, bumper value, SQL preview, SQL validation notices (`ruleSqlWarnings`), duplicate check — are identical in both.
 
 ---
 
