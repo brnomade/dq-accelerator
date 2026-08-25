@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260825-2103 — Enhancement: SQL validation notices shown in edit mode as well
+
+**Date:** 2026-08-25
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Enhancement | 3 min | 0 min | 3 min | |
+| **Total** | **3 min** | **0 min** | **3 min** | |
+
+### Changes delivered
+- `src/130_view_rule_allocation.js`: Removed `isEdit` guard from `ruleSqlWarnings` useMemo and JSX block.
+- `src/141_view_cde_list.js`: Same removal.
+
+---
+
 ## build-20260825-2100 — Fix: SQL validation notices applied to both allocation panels
 
 **Date:** 2026-08-25

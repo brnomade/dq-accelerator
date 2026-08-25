@@ -1019,7 +1019,7 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
   }, [values.data_quality_rule_id]);
 
   const ruleSqlWarnings = useMemo(() => {
-    if (isEdit || !values.data_quality_rule_id) return [];
+    if (!values.data_quality_rule_id) return [];
     const rule = ruleById[values.data_quality_rule_id];
     if (!rule) return [];
     const sql    = (rule.sql_code        || '').trim();
@@ -1053,7 +1053,7 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
         warns.push({ level: 'CRITICAL', msg: 'Sample SQL ends with a semicolon. The engine appends WHERE <snapshot_filter> after it, producing invalid SQL.' });
     }
     return warns;
-  }, [values.data_quality_rule_id, ruleById, isEdit]);
+  }, [values.data_quality_rule_id, ruleById]);
 
   const validate = () => {
     const errs = {};
@@ -1247,7 +1247,7 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
             </select>
           </div>
 
-          {!isEdit && ruleSqlWarnings.length > 0 && (
+          {ruleSqlWarnings.length > 0 && (
             <div style={{ marginBottom:14 }}>
               <div style={{ display:'flex', flexDirection:'column', gap:4, marginBottom:6 }}>
                 {ruleSqlWarnings.map((w, i) => (

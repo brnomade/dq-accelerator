@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260825-2103 — Enhancement: SQL validation notices shown in edit mode as well
+
+### Changed
+- **RuleAllocationFormPanel and CdeAllocFormPanel** — SQL validation notices now appear in both add and edit mode. Previously, the `isEdit` guard suppressed them entirely on the edit panel. Removed the guard so the pre-populated rule is checked on open.
+
+---
+
 ## build-20260825-2100 — Fix: SQL validation notices applied to both allocation panels
 
 ### Changed
