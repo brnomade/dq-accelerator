@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## 2026-08-26 — Refactor: prompt helpers code quality improvements (no build)
+
+**Date:** 2026-08-26
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Code review (3 rounds) | 20 min | 0 min | 0 min | — |
+| Fix: return type, helper extraction, grammar | 0 min | 0 min | 5 min | — |
+| **Total** | **20 min** | **0 min** | **5 min** | — |
+
+### Changes delivered
+- `src/46_prompt_helpers.js`: `buildProfilingEvidenceBlock` return type normalised to string; TASK sections extracted into `buildBlockedRuleTaskPrompt` and `buildPassingRuleTaskPrompt`; grammar fix on line 465.
+
+---
+
 ## build-20260825-2316 — Enhancement: refine AI Assistant prompt for Rule form panel
 
 **Date:** 2026-08-25

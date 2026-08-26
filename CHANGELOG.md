@@ -4,6 +4,16 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## 2026-08-26 — Refactor: prompt helpers code quality improvements (no build)
+
+### Changed
+- **`src/46_prompt_helpers.js`** -- Code quality fixes with no change to prompt output:
+  - `buildProfilingEvidenceBlock`: return type changed from `string[]` to a pre-joined `string`, consistent with every other helper in the file. Caller in `buildSuggestionPrompt` updated accordingly (`evidenceBlocks.join('\n\n')` replaced by plain `evidenceBlocks`).
+  - `buildBlockedRuleTaskPrompt` (new) and `buildPassingRuleTaskPrompt` (new): the two TASK sections previously built inline in `buildRuleAssistantPrompt` via one-line-per-push are extracted into standalone helper functions using the standard `[...].join('\n')` pattern.
+  - Grammar: "on following evidence" corrected to "on the following evidence" (line 465).
+
+---
+
 ## build-20260825-2316 — Enhancement: refine AI Assistant prompt for Rule form panel
 
 ### Changed
