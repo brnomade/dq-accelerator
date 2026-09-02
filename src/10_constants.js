@@ -273,6 +273,38 @@ const SCHEMA = {
   },
 };
 
+const RETIRE_CASCADE = {
+  executive_agency: [
+    { table: 'directorate',               fk: 'executive_agency_id' },
+    { table: 'data_patron',               fk: 'executive_agency_id' },
+    { table: 'criticality_group_weight',  fk: 'executive_agency_id' },
+    { table: 'quality_dimension_weight',  fk: 'executive_agency_id' },
+  ],
+  directorate: [
+    { table: 'critical_data_set', fk: 'directorate_id' },
+    { table: 'data_owner',        fk: 'directorate_id' },
+    { table: 'shortlist_group',   fk: 'directorate_id' },
+  ],
+  critical_data_set: [
+    { table: 'critical_data_element', fk: 'critical_data_set_id' },
+    { table: 'stewardship',           fk: 'critical_data_set_id' },
+  ],
+  critical_data_element: [
+    { table: 'cde_criticality',              fk: 'critical_data_element_id' },
+    { table: 'data_quality_rule_allocation', fk: 'critical_data_element_id' },
+    { table: 'cde_shortlist_tag',            fk: 'critical_data_element_id' },
+  ],
+  shortlist_group: [
+    { table: 'cde_shortlist_tag', fk: 'shortlist_group_id' },
+  ],
+  data_quality_rule: [
+    { table: 'data_quality_rule_allocation', fk: 'data_quality_rule_id' },
+  ],
+  data_steward: [
+    { table: 'stewardship', fk: 'data_steward_id' },
+  ],
+};
+
 // Excel sheet name -> internal table name mapping
 const SHEET_MAP = {
   'Critical Data Set':            'critical_data_set',

@@ -4,6 +4,43 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260902-1807 — Enhancement: duplicate PK warning shown in import log UI
+
+### Added
+- **`src/71_master_version.js`** -- `checkDeltaDuplicates(data)` function: scans all delta-tracked tables for duplicate primary keys and returns a list of `{ level: 'warn', msg }` log entries, one per affected table, naming the table, PK field, and duplicate IDs.
+- **`src/210_screen_import.js`** -- Both master JSON import paths (normal and override-uncommitted-changes) now call `checkDeltaDuplicates` and append any warnings to the `importLog` array. The warnings appear in the amber import result panel alongside the success messages, visible before the steward proceeds.
+
+---
+
+## build-20260902-1804 — Fix: warn on duplicate PKs in master JSON snapshot
+
+### Fixed
+- **`src/71_master_version.js`** -- `buildSnapshot()` now emits a `console.warn` when a duplicate primary key is encountered in any delta-tracked table. Previously, the second record silently overwrote the first in the snapshot map, causing those records to appear as phantom `updated` entries in every subsequent delta export despite no user operations. The warning names the table, field, and PK value and directs the user to run the Data Health Check to locate duplicates. The duplicate itself is still written (last-one-wins, as before), so import is not broken.
+
+### Investigation finding
+- Phantom `cde_criticality` updates (IDs 182–185) after fresh master JSON import were caused by duplicate PK records in the source file: each ID appeared twice with different `critical_data_element_id` values (62 and 107). `buildSnapshot` overwrote the first hash with the second; `buildDelta` then saw the first-occurrence records and computed a different hash → false `updated`. Root cause was corrupt data in the specific master JSON file; switching to a clean master eliminated the issue.
+
+---
+
+## build-20260902-1653 — Feature: cascading retirement with confirmation panel (Part 1 — CDE)
+
+### Added
+- **`src/10_constants.js`** -- `RETIRE_CASCADE` map: declares which child tables must be retired when a parent record is retired, keyed by parent table with FK field references. Covers the full hierarchy: Agency → Directorate → CDS → CDE → (Criticality, Rule Allocations, Shortlist Tags); also Data Quality Rule → Allocations; Data Steward → Stewardship.
+- **`src/90_panels.js`** -- `getRecordDisplayName()` helper: returns a human-readable label for a record given its table name (e.g. `DB.Table.Field` for CDEs, rule name for rules). `RetireConfirmPanel` component: centred modal overlay shown before any retirement executes. Displays the target record identity, an amber warning box listing counts of cascade-affected child records by table, and Cancel / Confirm retirement buttons.
+- **`src/240_app.js`** -- `collectCascadeRetirements()` module-level helper: walks `RETIRE_CASCADE` recursively and returns a flat list of all records to retire (parent + live children). `retireRecord` now applies the full cascade in a single `setData` call with one shared timestamp. `openRetireConfirm(tableName, pkValue)` added to context: computes the cascade preview and opens `RetireConfirmPanel`; used by UI retire buttons. `RetireConfirmPanel` rendered at App level (avoids overflow/transform ancestor issue).
+
+### Changed
+- **`src/141_view_cde_list.js`** -- CDE retire button on the Data and Stewardship page now routes through `openRetireConfirm` instead of calling `retireRecord` directly. All other retire buttons across the app are unchanged in this release (Part 2 will migrate them).
+
+---
+
+## build-20260902-1613 — Fix: delta export leaking born-and-died steward records as inserts
+
+### Fixed
+- **`src/71_master_version.js`** -- `buildDelta()` no longer includes newly-created rows that have `retiring_timestamp` set in the `inserted` array. Such rows were created and soft-deleted entirely within a steward's working session and were never published to the master; the master has no record of them and should not receive an instruction to insert them. The fix adds a single guard: `if (!row.retiring_timestamp) inserted.push(row)`. Rows that existed in the base snapshot and were subsequently retired continue to appear in `retired` (by id only) as before — that path is unaffected.
+
+---
+
 ## build-20260902-1248 — Enhancement: sortable columns and user guide update for uploader review
 
 ### Changed

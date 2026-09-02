@@ -5,6 +5,74 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260902-1807 — Enhancement: duplicate PK warning shown in import log UI
+
+**Date:** 2026-09-02
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Add checkDeltaDuplicates + wire into import log UI (both paths) | 5 min | 0 min | 10 min | |
+| **Total** | **5 min** | **0 min** | **10 min** | |
+
+### Changes delivered
+- `src/71_master_version.js`: `checkDeltaDuplicates(data)` function — scans delta tables for duplicate PKs, returns warn-level log entries
+- `src/210_screen_import.js`: both master JSON import paths call `checkDeltaDuplicates` and append warnings to `importLog`
+
+---
+
+## build-20260902-1804 — Fix: duplicate PK warning in buildSnapshot
+
+**Date:** 2026-09-02
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Investigate phantom cde_criticality updates (fresh import) | 40 min | 0 min | 0 min | |
+| Add diagnostic logging, identify root cause (duplicate PKs) | 0 min | 0 min | 10 min | |
+| Add defensive console.warn + clean up diagnostic code | 0 min | 0 min | 5 min | |
+| **Total** | **40 min** | **0 min** | **15 min** | |
+
+### Changes delivered
+- `src/71_master_version.js`: `buildSnapshot` warns on duplicate PKs; diagnostic logs removed
+
+---
+
+## build-20260902-1653 — Feature: cascading retirement + confirmation panel (Part 1)
+
+**Date:** 2026-09-02
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Bug investigation (cde_criticality leak) + new class identification | 15 min | 0 min | 0 min | |
+| Write DESIGN_CASCADE_RETIREMENT.md + PLAN_CASCADE_RETIREMENT.md (inc. UX) | 0 min | 25 min | 0 min | |
+| Implement Part 1 (RETIRE_CASCADE, cascade helper, panel, CDE wire-up) | 0 min | 0 min | 25 min | |
+| **Total** | **15 min** | **25 min** | **25 min** | |
+
+### Changes delivered
+- `src/10_constants.js`: `RETIRE_CASCADE` map
+- `src/90_panels.js`: `getRecordDisplayName` + `RetireConfirmPanel`
+- `src/240_app.js`: `collectCascadeRetirements`; cascade `retireRecord`; `retireConfirm` state; `openRetireConfirm`; panel render; context update
+- `src/141_view_cde_list.js`: CDE retire button → `openRetireConfirm`
+
+---
+
+## build-20260902-1613 — Fix: delta export soft-delete leak
+
+**Date:** 2026-09-02
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Bug investigation: soft-deleted rows in delta export | 20 min | 0 min | 0 min | |
+| Write DESIGN_DELTA_SOFT_DELETE_FIX.md and PLAN_DELTA_SOFT_DELETE_FIX.md | 0 min | 10 min | 0 min | |
+| Implement guard in buildDelta() | 0 min | 0 min | 5 min | |
+| **Total** | **20 min** | **10 min** | **5 min** | |
+
+### Changes delivered
+- `src/71_master_version.js`: guard added in `buildDelta()` — skip new rows with `retiring_timestamp`
+- `designs/DESIGN_DELTA_SOFT_DELETE_FIX.md`: new design document
+- `plans/PLAN_DELTA_SOFT_DELETE_FIX.md`: new implementation plan
+
+---
+
 ## build-20260902-1248 — Enhancement: sortable columns and user guide update
 
 **Date:** 2026-09-02

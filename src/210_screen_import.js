@@ -622,9 +622,11 @@ function ImportScreen({ onImport, onMerge }) {
           saveBaseSnapshot(buildSnapshot(importedData));
           await new Promise(r => setTimeout(r, 200));
           setProgress(100);
+          const dupWarnings = checkDeltaDuplicates(importedData);
           const importLog = [
             { level:'ok', msg:`Master import successful. Version: ${version}` },
             { level:'ok', msg:`Base snapshot recorded for ${DELTA_TABLES.length} delta-tracked tables.` },
+            ...dupWarnings,
           ];
           setLog(importLog);
           onImport(importedData, importLog);
@@ -782,10 +784,12 @@ function ImportScreen({ onImport, onMerge }) {
       const importedData = payload.data;
       saveBaseVersion(version);
       saveBaseSnapshot(buildSnapshot(importedData));
+      const dupWarnings = checkDeltaDuplicates(importedData);
       const importLog = [
         { level:'warn', msg:`Imported over ${totalChanges} uncommitted change${totalChanges !== 1 ? 's' : ''}.` },
         { level:'ok',  msg:`Master import successful. Version: ${version}` },
         { level:'ok',  msg:`Base snapshot recorded for ${DELTA_TABLES.length} delta-tracked tables.` },
+        ...dupWarnings,
       ];
       setPendingMasterImport(null);
       setLog(importLog);

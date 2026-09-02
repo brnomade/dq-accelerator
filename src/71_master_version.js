@@ -21,6 +21,36 @@ function hashRecord(record) {
   return h.toString(36);
 }
 
+// Check delta-tracked tables for duplicate PKs.
+// Returns an array of { level: 'warn', msg: '...' } entries, one per affected table.
+function checkDeltaDuplicates(data) {
+  var warnings = [];
+  for (var i = 0; i < DELTA_TABLES.length; i++) {
+    var tbl    = DELTA_TABLES[i];
+    var schema = SCHEMA[tbl];
+    if (!schema || !schema.pk) continue;
+    var pk   = schema.pk;
+    var rows = data[tbl] || [];
+    var seen  = new Set();
+    var dupes = new Set();
+    for (var j = 0; j < rows.length; j++) {
+      var v = rows[j][pk];
+      if (v === null || v === undefined) continue;
+      if (seen.has(v)) dupes.add(v);
+      else seen.add(v);
+    }
+    if (dupes.size > 0) {
+      var dupeList = Array.from(dupes).sort(function(a, b) { return a - b; }).join(', ');
+      warnings.push({
+        level: 'warn',
+        msg: (schema.label || tbl) + ': ' + dupes.size + ' duplicate PK' + (dupes.size > 1 ? 's' : '') +
+             ' detected (' + pk + ': ' + dupeList + '). Delta export will produce phantom updates until fixed. Run Data Health Check.',
+      });
+    }
+  }
+  return warnings;
+}
+
 // Build snapshot: { table: { pk: hash } } for delta-editable tables
 function buildSnapshot(data) {
   const snap = {};
@@ -28,7 +58,11 @@ function buildSnapshot(data) {
     snap[tbl] = {};
     const schema = SCHEMA[tbl];
     for (const row of (data[tbl] || [])) {
-      snap[tbl][row[schema.pk]] = hashRecord(row);
+      const pkVal = row[schema.pk];
+      if (snap[tbl][pkVal] !== undefined) {
+        console.warn('[buildSnapshot] Duplicate PK in ' + tbl + ': ' + schema.pk + '=' + pkVal + '. Snapshot will be corrupt -- phantom delta records will occur. Run Data Health Check.');
+      }
+      snap[tbl][pkVal] = hashRecord(row);
     }
   }
   return snap;
@@ -90,7 +124,7 @@ function buildDelta(data, snapshot) {
       const hash    = hashRecord(row);
       const wasSnap = snap[id] !== undefined;
       if (!wasSnap) {
-        inserted.push(row);
+        if (!row.retiring_timestamp) inserted.push(row);
       } else if (hash !== snap[id]) {
         if (row.retiring_timestamp) {
           retired.push(id);
@@ -376,7 +410,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           </button>
           {totalRows > 0 && (
             <button className="btn btn-ghost" style={{ fontSize:12 }} onClick={onShowReset}>
-              <Icon.Trash/> Reset data
+              <Icon.Trash/> Reset Data
             </button>
           )}
         </div>
