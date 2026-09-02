@@ -275,33 +275,33 @@ const SCHEMA = {
 
 const RETIRE_CASCADE = {
   executive_agency: [
-    { table: 'directorate',               fk: 'executive_agency_id' },
-    { table: 'data_patron',               fk: 'executive_agency_id' },
-    { table: 'criticality_group_weight',  fk: 'executive_agency_id' },
-    { table: 'quality_dimension_weight',  fk: 'executive_agency_id' },
+    { table: 'directorate',               fk: 'executive_agency_id',  action: 'null_fk' },
+    { table: 'data_patron',               fk: 'executive_agency_id',  action: 'null_fk' },
+    { table: 'criticality_group_weight',  fk: 'executive_agency_id',  action: 'retire'  },
+    { table: 'quality_dimension_weight',  fk: 'executive_agency_id',  action: 'retire'  },
   ],
   directorate: [
-    { table: 'critical_data_set', fk: 'directorate_id' },
-    { table: 'data_owner',        fk: 'directorate_id' },
-    { table: 'shortlist_group',   fk: 'directorate_id' },
+    { table: 'critical_data_set', fk: 'directorate_id', action: 'null_fk' },
+    { table: 'data_owner',        fk: 'directorate_id', action: 'null_fk' },
+    { table: 'shortlist_group',   fk: 'directorate_id', action: 'retire'  },
   ],
   critical_data_set: [
-    { table: 'critical_data_element', fk: 'critical_data_set_id' },
-    { table: 'stewardship',           fk: 'critical_data_set_id' },
+    { table: 'critical_data_element', fk: 'critical_data_set_id', action: 'null_fk' },
+    { table: 'stewardship',           fk: 'critical_data_set_id', action: 'retire'  },
   ],
   critical_data_element: [
-    { table: 'cde_criticality',              fk: 'critical_data_element_id' },
-    { table: 'data_quality_rule_allocation', fk: 'critical_data_element_id' },
-    { table: 'cde_shortlist_tag',            fk: 'critical_data_element_id' },
+    { table: 'cde_criticality',              fk: 'critical_data_element_id', action: 'retire' },
+    { table: 'data_quality_rule_allocation', fk: 'critical_data_element_id', action: 'retire' },
+    { table: 'cde_shortlist_tag',            fk: 'critical_data_element_id', action: 'retire' },
   ],
   shortlist_group: [
-    { table: 'cde_shortlist_tag', fk: 'shortlist_group_id' },
+    { table: 'cde_shortlist_tag', fk: 'shortlist_group_id', action: 'retire' },
   ],
   data_quality_rule: [
-    { table: 'data_quality_rule_allocation', fk: 'data_quality_rule_id' },
+    { table: 'data_quality_rule_allocation', fk: 'data_quality_rule_id', action: 'retire' },
   ],
   data_steward: [
-    { table: 'stewardship', fk: 'data_steward_id' },
+    { table: 'stewardship', fk: 'data_steward_id', action: 'retire' },
   ],
 };
 

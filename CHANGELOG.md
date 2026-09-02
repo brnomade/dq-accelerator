@@ -4,6 +4,18 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260902-1840 — Enhancement: cascade retirement null_fk action (infrastructure + CDE test)
+
+### Changed
+- **`src/10_constants.js`** -- `RETIRE_CASCADE` extended with `action` field on every entry. Entries are now `'retire'` (stamp `retiring_timestamp`, recurse) or `'null_fk'` (clear the FK field, keep record alive, no recursion). Affected mappings: `executive_agency → directorate/data_patron` now `null_fk`; `directorate → critical_data_set/data_owner` now `null_fk`; `critical_data_set → critical_data_element` now `null_fk`. All other entries remain `'retire'`.
+- **`src/240_app.js`** -- `collectCascadeRetirements` updated: return shape is now `{ tbl, pk, action, fk }`; recursion is gated on `action === 'retire'` only. `retireRecord` updated: `retire` entries stamp `retiring_timestamp`; `null_fk` entries clear the named FK field. `openRetireConfirm` updated: builds separate `retireSummary` and `nullFkSummary` arrays for the panel.
+- **`src/90_panels.js`** -- `RetireConfirmPanel` updated to render two sections when applicable: amber for records that will be retired, blue for records that will be unlinked (FK cleared, record kept for reassignment).
+
+### Scope
+Infrastructure changes only. Only the CDE retire button (already wired in Part 1) is live in this build. Remaining 13 call site migrations deferred to next wave.
+
+---
+
 ## build-20260902-1807 — Enhancement: duplicate PK warning shown in import log UI
 
 ### Added

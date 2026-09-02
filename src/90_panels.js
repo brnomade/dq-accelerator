@@ -156,12 +156,29 @@ function getRecordDisplayName(tableName, record) {
 }
 
 function RetireConfirmPanel({ confirm, onConfirm, onCancel }) {
-  var tableName     = confirm.tableName;
-  var record        = confirm.record;
-  var cascadeSummary = confirm.cascadeSummary;
-  var schema        = SCHEMA[tableName];
-  var displayName   = getRecordDisplayName(tableName, record);
-  var hasCascade    = cascadeSummary.length > 0;
+  var tableName    = confirm.tableName;
+  var record       = confirm.record;
+  var retireSummary = confirm.retireSummary || [];
+  var nullFkSummary = confirm.nullFkSummary || [];
+  var schema       = SCHEMA[tableName];
+  var displayName  = getRecordDisplayName(tableName, record);
+  var hasRetire    = retireSummary.length > 0;
+  var hasNullFk    = nullFkSummary.length > 0;
+
+  function summaryRow(item, dotColor) {
+    return (
+      <div key={item.tbl} style={{
+        fontSize:12, color:'var(--text2)',
+        display:'flex', alignItems:'center', gap:8, marginTop:4,
+      }}>
+        <span style={{
+          width:4, height:4, borderRadius:'50%',
+          background:dotColor, flexShrink:0, display:'inline-block',
+        }}/>
+        {item.count} {SCHEMA[item.tbl] && SCHEMA[item.tbl].label} {item.count === 1 ? 'record' : 'records'}
+      </div>
+    );
+  }
 
   return (
     <>
@@ -188,32 +205,34 @@ function RetireConfirmPanel({ confirm, onConfirm, onCancel }) {
           {displayName}
         </div>
 
-        {hasCascade ? (
-          <div style={{
-            background:'var(--amber-bg)', border:'1px solid rgba(245,166,35,0.4)',
-            borderRadius:'var(--radius)', padding:'10px 14px', marginBottom:20,
-          }}>
-            <div style={{ fontSize:12, fontWeight:600, color:'var(--amber)', marginBottom:6 }}>
-              This will also retire:
-            </div>
-            {cascadeSummary.map(function(item) {
-              return (
-                <div key={item.tbl} style={{
-                  fontSize:12, color:'var(--text2)',
-                  display:'flex', alignItems:'center', gap:8, marginTop:4,
-                }}>
-                  <span style={{
-                    width:4, height:4, borderRadius:'50%',
-                    background:'var(--amber)', flexShrink:0, display:'inline-block',
-                  }}/>
-                  {item.count} {SCHEMA[item.tbl] && SCHEMA[item.tbl].label} {item.count === 1 ? 'record' : 'records'}
-                </div>
-              );
-            })}
-          </div>
-        ) : (
+        {!hasRetire && !hasNullFk && (
           <div style={{ fontSize:12, color:'var(--text3)', marginBottom:20 }}>
             No dependent records will be affected. This can be undone by restoring the record.
+          </div>
+        )}
+
+        {hasRetire && (
+          <div style={{
+            background:'var(--amber-bg)', border:'1px solid rgba(245,166,35,0.4)',
+            borderRadius:'var(--radius)', padding:'10px 14px',
+            marginBottom: hasNullFk ? 10 : 20,
+          }}>
+            <div style={{ fontSize:12, fontWeight:600, color:'var(--amber)', marginBottom:6 }}>
+              Will also be retired:
+            </div>
+            {retireSummary.map(function(item) { return summaryRow(item, 'var(--amber)'); })}
+          </div>
+        )}
+
+        {hasNullFk && (
+          <div style={{
+            background:'rgba(24,180,212,0.06)', border:'1px solid rgba(24,180,212,0.35)',
+            borderRadius:'var(--radius)', padding:'10px 14px', marginBottom:20,
+          }}>
+            <div style={{ fontSize:12, fontWeight:600, color:'var(--blue)', marginBottom:6 }}>
+              Will be unlinked (FK cleared, records kept {'&'} can be reassigned):
+            </div>
+            {nullFkSummary.map(function(item) { return summaryRow(item, 'var(--blue)'); })}
           </div>
         )}
 

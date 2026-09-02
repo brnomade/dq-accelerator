@@ -80,16 +80,20 @@ function Breadcrumb({ route }) {
 // ROOT APP -- single source of state, also provides AppContext directly
 // ===============================================================================
 function collectCascadeRetirements(data, tableName, pkValue) {
-  var result = [{ tbl: tableName, pk: pkValue }];
+  var result = [{ tbl: tableName, pk: pkValue, action: 'retire', fk: null }];
   var cascades = RETIRE_CASCADE[tableName] || [];
   for (var i = 0; i < cascades.length; i++) {
-    var table = cascades[i].table;
-    var fk    = cascades[i].fk;
-    var childPkField = SCHEMA[table].pk;
-    var children = (data[table] || []).filter(function(r) { return r[fk] === pkValue && !r.retiring_timestamp; });
+    var entry = cascades[i];
+    var childPkField = SCHEMA[entry.table].pk;
+    var children = (data[entry.table] || []).filter(function(r) { return r[entry.fk] === pkValue && !r.retiring_timestamp; });
     for (var j = 0; j < children.length; j++) {
-      var sub = collectCascadeRetirements(data, table, children[j][childPkField]);
-      for (var k = 0; k < sub.length; k++) result.push(sub[k]);
+      var childPk = children[j][childPkField];
+      if (entry.action === 'retire') {
+        var sub = collectCascadeRetirements(data, entry.table, childPk);
+        for (var k = 0; k < sub.length; k++) result.push(sub[k]);
+      } else {
+        result.push({ tbl: entry.table, pk: childPk, action: 'null_fk', fk: entry.fk });
+      }
     }
   }
   return result;
@@ -153,12 +157,21 @@ function App() {
   const retireRecord = useCallback((tableName, pkValue) => {
     if (!stewardIdentity) return;
     setData(prev => {
-      const toRetire = collectCascadeRetirements(prev, tableName, pkValue);
-      const ts = new Date().toISOString();
-      let next = { ...prev };
-      for (const { tbl, pk } of toRetire) {
-        const pkField = SCHEMA[tbl].pk;
-        next = { ...next, [tbl]: next[tbl].map(r => r[pkField] === pk ? { ...r, retiring_timestamp: ts } : r) };
+      var toProcess = collectCascadeRetirements(prev, tableName, pkValue);
+      var ts = new Date().toISOString();
+      var next = { ...prev };
+      for (var i = 0; i < toProcess.length; i++) {
+        var item = toProcess[i];
+        var pkField = SCHEMA[item.tbl].pk;
+        if (item.action === 'retire') {
+          next = { ...next, [item.tbl]: next[item.tbl].map(function(r) {
+            return r[pkField] === item.pk ? { ...r, retiring_timestamp: ts } : r;
+          })};
+        } else {
+          next = { ...next, [item.tbl]: next[item.tbl].map(function(r) {
+            return r[pkField] === item.pk ? { ...r, [item.fk]: null } : r;
+          })};
+        }
       }
       persist(next);
       return next;
@@ -392,15 +405,20 @@ function App() {
 
   const openRetireConfirm = useCallback((tableName, pkValue) => {
     if (!stewardIdentity || !data) return;
-    const pkField = SCHEMA[tableName]?.pk;
+    var pkField = SCHEMA[tableName] && SCHEMA[tableName].pk;
     if (!pkField) return;
-    const record = (data[tableName] || []).find(r => r[pkField] === pkValue);
+    var record = (data[tableName] || []).find(function(r) { return r[pkField] === pkValue; });
     if (!record) return;
-    const toRetire = collectCascadeRetirements(data, tableName, pkValue);
-    const childCounts = {};
-    for (const { tbl } of toRetire.slice(1)) childCounts[tbl] = (childCounts[tbl] || 0) + 1;
-    const cascadeSummary = Object.entries(childCounts).map(([tbl, count]) => ({ tbl, count }));
-    setRetireConfirm({ tableName, pkValue, record, cascadeSummary });
+    var toProcess = collectCascadeRetirements(data, tableName, pkValue);
+    var retireCounts = {}, nullFkCounts = {};
+    for (var i = 1; i < toProcess.length; i++) {
+      var item = toProcess[i];
+      if (item.action === 'retire') retireCounts[item.tbl] = (retireCounts[item.tbl] || 0) + 1;
+      else                          nullFkCounts[item.tbl] = (nullFkCounts[item.tbl] || 0) + 1;
+    }
+    var retireSummary = Object.keys(retireCounts).map(function(t) { return { tbl: t, count: retireCounts[t] }; });
+    var nullFkSummary = Object.keys(nullFkCounts).map(function(t) { return { tbl: t, count: nullFkCounts[t] }; });
+    setRetireConfirm({ tableName: tableName, pkValue: pkValue, record: record, retireSummary: retireSummary, nullFkSummary: nullFkSummary });
   }, [stewardIdentity, data]);
 
   // Rule allocation form state
