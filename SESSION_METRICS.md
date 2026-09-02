@@ -5,6 +5,22 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260902-1856 — Feature: CDS retire button + legacy cleanup
+
+**Date:** 2026-09-02
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Investigate missing CDS retire button + confirm 150_ is dead code | 5 min | 0 min | 0 min | |
+| Move 150_ to legacy; add retire button to 141_view_cde_list.js | 0 min | 0 min | 10 min | |
+| **Total** | **5 min** | **0 min** | **10 min** | |
+
+### Changes delivered
+- `src/141_view_cde_list.js`: CDS retire button added (calls `openRetireConfirm`)
+- `legacy/150_view_cds_dir.js`: moved from `src/` — was dead/unreachable code
+
+---
+
 ## build-20260902-1840 — Enhancement: cascade retirement null_fk action
 
 **Date:** 2026-09-02

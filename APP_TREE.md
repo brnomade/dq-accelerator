@@ -135,5 +135,5 @@ All panels render at App level (outside scroll container) to avoid `position:fix
 | File | Component | Status |
 |---|---|---|
 | `110_view_rules.js` | _(stub, 73 bytes)_ | Dead -- replaced by `145_view_rules.js` |
-| `150_view_cds_dir.js` | `CriticalDataSetView` | Dead -- CDS management moved into `141_view_cde_list.js` |
+| `legacy/150_view_cds_dir.js` | `CriticalDataSetView` | Moved to legacy -- never routed; CDS actions now in `141_view_cde_list.js` |
 | `190_screen_coverage.js` | `CDECoverageScreen` | Dormant -- route exists (`coverage`) but no sidebar link |

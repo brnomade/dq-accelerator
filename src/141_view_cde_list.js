@@ -500,6 +500,12 @@ function CriticalDataElementView({ initialSearch }) {
                                   title={`Add new CDE to ${cds?.data_set_name || 'this data set'}`}>
                                   <Icon.Plus/> CDE
                                 </button>
+                                <button {...dp} className="btn btn-ghost"
+                                  style={{ fontSize:11, padding:'2px 6px', flexShrink:0 }}
+                                  onClick={e => { e.stopPropagation(); openRetireConfirm('critical_data_set', cds.critical_data_set_id); }}
+                                  title="Retire this CDS">
+                                  <Icon.EyeOff/>
+                                </button>
                               </>
                             )}
                           </div>
