@@ -230,7 +230,7 @@ function RetireConfirmPanel({ confirm, onConfirm, onCancel }) {
             borderRadius:'var(--radius)', padding:'10px 14px', marginBottom:20,
           }}>
             <div style={{ fontSize:12, fontWeight:600, color:'var(--blue)', marginBottom:6 }}>
-              Will be unlinked (FK cleared, records kept {'&'} can be reassigned):
+              Depending records will be unlinked and must be manually reassigned:
             </div>
             {nullFkSummary.map(function(item) { return summaryRow(item, 'var(--blue)'); })}
           </div>

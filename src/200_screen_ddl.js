@@ -1155,7 +1155,7 @@ function OrphanDdlRow({ ddl, accent, canEdit, onEdit, onRetire }) {
 }
 
 function ProfilingView() {
-  const { data, retireRecord, restoreRecord, openDdlForm, canEdit, stewardIdentity, isMaster } = useApp();
+  const { data, restoreRecord, openDdlForm, canEdit, stewardIdentity, isMaster, openRetireConfirm } = useApp();
   const accent = 'var(--purple)';
 
   const myStewardCdsIds = useMemo(() => getMyStewardCdsIds(data, stewardIdentity), [data, stewardIdentity]);
@@ -1340,7 +1340,7 @@ function ProfilingView() {
 
   // DDL inline actions (Task 7 wiring)
   const handleEditDDL    = (tg) => openDdlForm(tg.ddl);
-  const handleRetireDDL  = (tg) => retireRecord('source_table_ddl', tg.ddl.source_table_ddl_id);
+  const handleRetireDDL  = (tg) => openRetireConfirm('source_table_ddl', tg.ddl.source_table_ddl_id);
   const handleAddDDL     = (tg) => openDdlForm({
     source_database_name: tg.db || '',
     source_table_name:    tg.table,
@@ -1538,7 +1538,7 @@ function ProfilingView() {
                 accent={accent}
                 canEdit={canEdit}
                 onEdit={() => openDdlForm(ddl)}
-                onRetire={() => retireRecord('source_table_ddl', ddl.source_table_ddl_id)}
+                onRetire={() => openRetireConfirm('source_table_ddl', ddl.source_table_ddl_id)}
               />
             ))}
           </div>

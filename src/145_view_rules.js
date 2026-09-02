@@ -479,8 +479,8 @@ function RulesRuleRow({ ruleEntry, critGroupsSorted, critLevelsById, dimensionsB
 // RuleExplorerView -- outer shell, state, toolbar
 // -------------------------------------------------------------------------------
 function RuleExplorerView() {
-  const { data, upsertRecord, retireRecord, restoreRecord, nextPk, canEdit,
-    stewardIdentity, isMaster, openSqlPanel } = useApp();
+  const { data, upsertRecord, restoreRecord, nextPk, canEdit,
+    stewardIdentity, isMaster, openSqlPanel, openRetireConfirm } = useApp();
 
   const accent = '#18b4d4';
 
@@ -588,12 +588,12 @@ function RuleExplorerView() {
   const handleEditRule        = (rule) => setRulePanel({ record: { ...rule } });
   const handleRuleSave        = (saved) => { upsertRecord('data_quality_rule', saved); setRulePanel(null); };
   const handleToggleAutomated = (rule) => { if (canEdit) upsertRecord('data_quality_rule', { ...rule, automated: !rule.automated }); };
-  const handleRetireRule  = (rule) => { if (canEdit) retireRecord('data_quality_rule', rule.data_quality_rule_id); };
+  const handleRetireRule  = (rule) => { if (canEdit) openRetireConfirm('data_quality_rule', rule.data_quality_rule_id); };
   const handleRestoreRule = (rule) => { if (canEdit) restoreRecord('data_quality_rule', rule.data_quality_rule_id); };
 
   const handleEditAlloc    = (alloc) => setAllocPanel({ record: { ...alloc }, isEdit: true });
   const handleAllocSave    = (saved) => { upsertRecord('data_quality_rule_allocation', saved); setAllocPanel(null); };
-  const handleRetireAlloc  = (alloc) => { if (canEdit) retireRecord('data_quality_rule_allocation', alloc.data_quality_rule_allocation_id); };
+  const handleRetireAlloc  = (alloc) => { if (canEdit) openRetireConfirm('data_quality_rule_allocation', alloc.data_quality_rule_allocation_id); };
   const handleRestoreAlloc = (alloc) => { if (canEdit) restoreRecord('data_quality_rule_allocation', alloc.data_quality_rule_allocation_id); };
 
   const handleOpenSql = useCallback((mode, rule, alloc, cde) => {

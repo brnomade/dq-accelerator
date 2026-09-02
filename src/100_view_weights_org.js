@@ -1,5 +1,5 @@
 function AggregatedWeightView({ tableName }) {
-  const { data, retireRecord, restoreRecord, openForm, nextPk, canEdit } = useApp();
+  const { data, retireRecord, restoreRecord, openForm, nextPk, canEdit, openRetireConfirm } = useApp();
   const dp = !canEdit ? { style:{ opacity:0.35, cursor:'not-allowed', pointerEvents:'none' }, title:'Set your steward identity in Settings to make changes' } : {};
 
 
@@ -215,7 +215,7 @@ function AggregatedWeightView({ tableName }) {
                           className="weight-box-action"
                           onClick={() => isRetired
                             ? restoreRecord(tableName, pk)
-                            : retireRecord(tableName, pk)
+                            : openRetireConfirm(tableName, pk)
                           }
                           title={isRetired ? 'Restore' : 'Retire'}
                         >
@@ -271,7 +271,7 @@ function OrgNone() {
 }
 
 function OwnershipOrgChart() {
-  const { data, openForm, retireRecord, restoreRecord, canEdit, nextPk, stewardIdentity, isMaster } = useApp();
+  const { data, openForm, restoreRecord, canEdit, nextPk, stewardIdentity, isMaster, openRetireConfirm } = useApp();
   const accent = '#18b4d4';
 
   const [showRetired,   setShowRetired]   = useState(false);
@@ -577,7 +577,7 @@ function OwnershipOrgChart() {
                     ) : (
                       <button title="Retire agency" className="btn btn-ghost"
                         style={{ padding:'2px 6px', fontSize:10 }}
-                        onClick={() => retireRecord('executive_agency', aid)}>
+                        onClick={() => openRetireConfirm('executive_agency', aid)}>
                         <Icon.EyeOff/>
                       </button>
                     )}
@@ -671,7 +671,7 @@ function OwnershipOrgChart() {
                                   ) : (
                                     <button title="Retire directorate" className="btn btn-ghost"
                                       style={{ padding:'2px 6px', fontSize:10 }}
-                                      onClick={() => retireRecord('directorate', dir.directorate_id)}>
+                                      onClick={() => openRetireConfirm('directorate', dir.directorate_id)}>
                                       <Icon.EyeOff/>
                                     </button>
                                   )}

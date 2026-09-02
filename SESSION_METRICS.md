@@ -5,6 +5,28 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260902-1930 — Enhancement: all retire buttons through cascade confirmation panel
+
+**Date:** 2026-09-02
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Audit 15 remaining retireRecord call sites across 7 files | 5 min | 0 min | 0 min | |
+| Migrate all 15 sites to openRetireConfirm; remove inline confirm state | 0 min | 0 min | 35 min | |
+| Update 5 user guide pages (alloc, table-remove, rule-add-edit, ea-remove, dir-remove) | 0 min | 0 min | 15 min | |
+| **Total** | **5 min** | **0 min** | **50 min** | |
+
+### Changes delivered
+- `src/100_view_weights_org.js`: sites #1, #2, #3 migrated
+- `src/120_view_cde_criticality.js`: site #4 migrated
+- `src/141_view_cde_list.js`: site #5 migrated
+- `src/145_view_rules.js`: sites #6, #7 migrated
+- `src/151_view_directorate.js`: site #8 migrated
+- `src/161_view_generic.js`: sites #9–13 migrated; inline `confirmRetire` state removed
+- `src/200_screen_ddl.js`: sites #14, #15 migrated
+
+---
+
 ## build-20260902-1912 — Fix: CDE reassignment to a different CDS
 
 **Date:** 2026-09-02
