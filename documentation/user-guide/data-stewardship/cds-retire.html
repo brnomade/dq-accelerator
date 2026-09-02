@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>How to edit or retire a Critical Data Element &mdash; DQ Accelerator User Guide</title>
+<title>How to retire a Critical Data Set &mdash; DQ Accelerator User Guide</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
@@ -26,6 +26,14 @@ h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;
 .sbody .sub{font-size:12px;color:var(--text3);margin-top:3px}
 .f{font-weight:600;color:var(--blue)}
 .note{margin-top:20px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.effect-box{margin:20px 0;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.effect-box-header{padding:8px 14px;background:var(--bg3);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
+.effect-row{display:flex;align-items:baseline;gap:10px;padding:10px 14px;border-top:1px solid var(--border);font-size:13px}
+.effect-row:first-of-type{border-top:none}
+.effect-label{flex:1;color:var(--text2)}
+.badge{font-size:10px;font-weight:700;font-family:var(--mono);padding:2px 8px;border-radius:3px;flex-shrink:0}
+.badge-retire{color:var(--amber);background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.35)}
+.badge-unlink{color:var(--blue);background:rgba(24,180,212,0.08);border:1px solid rgba(24,180,212,0.35)}
 .related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
 .rlist{list-style:none;display:flex;flex-direction:column;gap:4px}
 .rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
@@ -40,78 +48,78 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
 </header>
 <main>
   <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; Data and Stewardship</div>
-  <h1>How to edit or retire a Critical Data Element</h1>
-  <p class="lead">You can update any field on an existing CDE, retire it to remove it from active monitoring, or restore a previously retired CDE.</p>
+  <h1>How to retire a Critical Data Set</h1>
+  <p class="lead">Retiring a CDS marks it as inactive. It is not deleted and can be restored if needed. CDEs belonging to it are not retired &mdash; they are unlinked so they can be reassigned to another CDS.</p>
 
-  <h2>Edit a CDE</h2>
+  <h2>What happens when you retire a CDS</h2>
+
+  <div class="effect-box">
+    <div class="effect-box-header">Effect on dependent records</div>
+    <div class="effect-row">
+      <span class="effect-label">Stewardship records assigned to this CDS</span>
+      <span class="badge badge-retire">retired</span>
+    </div>
+    <div class="effect-row">
+      <span class="effect-label">Critical Data Elements belonging to this CDS</span>
+      <span class="badge badge-unlink">unlinked &mdash; CDS field cleared</span>
+    </div>
+  </div>
+
+  <p style="font-size:13px;color:var(--text3);line-height:1.6;margin-bottom:8px">Stewardship records are retired because they are directly bound to the CDS and have no meaning without it. CDEs are kept active and unlinked because they may contain valuable field-level metadata that can be reassigned to a new or different CDS.</p>
+
+  <h2>Retiring a CDS</h2>
 
   <ol class="steps">
     <li>
       <div class="snum">1</div>
-      <div class="sbody">Expand the Agency, CDS, and Table rows until the CDE row is visible.</div>
+      <div class="sbody">Navigate to the <span class="f">Data and Stewardship</span> page from the sidebar.</div>
     </li>
     <li>
       <div class="snum">2</div>
-      <div class="sbody">Click the <span class="f">pencil icon</span> on the right side of the CDE row. The Edit CDE panel slides open.</div>
+      <div class="sbody">Expand the Agency row to reveal the CDS rows beneath it.</div>
     </li>
     <li>
       <div class="snum">3</div>
-      <div class="sbody">Update any field you need to change. To move the CDE to a different Critical Data Set, use the Agency, Directorate, and Data Set dropdowns to select the new location.</div>
+      <div class="sbody">Click the <span class="f">eye-off icon</span> on the right side of the CDS row. A confirmation panel appears listing the records that will be retired and any CDEs that will be unlinked.</div>
     </li>
     <li>
       <div class="snum">4</div>
-      <div class="sbody">Click <span class="f">Save</span>. The changes take effect immediately in the hierarchy.</div>
+      <div class="sbody">Review the summary carefully, then click <span class="f">Confirm retirement</span>.</div>
+    </li>
+    <li>
+      <div class="snum">5</div>
+      <div class="sbody">The CDS is retired. Unlinked CDEs remain visible in the hierarchy under a <em>No data set assigned</em> group. Edit each one to reassign it to the correct CDS.
+        <div class="sub">See <a href="cde-edit-retire.html" style="color:var(--blue)">How to edit or retire a Critical Data Element</a>.</div>
+      </div>
     </li>
   </ol>
 
-  <div class="note">If the CDE has a missing snapshot filter, a red warning icon appears on the row. Edit the CDE and add the snapshot filter to clear the warning. Without it, data quality SQL cannot be generated for any rules assigned to this CDE.</div>
+  <div class="note"><strong>Unlinked CDEs in the delta:</strong> When you export your delta after retiring a CDS, the unlinked CDEs will appear as <em>updated</em> records because their CDS field changed. This is correct &mdash; they will be updated in the master when your delta is merged. Reassign them before exporting if you want the master to hold the final CDS assignment.</div>
 
-  <h2>Retire a CDE</h2>
+  <h2>Restoring a retired CDS</h2>
 
-  <p style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:16px">Retiring marks a CDE as inactive. It is not deleted and can be restored if needed.</p>
+  <p style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:16px">Restoring the CDS does not automatically re-link the CDEs that were unlinked. You must reassign them manually after restoring.</p>
 
   <ol class="steps">
     <li>
       <div class="snum">1</div>
-      <div class="sbody">Expand the hierarchy until the CDE row is visible.</div>
+      <div class="sbody">Enable the <span class="f">Show retired</span> toggle in the toolbar. The retired CDS appears faded with a <em>retired</em> label.</div>
     </li>
     <li>
       <div class="snum">2</div>
-      <div class="sbody">Click the <span class="f">eye-off icon</span> (strikethrough eye) on the right side of the CDE row. A confirmation panel appears showing any dependent records that will also be retired (criticality records, rule allocations).</div>
+      <div class="sbody">Click the <span class="f">eye icon</span> on the retired CDS row. The CDS is restored to active status.</div>
     </li>
     <li>
       <div class="snum">3</div>
-      <div class="sbody">Review the summary and click <span class="f">Confirm retirement</span>. The CDE and all listed dependent records are retired together.</div>
-    </li>
-    <li>
-      <div class="snum">4</div>
-      <div class="sbody">The CDE disappears from the active view. If the <span class="f">Show retired</span> toggle is enabled, it reappears in a faded state with a <em>retired</em> label.</div>
-    </li>
-  </ol>
-
-  <h2>Restore a retired CDE</h2>
-
-  <ol class="steps">
-    <li>
-      <div class="snum">1</div>
-      <div class="sbody">Enable the <span class="f">Show retired</span> toggle in the toolbar. This toggle appears only when retired CDEs exist.</div>
-    </li>
-    <li>
-      <div class="snum">2</div>
-      <div class="sbody">Expand the hierarchy to locate the retired CDE (shown faded with a <em>retired</em> label).</div>
-    </li>
-    <li>
-      <div class="snum">3</div>
-      <div class="sbody">Click the <span class="f">eye icon</span> on the right side of the retired CDE row. The CDE is restored immediately and returns to active status.</div>
+      <div class="sbody">Edit any CDEs that should belong to this CDS and reassign them using the CDS dropdowns in the Edit CDE panel.</div>
     </li>
   </ol>
 
   <div class="related">
     <div class="rtitle">Related guides</div>
     <ul class="rlist">
-      <li><a href="cde-add.html">How to add a Critical Data Element &rsaquo;</a></li>
-      <li><a href="cds-retire.html">How to retire a Critical Data Set &rsaquo;</a></li>
-      <li><a href="rule-allocate.html">How to assign a rule to a CDE &rsaquo;</a></li>
+      <li><a href="cde-edit-retire.html">How to edit or retire a Critical Data Element &rsaquo;</a></li>
+      <li><a href="cds-add.html">How to add a Critical Data Set &rsaquo;</a></li>
     </ul>
   </div>
 </main>
