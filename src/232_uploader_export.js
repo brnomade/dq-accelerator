@@ -186,41 +186,45 @@ function UploaderReviewView(props) {
   const hasExclusions   = totalExcluded > 0;
   const confirmLabel    = exporting ? 'Exporting...' : (hasExclusions ? 'Export ZIP + receipt' : 'Export ZIP');
 
-  // Build Agency > CDS > items tree from excluded list
-  // agencyGroups: [{ agencyId, agencyName, cdsGroups: [{ cdsId, cdsName, items[] }] }]
+  // Build Agency > CDS > items tree from excluded list, sorted alphabetically by acronym
+  // agencyGroups: [{ agencyId, agency, cdsGroups: [{ cdsId, cdsName, items[] }] }]
   const agencyGroups = useMemo(() => {
-    const agMap  = {};  // agencyId -> { agencyId, agencyName, cdsMap: { cdsId -> { cdsId, cdsName, items[] } } }
+    const agMap = {};
 
     for (const item of excluded) {
-      const cds    = item.cds;
-      const cdsId  = cds ? cds.critical_data_set_id : 'unknown';
+      const cds     = item.cds;
+      const cdsId   = cds ? cds.critical_data_set_id : 'unknown';
       const cdsName = cds ? (cds.data_set_name || 'Unnamed CDS') : 'Unknown CDS';
 
       // Resolve agency via directorate
-      let agencyId   = 'unknown';
-      let agencyName = 'Unknown Agency';
+      let agencyId = 'unknown';
+      let agency   = null;
       if (cds && cds.directorate_id) {
         const dir = dirMap[cds.directorate_id];
         if (dir && dir.executive_agency_id) {
-          const ag = agencyMap[dir.executive_agency_id];
-          agencyId   = dir.executive_agency_id;
-          agencyName = ag ? (ag.agency_name || ag.agency_acronymn || 'Unnamed Agency') : 'Unknown Agency';
+          agencyId = dir.executive_agency_id;
+          agency   = agencyMap[agencyId] || null;
         }
       }
 
-      if (!agMap[agencyId]) agMap[agencyId] = { agencyId, agencyName, cdsMap: {} };
+      if (!agMap[agencyId]) agMap[agencyId] = { agencyId, agency, cdsMap: {} };
       if (!agMap[agencyId].cdsMap[cdsId]) agMap[agencyId].cdsMap[cdsId] = { cdsId, cdsName, items: [] };
       agMap[agencyId].cdsMap[cdsId].items.push(item);
     }
 
-    return Object.values(agMap).map(ag => ({
-      ...ag,
-      cdsGroups: Object.values(ag.cdsMap),
-    }));
+    return Object.values(agMap)
+      .sort((a, b) =>
+        (a.agency ? (a.agency.agency_acronymn || '') : 'ZZZ')
+          .localeCompare(b.agency ? (b.agency.agency_acronymn || '') : 'ZZZ')
+      )
+      .map(ag => ({
+        ...ag,
+        cdsGroups: Object.values(ag.cdsMap),
+      }));
   }, [excluded, agencyMap, dirMap]);
 
   function isAgencyExpanded(agencyId) {
-    return agencyExpanded[agencyId] !== false;
+    return agencyExpanded[agencyId] === true;
   }
   function isCdsExpanded(cdsId) {
     return cdsExpanded[cdsId] !== false;
@@ -286,8 +290,8 @@ function UploaderReviewView(props) {
 
   function CheckMark(ok) {
     return ok
-      ? <span style={{ color:'var(--green)', fontWeight:700, fontSize:13 }}>{'String.fromCharCode(10003)'}</span>
-      : <span style={{ color:'var(--red)',   fontWeight:700, fontSize:13 }}>{'String.fromCharCode(10007)'}</span>;
+      ? <span style={{ color:'var(--green)', fontWeight:700, fontSize:13 }}>{String.fromCharCode(10003)}</span>
+      : <span style={{ color:'var(--red)',   fontWeight:700, fontSize:13 }}>{String.fromCharCode(10007)}</span>;
   }
 
   // ---- Zero failures case --------------------------------------------------
@@ -346,9 +350,16 @@ function UploaderReviewView(props) {
                 onClick={() => toggleAgency(agGroup.agencyId)}>
                 {agExpanded ? '-' : '+'}
               </span>
-              <span style={{ fontWeight:700, fontSize:12, flex:1 }}
+              <span style={{ display:'flex', alignItems:'baseline', gap:8, flex:1 }}
                 onClick={() => toggleAgency(agGroup.agencyId)}>
-                {agGroup.agencyName}
+                <span style={{ fontSize:13, fontWeight:600, color:'var(--text)' }}>
+                  {agGroup.agency ? (agGroup.agency.agency_acronymn || 'Unknown') : 'Unknown Agency'}
+                </span>
+                {agGroup.agency && agGroup.agency.agency_name &&
+                  <span style={{ fontSize:11, color:'var(--text3)' }}>
+                    {agGroup.agency.agency_name}
+                  </span>
+                }
               </span>
               <span style={{ fontSize:11, color:'var(--red)', marginRight:8 }}
                 onClick={() => toggleAgency(agGroup.agencyId)}>
