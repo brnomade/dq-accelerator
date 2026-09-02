@@ -5,6 +5,25 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260902-1653 — Feature: cascading retirement + confirmation panel (Part 1)
+
+**Date:** 2026-09-02
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Bug investigation (cde_criticality leak) + new class identification | 15 min | 0 min | 0 min | |
+| Write DESIGN_CASCADE_RETIREMENT.md + PLAN_CASCADE_RETIREMENT.md (inc. UX) | 0 min | 25 min | 0 min | |
+| Implement Part 1 (RETIRE_CASCADE, cascade helper, panel, CDE wire-up) | 0 min | 0 min | 25 min | |
+| **Total** | **15 min** | **25 min** | **25 min** | |
+
+### Changes delivered
+- `src/10_constants.js`: `RETIRE_CASCADE` map
+- `src/90_panels.js`: `getRecordDisplayName` + `RetireConfirmPanel`
+- `src/240_app.js`: `collectCascadeRetirements`; cascade `retireRecord`; `retireConfirm` state; `openRetireConfirm`; panel render; context update
+- `src/141_view_cde_list.js`: CDE retire button → `openRetireConfirm`
+
+---
+
 ## build-20260902-1613 — Fix: delta export soft-delete leak
 
 **Date:** 2026-09-02

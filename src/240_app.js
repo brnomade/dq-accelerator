@@ -79,6 +79,22 @@ function Breadcrumb({ route }) {
 // ===============================================================================
 // ROOT APP -- single source of state, also provides AppContext directly
 // ===============================================================================
+function collectCascadeRetirements(data, tableName, pkValue) {
+  var result = [{ tbl: tableName, pk: pkValue }];
+  var cascades = RETIRE_CASCADE[tableName] || [];
+  for (var i = 0; i < cascades.length; i++) {
+    var table = cascades[i].table;
+    var fk    = cascades[i].fk;
+    var childPkField = SCHEMA[table].pk;
+    var children = (data[table] || []).filter(function(r) { return r[fk] === pkValue && !r.retiring_timestamp; });
+    for (var j = 0; j < children.length; j++) {
+      var sub = collectCascadeRetirements(data, table, children[j][childPkField]);
+      for (var k = 0; k < sub.length; k++) result.push(sub[k]);
+    }
+  }
+  return result;
+}
+
 function App() {
   // -- Core state ------------------------------------------
   const stored = useMemo(function() {
@@ -136,12 +152,16 @@ function App() {
 
   const retireRecord = useCallback((tableName, pkValue) => {
     if (!stewardIdentity) return;
-    const pk = SCHEMA[tableName]?.pk;
-    if (!pk) return;
     setData(prev => {
-      const rows = prev[tableName] || [];
-      const next = rows.map(r => r[pk]===pkValue ? {...r, retiring_timestamp:new Date().toISOString()} : r);
-      const n = {...prev, [tableName]:next}; persist(n); return n;
+      const toRetire = collectCascadeRetirements(prev, tableName, pkValue);
+      const ts = new Date().toISOString();
+      let next = { ...prev };
+      for (const { tbl, pk } of toRetire) {
+        const pkField = SCHEMA[tbl].pk;
+        next = { ...next, [tbl]: next[tbl].map(r => r[pkField] === pk ? { ...r, retiring_timestamp: ts } : r) };
+      }
+      persist(next);
+      return next;
     });
   }, [persist, stewardIdentity]);
 
@@ -367,6 +387,22 @@ function App() {
     setCritFormPreAgency(null); setCritFormPreDir(null); setCritFormPreCds(null);
   }, []);
 
+  // Retire confirmation panel state
+  const [retireConfirm, setRetireConfirm] = useState(null);
+
+  const openRetireConfirm = useCallback((tableName, pkValue) => {
+    if (!stewardIdentity || !data) return;
+    const pkField = SCHEMA[tableName]?.pk;
+    if (!pkField) return;
+    const record = (data[tableName] || []).find(r => r[pkField] === pkValue);
+    if (!record) return;
+    const toRetire = collectCascadeRetirements(data, tableName, pkValue);
+    const childCounts = {};
+    for (const { tbl } of toRetire.slice(1)) childCounts[tbl] = (childCounts[tbl] || 0) + 1;
+    const cascadeSummary = Object.entries(childCounts).map(([tbl, count]) => ({ tbl, count }));
+    setRetireConfirm({ tableName, pkValue, record, cascadeSummary });
+  }, [stewardIdentity, data]);
+
   // Rule allocation form state
   const [allocFormRecord, setAllocFormRecord] = useState(null);
   const [allocFormIsEdit, setAllocFormIsEdit] = useState(false);
@@ -452,9 +488,10 @@ function App() {
     data, lookups, savedAt, hasData,
     updateTable, upsertRecord, retireRecord, restoreRecord, bulkSetRetiring, nextPk, designateAsMaster,
     openForm, openCritForm, openSqlPanel, openAllocForm, openCdeForm, navigate, openDdlForm,
+    openRetireConfirm,
     isMaster, stewardIdentity,
     canEdit: !!stewardIdentity,
-  }), [data, lookups, savedAt, hasData, updateTable, upsertRecord, retireRecord, restoreRecord, bulkSetRetiring, nextPk, designateAsMaster, openForm, openCritForm, openSqlPanel, openAllocForm, openCdeForm, navigate, openDdlForm, isMaster, stewardIdentity]);
+  }), [data, lookups, savedAt, hasData, updateTable, upsertRecord, retireRecord, restoreRecord, bulkSetRetiring, nextPk, designateAsMaster, openForm, openCritForm, openSqlPanel, openAllocForm, openCdeForm, navigate, openDdlForm, openRetireConfirm, isMaster, stewardIdentity]);
 
   // -- Screen renderer --------------------------------------
   const renderScreen = () => {
@@ -667,6 +704,15 @@ function App() {
           preCdsId={critFormPreCds}
           onClose={closeCritForm}
           data={data}
+        />
+      )}
+
+      {/* Retire confirmation panel -- rendered at App level */}
+      {retireConfirm && (
+        <RetireConfirmPanel
+          confirm={retireConfirm}
+          onConfirm={() => { retireRecord(retireConfirm.tableName, retireConfirm.pkValue); setRetireConfirm(null); }}
+          onCancel={() => setRetireConfirm(null)}
         />
       )}
     </AppContext.Provider>

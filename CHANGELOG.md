@@ -4,6 +4,18 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260902-1653 — Feature: cascading retirement with confirmation panel (Part 1 — CDE)
+
+### Added
+- **`src/10_constants.js`** -- `RETIRE_CASCADE` map: declares which child tables must be retired when a parent record is retired, keyed by parent table with FK field references. Covers the full hierarchy: Agency → Directorate → CDS → CDE → (Criticality, Rule Allocations, Shortlist Tags); also Data Quality Rule → Allocations; Data Steward → Stewardship.
+- **`src/90_panels.js`** -- `getRecordDisplayName()` helper: returns a human-readable label for a record given its table name (e.g. `DB.Table.Field` for CDEs, rule name for rules). `RetireConfirmPanel` component: centred modal overlay shown before any retirement executes. Displays the target record identity, an amber warning box listing counts of cascade-affected child records by table, and Cancel / Confirm retirement buttons.
+- **`src/240_app.js`** -- `collectCascadeRetirements()` module-level helper: walks `RETIRE_CASCADE` recursively and returns a flat list of all records to retire (parent + live children). `retireRecord` now applies the full cascade in a single `setData` call with one shared timestamp. `openRetireConfirm(tableName, pkValue)` added to context: computes the cascade preview and opens `RetireConfirmPanel`; used by UI retire buttons. `RetireConfirmPanel` rendered at App level (avoids overflow/transform ancestor issue).
+
+### Changed
+- **`src/141_view_cde_list.js`** -- CDE retire button on the Data and Stewardship page now routes through `openRetireConfirm` instead of calling `retireRecord` directly. All other retire buttons across the app are unchanged in this release (Part 2 will migrate them).
+
+---
+
 ## build-20260902-1613 — Fix: delta export leaking born-and-died steward records as inserts
 
 ### Fixed

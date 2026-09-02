@@ -1,5 +1,5 @@
 function CriticalDataElementView({ initialSearch }) {
-  const { data, upsertRecord, retireRecord, restoreRecord, openCdeForm, openForm, nextPk, canEdit, stewardIdentity, isMaster, openSqlPanel } = useApp();
+  const { data, upsertRecord, retireRecord, restoreRecord, openCdeForm, openForm, nextPk, canEdit, stewardIdentity, isMaster, openSqlPanel, openRetireConfirm } = useApp();
   const dp = !canEdit ? { style:{ opacity:0.35, cursor:'not-allowed', pointerEvents:'none' }, title:'Set your steward identity in Settings to make changes' } : {};
 
   const [search,      setSearch]      = useState(initialSearch || '');
@@ -730,7 +730,7 @@ function CriticalDataElementView({ initialSearch }) {
                                                   ) : (
                                                     <button {...dp} className="btn btn-ghost"
                                                       style={{ fontSize:10, padding:'2px 6px' }}
-                                                      onClick={() => canEdit && retireRecord('critical_data_element', pk)}
+                                                      onClick={() => canEdit && openRetireConfirm('critical_data_element', pk)}
                                                       title="Retire">
                                                       <Icon.EyeOff/>
                                                     </button>
