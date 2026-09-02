@@ -2679,7 +2679,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260902-1237</div>
+              <div className="header-app-sub">build-20260902-1245</div>
             </div>
           </div>
         </div>
@@ -18209,6 +18209,46 @@ function UploaderReviewView(props) {
   const hasExclusions   = totalExcluded > 0;
   const confirmLabel    = exporting ? 'Exporting...' : (hasExclusions ? 'Export ZIP + receipt' : 'Export ZIP');
 
+  const [sortCol, setSortCol] = useState('cde');
+  const [sortDir, setSortDir] = useState('asc');
+
+  function handleColClick(col) {
+    if (sortCol === col) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortCol(col);
+      setSortDir('asc');
+    }
+  }
+
+  function sortItems(items) {
+    return [...items].sort(function(a, b) {
+      if (sortCol === 'cde') {
+        const av = (a.cde ? a.cde.source_field_name : '') || '';
+        const bv = (b.cde ? b.cde.source_field_name : '') || '';
+        return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+      }
+      if (sortCol === 'rule') {
+        const av = (a.rule ? a.rule.rule_name : '') || '';
+        const bv = (b.rule ? b.rule.rule_name : '') || '';
+        return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+      }
+      // Check columns: asc = failures first (0 before 1), desc = passes first
+      const av = a.checks[sortCol] ? 1 : 0;
+      const bv = b.checks[sortCol] ? 1 : 0;
+      return sortDir === 'asc' ? av - bv : bv - av;
+    });
+  }
+
+  function SortIndicator(col) {
+    if (sortCol !== col) return null;
+    return (
+      <span style={{ marginLeft:3, fontSize:9, color:'var(--accent)' }}>
+        {sortDir === 'asc' ? String.fromCharCode(9650) : String.fromCharCode(9660)}
+      </span>
+    );
+  }
+
   // Build Agency > CDS > items tree from excluded list, sorted alphabetically by acronym
   // agencyGroups: [{ agencyId, agency, cdsGroups: [{ cdsId, cdsName, items[] }] }]
   const agencyGroups = useMemo(() => {
@@ -18457,18 +18497,26 @@ function UploaderReviewView(props) {
                             </colgroup>
                             <thead>
                               <tr>
-                                <th style={{ ...colHeaderStyle, textAlign:'left' }}>CDE</th>
-                                <th style={{ ...colHeaderStyle, textAlign:'left' }}>Rule</th>
+                                <th style={{ ...colHeaderStyle, textAlign:'left', cursor:'pointer' }}
+                                  onClick={() => handleColClick('cde')}>
+                                  {'CDE'}{SortIndicator('cde')}
+                                </th>
+                                <th style={{ ...colHeaderStyle, textAlign:'left', cursor:'pointer' }}
+                                  onClick={() => handleColClick('rule')}>
+                                  {'Rule'}{SortIndicator('rule')}
+                                </th>
                                 {CHECK_COLS.map(col => (
-                                  <th key={col.key} style={colHeaderStyle} title={col.tip}>
-                                    {col.label}
+                                  <th key={col.key} style={{ ...colHeaderStyle, cursor:'pointer' }}
+                                    title={col.tip}
+                                    onClick={() => handleColClick(col.key)}>
+                                    {col.label}{SortIndicator(col.key)}
                                   </th>
                                 ))}
                                 <th style={colHeaderStyle}>Include?</th>
                               </tr>
                             </thead>
                             <tbody>
-                              {cdsGroup.items.map((item, rowIdx) => {
+                              {sortItems(cdsGroup.items).map((item, rowIdx) => {
                                 const allocId  = item.allocation.data_quality_rule_allocation_id;
                                 const cdeName  = item.cde  ? (item.cde.source_field_name || '-') : '-';
                                 const ruleName = item.rule ? (item.rule.rule_name        || '-') : '-';
