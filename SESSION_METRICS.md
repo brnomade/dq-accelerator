@@ -5,6 +5,24 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260902-1840 — Enhancement: cascade retirement null_fk action
+
+**Date:** 2026-09-02
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Analyse cascade definition and design null_fk approach | 10 min | 0 min | 0 min | |
+| Write DESIGN_CASCADE_RETIREMENT_PART2.md + PLAN | 0 min | 15 min | 0 min | |
+| Implement infrastructure (RETIRE_CASCADE, collector, retireRecord, panel) | 0 min | 0 min | 20 min | |
+| **Total** | **10 min** | **15 min** | **20 min** | |
+
+### Changes delivered
+- `src/10_constants.js`: `action` field added to all `RETIRE_CASCADE` entries
+- `src/240_app.js`: `collectCascadeRetirements`, `retireRecord`, `openRetireConfirm` updated
+- `src/90_panels.js`: `RetireConfirmPanel` renders amber retire section + blue unlink section
+
+---
+
 ## build-20260902-1807 — Enhancement: duplicate PK warning shown in import log UI
 
 **Date:** 2026-09-02
