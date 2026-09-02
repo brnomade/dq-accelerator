@@ -4,6 +4,45 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260902-1038 — Fix: validation placeholder check and user guide correction
+
+### Fixed
+- **`src/231_uploader_validation.js`** -- The three placeholder checks were logically inverted: they tested whether `{PLACEHOLDER}` remained in the *substituted* SQL, which can never be true when CDE fields are non-blank (already checked). Corrected to test whether each placeholder is *absent* from the original `sql_code` (`=== -1`), which is the same test `computeRuleSqlWarnings` uses as a SEVERE warning. Reason strings updated from `'Unresolved placeholder...'` to `'Missing placeholder...'`.
+- **`documentation/user-guide/import-export/uploader-export.html`** -- Exclusion criteria list corrected to match the actual check: "The rule SQL is missing a required placeholder" (was: "a placeholder token remains unresolved after substitution").
+
+---
+
+## build-20260902-1026 — Fix: Uploader tab UI corrections
+
+### Fixed
+- **`src/232_uploader_export.js`** -- Settings card now shows a record-count summary line matching the Backup tab pattern (e.g. `22 CSV files - 1,481 total records - bundled as dq_uploader_YYYYMMDDHHMMSS.zip`), updating live when the soft-deleted toggle changes.
+- **`src/232_uploader_export.js`** -- ZIP and receipt downloads now use `saveWithPicker` (file explorer dialog), consistent with the Backup and Master export tabs. If the user cancels the ZIP dialog the receipt dialog is suppressed and the view stays on the review screen.
+- **`src/232_uploader_export.js`** -- Confirm button label simplified to `Export File` (was conditionally `Export ZIP` or `Export ZIP + receipt`), removing the inconsistent dual naming.
+
+---
+
+## build-20260902-1018 — Feature: Uploader Export with validity filter
+
+### Added
+- **`src/231_uploader_validation.js`** (new) -- Pure-logic allocation validity filter. `computeUploaderExclusions(data, includeSoftDeleted)` classifies every rule allocation as included or excluded based on missing SQL, incomplete CDE source fields, unresolvable placeholder tokens, and basic SQL sanity checks (quote balance, parenthesis depth). `buildUploaderReceipt(excluded, totalEvaluated)` builds the exclusion receipt JSON Blob. No UI in this file.
+- **`src/232_uploader_export.js`** (new) -- `UploaderExportTab` component. Settings view (soft-deleted toggle, Export for Uploader button); review view (headline counts, expandable Excluded / Included sections); confirm triggers ZIP download followed by receipt download when exclusions exist. Tab returns to settings after download.
+- **`documentation/user-guide/import-export/uploader-export.html`** (new) -- Step-by-step guide covering the full uploader export workflow.
+
+### Changed
+- **`src/230_screen_export.js`** -- Export page refactored from single-scroll layout to tabbed layout matching the Import page pattern. Master users see: Master / Uploader / Backup / Tables tabs. Non-master users see: Delta / Backup tabs. Existing export behaviour is unchanged. Read-only mode banner moved inside the Backup tab. Active tab indicator uses `var(--accent)`.
+
+---
+
+## 2026-08-26 — Refactor: prompt helpers code quality improvements (no build)
+
+### Changed
+- **`src/46_prompt_helpers.js`** -- Code quality fixes with no change to prompt output:
+  - `buildProfilingEvidenceBlock`: return type changed from `string[]` to a pre-joined `string`, consistent with every other helper in the file. Caller in `buildSuggestionPrompt` updated accordingly (`evidenceBlocks.join('\n\n')` replaced by plain `evidenceBlocks`).
+  - `buildBlockedRuleTaskPrompt` (new) and `buildPassingRuleTaskPrompt` (new): the two TASK sections previously built inline in `buildRuleAssistantPrompt` via one-line-per-push are extracted into standalone helper functions using the standard `[...].join('\n')` pattern.
+  - Grammar: "on following evidence" corrected to "on the following evidence" (line 465).
+
+---
+
 ## build-20260825-2316 — Enhancement: refine AI Assistant prompt for Rule form panel
 
 ### Changed

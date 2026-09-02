@@ -5,6 +5,73 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260902-1038 — Fix: validation placeholder check and user guide correction
+
+**Date:** 2026-09-02
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Code review: found inverted placeholder condition | 10 min | 0 min | 0 min | |
+| Fix placeholder checks + user guide update | 0 min | 0 min | 5 min | |
+| **Total** | **10 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/231_uploader_validation.js`: placeholder checks corrected (inverted condition fixed, operand changed from substituted to original sql_code)
+- `documentation/user-guide/import-export/uploader-export.html`: exclusion criteria corrected
+
+---
+
+## build-20260902-1026 — Fix: Uploader tab UI corrections
+
+**Date:** 2026-09-02
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Three UI fixes (summary, saveWithPicker, button label) | 5 min | 0 min | 10 min | |
+| **Total** | **5 min** | **0 min** | **10 min** | |
+
+### Changes delivered
+- `src/232_uploader_export.js`: record-count summary, saveWithPicker, unified button label
+
+---
+
+## build-20260902-1018 — Feature: Uploader Export with validity filter
+
+**Date:** 2026-09-02
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Pre-implementation Q&amp;A (3 Qs clarified) | 15 min | 0 min | 0 min | |
+| 231_uploader_validation.js | 0 min | 0 min | 15 min | |
+| 232_uploader_export.js | 0 min | 0 min | 25 min | |
+| 230_screen_export.js refactor | 0 min | 0 min | 20 min | |
+| Docs, CHANGELOG, SESSION_METRICS | 0 min | 0 min | 15 min | |
+| **Total** | **15 min** | **0 min** | **75 min** | |
+
+### Changes delivered
+- `src/231_uploader_validation.js` (new): `computeUploaderExclusions` + `buildUploaderReceipt`
+- `src/232_uploader_export.js` (new): `UploaderExportTab` with settings + review views
+- `src/230_screen_export.js`: tabbed layout; Master / Uploader / Backup / Tables / Delta tabs
+- `documentation/user-guide/import-export/uploader-export.html` (new)
+- `APP_TREE.md`: two new files registered
+
+---
+
+## 2026-08-26 — Refactor: prompt helpers code quality improvements (no build)
+
+**Date:** 2026-08-26
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Code review (3 rounds) | 20 min | 0 min | 0 min | — |
+| Fix: return type, helper extraction, grammar | 0 min | 0 min | 5 min | — |
+| **Total** | **20 min** | **0 min** | **5 min** | — |
+
+### Changes delivered
+- `src/46_prompt_helpers.js`: `buildProfilingEvidenceBlock` return type normalised to string; TASK sections extracted into `buildBlockedRuleTaskPrompt` and `buildPassingRuleTaskPrompt`; grammar fix on line 465.
+
+---
+
 ## build-20260825-2316 — Enhancement: refine AI Assistant prompt for Rule form panel
 
 **Date:** 2026-08-25

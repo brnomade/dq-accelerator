@@ -1453,6 +1453,17 @@ function RuleSqlWarningNotices({ warnings, hint }) {
 // Shared building blocks
 // ---------------------------------------------------------------------------
 
+function buildAthenaDialectPrompt() {
+  return [
+    'SQL DIALECT CONSTRAINT:',
+    'All SQL you write must be valid AWS Athena SQL (Presto/Trino engine) -- this is the only',
+    'engine the DQ Accelerator executes against. Do not use syntax, functions, or conventions',
+    'valid in other dialects (e.g. T-SQL, MySQL, PostgreSQL-only functions) if they are not also',
+    'valid in Athena. If a standard\'s example syntax is ever ambiguous between dialects, prefer',
+    'the Athena-valid form.'
+  ].join('\n');
+}
+
 function buildEngineMechanicsPrompt() {
   return [
     'HOW THE DQ ENGINE EXECUTES THIS SQL (read before proposing any fix):',
@@ -1488,9 +1499,7 @@ function buildSqlStandardsPrompt() {
   ].join('\n');
 }
 
-function buildNamingConventionsPrompt(opts) {
-  var cdsName   = (opts && opts.cdsName)   || null;
-  var fieldName = (opts && opts.fieldName) || null;
+function buildNamingConventionsPrompt() {
   return [
     'RULE NAMING CONVENTIONS (follow strictly):',
     'Rule names must be assertive -- they state what is enforced, not what is checked.',
@@ -1543,7 +1552,7 @@ function buildWorkedExamplePrompt() {
     '',
     'Expected output:',
     '### Clarifying Questions',
-    '(none -- intent is unambiguous)',
+    'Nothing to ask',
     '',
     '### Corrected sql_code',
     'SELECT COUNT(*) FROM {SOURCE_DATABASE_NAME}.{SOURCE_TABLE_NAME} WHERE NULLIF(TRIM({SOURCE_FIELD_NAME}), \'\') IS NULL',
@@ -1552,7 +1561,7 @@ function buildWorkedExamplePrompt() {
     'No change needed',
     '',
     '### Additional Observations',
-    '(none)',
+    'Nothing to add',
     '',
     '### Name Assessment',
     'Compliant: No',
@@ -1582,7 +1591,7 @@ function buildOutputFormatPromptForRuleAssistantPrompt() {
     'Respond in exactly this structure, so the output can be parsed and pasted back into the form:',
     '',
     '### Clarifying Questions',
-    '(bullet list, max 3 -- omit this section entirely if none)',
+    '(bullet list, max 3 -- report "Nothing to ask" if none)',
     '',
     '### Corrected sql_code',
     '(single SQL statement, "No change needed", or -- if the rule is blocked per Step 1 --',
@@ -1593,7 +1602,7 @@ function buildOutputFormatPromptForRuleAssistantPrompt() {
     '"Cannot be determined until Clarifying Questions are answered")',
     '',
     '### Additional Observations',
-    '(bullet list of anything noticed outside the listed warnings -- omit if none)',
+    '(bullet list of anything noticed outside the listed warnings -- report "Nothing to add" if nothing noticed)',
     '',
     '### Name Assessment',
     'Compliant: Yes / No / Cannot be determined until Clarifying Questions are answered',
@@ -1607,6 +1616,53 @@ function buildOutputFormatPromptForRuleAssistantPrompt() {
 // Context: user is reviewing / fixing an existing or new rule in the form panel.
 // No CDE or CDS context is available -- only the rule fields themselves.
 // ---------------------------------------------------------------------------
+
+function buildWithWarningsTaskPrompt() {
+  return [
+    'TASK:',
+    'Work through these steps in order:',
+    '1. Check for real intent, and decide if the rule is BLOCKED. If the Name, Explanation,',
+    '   and SQL together give no genuine business context to work from (e.g. placeholder',
+    '   text, gibberish, or a query with no recoverable logic), this rule is blocked: do not',
+    '   invent a plausible-sounding fix. Go straight to step 2 to ask what the rule is meant',
+    '   to check, then STOP -- do not attempt steps 3 and 4 in this turn. Still complete step',
+    '   5 if the name can be judged independently of the SQL\'s intent; if the name is equally',
+    '   meaningless, say so there instead of guessing. If the rule is not blocked, continue.',
+    '2. Clarify if genuinely needed. Ask at most 2-3 clarifying questions -- either because',
+    '   the rule is blocked per step 1, or because a fix cannot otherwise proceed without an',
+    '   answer. Do not ask questions you could reasonably infer.',
+    '3. Correct the SQL (skip entirely if step 1 found the rule blocked). Provide corrected',
+    '   sql_code and/or sql_code_sample that resolve every warning listed above, in Athena-',
+    '   valid SQL, following the engine mechanics, coding standards, and scope rules above.',
+    '4. Self-check before responding (skip if blocked). Confirm silently: no trailing',
+    '   semicolon; no CAST(); no snapshot/timestamp condition added by you; all three',
+    '   placeholders present where relevant; NULLIF(TRIM(...)) pattern used for null/empty',
+    '   checks; SQL is Athena-valid. Fix anything that fails before outputting.',
+    '5. Assess the name. Check the Name above against the naming convention above. If it',
+    '   does not comply, state what is wrong and recommend a corrected name -- but do not',
+    '   apply it. The user will update the Name field manually.'
+  ].join('\n');
+}
+
+function buildPassingRuleTaskPrompt() {
+  return [
+    'TASK:',
+    'The SQL passes all automated validation checks. Work through these steps in order:',
+    '1. Check for real intent, and decide if the rule is BLOCKED. Automated checks only',
+    '   confirm structural correctness, not that the SQL is meaningful. If the Name,',
+    '   Explanation, and SQL together give no genuine business context (e.g. gibberish table,',
+    '   column, or field names with no recoverable logic), this rule is blocked: do not',
+    '   invent a plausible-sounding review -- ask what the rule is meant to check instead,',
+    '   then STOP. Still complete step 3 if the name can be judged independently; if it is',
+    '   equally meaningless, say so there instead of guessing. If not blocked, continue.',
+    '2. Confirm the SQL is correct, is valid Athena SQL, and follows all standards above.',
+    '   Suggest any optimisations if relevant, but do not change the logic unless something',
+    '   above is actually violated.',
+    '3. Assess the name. Check the Name above against the naming convention above. If it',
+    '   does not comply, state what is wrong and recommend a corrected name -- but do not',
+    '   apply it. The user will update the Name field manually.'
+  ].join('\n');
+}
 
 function buildRuleAssistantPrompt(values, warnings) {
   var lines = [
@@ -1631,13 +1687,7 @@ function buildRuleAssistantPrompt(values, warnings) {
   }
 
   lines.push('');
-  lines.push('SQL DIALECT CONSTRAINT:');
-  lines.push('All SQL you write must be valid AWS Athena SQL (Presto/Trino engine) -- this is the only');
-  lines.push('engine the DQ Accelerator executes against. Do not use syntax, functions, or conventions');
-  lines.push('valid in other dialects (e.g. T-SQL, MySQL, PostgreSQL-only functions) if they are not also');
-  lines.push('valid in Athena. If a standard\'s example syntax is ever ambiguous between dialects, prefer');
-  lines.push('the Athena-valid form.');
-
+  lines.push(buildAthenaDialectPrompt());
   lines.push('');
   lines.push(buildEngineMechanicsPrompt());
   lines.push('');
@@ -1645,9 +1695,9 @@ function buildRuleAssistantPrompt(values, warnings) {
   lines.push('');
   lines.push(buildNamingConventionsPrompt());
   lines.push('');
-  lines.push(buildWorkedExamplePrompt());
-  lines.push('');
   lines.push(buildScopePromptForRuleAssistantPrompt());
+  lines.push('');
+  lines.push(buildWorkedExamplePrompt());
 
   if (warnings && warnings.length > 0) {
     lines.push('');
@@ -1656,47 +1706,11 @@ function buildRuleAssistantPrompt(values, warnings) {
       lines.push('  [' + w.level + '] ' + w.msg);
     });
     lines.push('');
-    lines.push('TASK:');
-    lines.push('Work through these steps in order:');
-    lines.push('1. Check for real intent, and decide if the rule is BLOCKED. If the Name, Explanation,');
-    lines.push('   and SQL together give no genuine business context to work from (e.g. placeholder');
-    lines.push('   text, gibberish, or a query with no recoverable logic), this rule is blocked: do not');
-    lines.push('   invent a plausible-sounding fix. Go straight to step 2 to ask what the rule is meant');
-    lines.push('   to check, then STOP -- do not attempt steps 3 and 4 in this turn. Still complete step');
-    lines.push('   5 if the name can be judged independently of the SQL\'s intent; if the name is equally');
-    lines.push('   meaningless, say so there instead of guessing. If the rule is not blocked, continue.');
-    lines.push('2. Clarify if genuinely needed. Ask at most 2-3 clarifying questions -- either because');
-    lines.push('   the rule is blocked per step 1, or because a fix cannot otherwise proceed without an');
-    lines.push('   answer. Do not ask questions you could reasonably infer.');
-    lines.push('3. Correct the SQL (skip entirely if step 1 found the rule blocked). Provide corrected');
-    lines.push('   sql_code and/or sql_code_sample that resolve every warning listed above, in Athena-');
-    lines.push('   valid SQL, following the engine mechanics, coding standards, and scope rules above.');
-    lines.push('4. Self-check before responding (skip if blocked). Confirm silently: no trailing');
-    lines.push('   semicolon; no CAST(); no snapshot/timestamp condition added by you; all three');
-    lines.push('   placeholders present where relevant; NULLIF(TRIM(...)) pattern used for null/empty');
-    lines.push('   checks; SQL is Athena-valid. Fix anything that fails before outputting.');
-    lines.push('5. Assess the name. Check the Name above against the naming convention above. If it');
-    lines.push('   does not comply, state what is wrong and recommend a corrected name -- but do not');
-    lines.push('   apply it. The user will update the Name field manually.');
+    lines.push(buildWithWarningsTaskPrompt());
   } else {
     lines.push('');
-    lines.push('TASK:');
-    lines.push('The SQL passes all automated validation checks. Work through these steps in order:');
-    lines.push('1. Check for real intent, and decide if the rule is BLOCKED. Automated checks only');
-    lines.push('   confirm structural correctness, not that the SQL is meaningful. If the Name,');
-    lines.push('   Explanation, and SQL together give no genuine business context (e.g. gibberish table,');
-    lines.push('   column, or field names with no recoverable logic), this rule is blocked: do not');
-    lines.push('   invent a plausible-sounding review -- ask what the rule is meant to check instead,');
-    lines.push('   then STOP. Still complete step 3 if the name can be judged independently; if it is');
-    lines.push('   equally meaningless, say so there instead of guessing. If not blocked, continue.');
-    lines.push('2. Confirm the SQL is correct, is valid Athena SQL, and follows all standards above.');
-    lines.push('   Suggest any optimisations if relevant, but do not change the logic unless something');
-    lines.push('   above is actually violated.');
-    lines.push('3. Assess the name. Check the Name above against the naming convention above. If it');
-    lines.push('   does not comply, state what is wrong and recommend a corrected name -- but do not');
-    lines.push('   apply it. The user will update the Name field manually.');
- }
-
+    lines.push(buildPassingRuleTaskPrompt());
+  }
   lines.push('');
   lines.push(buildOutputFormatPromptForRuleAssistantPrompt());
 
@@ -1710,121 +1724,230 @@ function buildRuleAssistantPrompt(values, warnings) {
 // rules. Response must be a JSON array the application can parse and import.
 // ---------------------------------------------------------------------------
 
-function buildSuggestionPrompt(cde, ddlCols, profRecord, cdsName, existingRulesCtx) {
-  const db    = cde.source_database_name || '';
-  const tbl   = cde.source_table_name    || '';
-  const field = cde.source_field_name    || '';
-  const snap  = cde.source_snapshot_filter || '';
-  const phys  = ddlCols.find(c => c.name === field)?.type || profRecord.physical_data_type || 'UNKNOWN';
-  const sem   = profRecord.semantic_type || '';
-
-  const lines = [
-    'You are a data quality expert helping define SQL-based data quality rules for AWS Athena.',
+function buildGeneratorNamingConventionsPrompt(field) {
+  return [
+    'RULE NAMING CONVENTIONS (follow strictly):',
+    'Rule names must be assertive -- they state what is enforced, not what is checked.',
+    '  GOOD: "Values for this field cannot be null or empty"',
+    '  BAD:  "Check if the value is null or empty" / "Validate null values"',
     '',
-    'FIELD DETAILS:',
-    'Field name:      ' + field,
-    'Database:        ' + db,
-    'Table:           ' + tbl,
-    'Physical type:   ' + phys,
-    sem ? ('Semantic type:   ' + sem) : '',
-    'Snapshot filter: ' + (snap || 'none'),
+    'You may only use one of these two prefix forms when naming a suggestion:',
+    '  1. "GENERIC - "        : the rule is fully generic (applies to any field).',
+    '  2. "' + field + ' - " : use this CDE\'s own name ("' + field + '") directly as the prefix.',
+    '                       Indicates the rule only works for this specific CDE. If the name is',
+    '                       long, shorten it in a way that stays logical and recognisable.',
     '',
-  ];
-
-  if (profRecord.summary_raw) {
-    lines.push('PROFILING SUMMARY:');
-    lines.push(profRecord.summary_raw);
-    lines.push('');
-  }
-  if (profRecord.type_patterns_raw) {
-    lines.push('TYPE PATTERNS:');
-    lines.push(profRecord.type_patterns_raw);
-    lines.push('');
-  }
-  if (profRecord.top_values_raw) {
-    lines.push('TOP VALUES:');
-    lines.push(profRecord.top_values_raw);
-    lines.push('');
-  }
-  if (profRecord.length_distribution_raw) {
-    lines.push('LENGTH DISTRIBUTION:');
-    lines.push(profRecord.length_distribution_raw);
-    lines.push('');
-  }
-  if (profRecord.profiling_notes) {
-    lines.push('NOTES:');
-    lines.push(profRecord.profiling_notes);
-    lines.push('');
-  }
-
-  const rCtx    = existingRulesCtx || {};
-  const gRules  = rCtx.genericRules || [];
-  const cRules  = rCtx.cdsRules     || [];
-  const ceRules = rCtx.cdeRules     || [];
-  if (gRules.length || cRules.length || ceRules.length) {
-    lines.push('EXISTING RULES IN CATALOGUE -- DO NOT DUPLICATE:');
-    lines.push('If a suggestion you would make is equivalent to any rule listed below, omit it entirely.');
-    lines.push('For Generic rules: do NOT create a new Generic rule that overlaps with one already listed.');
-    lines.push('Reuse the exact existing rule name where applicable -- do not paraphrase it.');
-    lines.push('');
-    if (gRules.length) {
-      lines.push('Generic rules (reusable across any field -- exact names, do not reinvent these):');
-      gRules.forEach(r => lines.push('  - "' + r.rule_name + '"'));
-      lines.push('');
-    }
-    if (cRules.length) {
-      lines.push('Rules already applied to other CDEs in this Critical Data Set' + (cdsName ? ' ("' + cdsName + '")' : '') + ':');
-      cRules.forEach(r => lines.push('  - "' + r.rule_name + '"' + (r.dimension ? ' (' + r.dimension + ')' : '')));
-      lines.push('');
-    }
-    if (ceRules.length) {
-      lines.push('Rules already allocated to this specific CDE (do not re-suggest):');
-      ceRules.forEach(r => lines.push('  - "' + r.rule_name + '"' + (r.dimension ? ' (' + r.dimension + ')' : '')));
-      lines.push('');
-    }
-  }
-
-  lines.push('TASK:');
-  lines.push('Based on the profiling data above, suggest data quality rules for this field.');
-  lines.push('Each rule must be implementable as an Athena SQL SELECT COUNT(*) query counting failing records.');
-  lines.push('Use these exact placeholders in the SQL: {SOURCE_DATABASE_NAME}, {SOURCE_TABLE_NAME}, {SOURCE_FIELD_NAME}.');
-  lines.push('');
-  lines.push(buildSqlStandardsPrompt());
-  if (snap) lines.push('Note: the snapshot filter for this table is "' + snap + '" -- be aware of it when designing the WHERE clause logic, but do NOT include it in either query.');
-  lines.push('');
-  lines.push('Respond ONLY with a valid JSON array. No explanation, no markdown, no code fences.');
-  lines.push(buildNamingConventionsPrompt({ cdsName: cdsName, fieldName: field }));
-  lines.push('');
-  lines.push('Each element is either a NEW rule or a REUSE suggestion -- choose based on the catalogue above.');
-  lines.push('');
-  lines.push('NEW rule (no equivalent exists in the catalogue):');
-  lines.push('[');
-  lines.push('  {');
-  lines.push('    "rule_name": "prefix + assertive statement, e.g. \'Generic - field values cannot be null or empty\' or \'CDE ' + field + ' - values must match the expected pattern\'",');
-  lines.push('    "dimension": "one of: Completeness, Validity, Uniqueness, Consistency, Timeliness, Accuracy",');
-  lines.push('    "description": "business rule statement -- must start with \'As a business rule, \' and complete the sentence in plain English. Do not mention SQL, thresholds, or technical implementation details.",');
-  lines.push('    "basis": "what in the profiling data triggered this suggestion",');
-  lines.push('    "sql_code": "SELECT COUNT(*) FROM {SOURCE_DATABASE_NAME}.{SOURCE_TABLE_NAME} WHERE <business logic only -- no snapshot filter -- no semicolon>",');
-  lines.push('    "sql_code_sample": "SELECT * FROM {SOURCE_DATABASE_NAME}.{SOURCE_TABLE_NAME} LIMIT 100 (no WHERE clause -- no semicolon)"');
-  lines.push('  }');
-  lines.push(']');
-  lines.push('');
-  lines.push('REUSE suggestion (an existing rule from the catalogue already covers this concern):');
-  lines.push('[');
-  lines.push('  {');
-  lines.push('    "reuse": true,');
-  lines.push('    "existing_rule_name": "exact rule name copied from the catalogue list above",');
-  lines.push('    "dimension": "one of: Completeness, Validity, Uniqueness, Consistency, Timeliness, Accuracy",');
-  lines.push('    "basis": "why this existing rule applies to this CDE, and what in the profiling confirms it"');
-  lines.push('  }');
-  lines.push(']');
-  lines.push('');
-  lines.push('Return a single JSON array mixing both types as appropriate.');
-  lines.push('For each concern you identify, prefer REUSE over NEW if an equivalent rule exists in the catalogue.');
-
-  return lines.filter(l => l !== null).join('\n');
+    'You do NOT have visibility into other CDEs in this CDS -- only this field\'s profiling data.',
+    'For that reason, NEVER propose a CDS-level prefix (a rule spanning multiple CDEs), and NEVER',
+    'omit the prefix entirely (an unprefixed name is a legacy form used elsewhere, not valid for',
+    'suggestions you produce). If a concern you identify feels like it might actually be CDS-wide',
+    '(e.g. a cross-field consistency issue), still propose the best Generic or CDE-specific version',
+    'of it you can, and say so explicitly in "basis" so the Steward can escalate it manually.',
+    '',
+    'Do not name a specific field directly in the rule name unless the rule cannot possibly be',
+    'parameterised -- rules are reusable templates, and naming a field directly signals a one-off.'
+  ].join('\n');
 }
 
+function buildProfilingEvidenceBlock(profRecord) {
+  var blocks = [];
+  if (profRecord.summary_raw) {
+    blocks.push('Summary:\n' + profRecord.summary_raw);
+  }
+  if (profRecord.type_patterns_raw) {
+    blocks.push('Type patterns:\n' + profRecord.type_patterns_raw);
+  }
+  if (profRecord.top_values_raw) {
+    blocks.push('Top values:\n' + profRecord.top_values_raw);
+  }
+  if (profRecord.length_distribution_raw) {
+    blocks.push('Length distribution:\n' + profRecord.length_distribution_raw);
+  }
+  if (profRecord.profiling_notes) {
+    blocks.push('Steward notes:\n' + profRecord.profiling_notes);
+  }
+  return blocks.join('\n\n');
+}
+
+function buildRuleCataloguePrompt(existingRulesCtx, cdsName) {
+  var rCtx    = existingRulesCtx || {};
+  var gRules  = rCtx.genericRules || [];
+  var cRules  = rCtx.cdsRules     || [];
+  var ceRules = rCtx.cdeRules     || [];
+
+  if (!gRules.length && !cRules.length && !ceRules.length) {
+    return null;
+  }
+
+  var lines = [
+    'EXISTING RULE CATALOGUE -- AVOID DUPLICATES:',
+    'If a suggestion you would make is equivalent to any rule listed below, do not create a new',
+    'one -- output a REUSE suggestion referencing it instead, using its exact existing name (do not',
+    'paraphrase it). This applies especially to Generic rules: never create a new Generic rule that',
+    'overlaps with one already listed.',
+    ''
+  ];
+  if (gRules.length) {
+    lines.push('Generic rules (reusable across any field -- exact names, do not reinvent these):');
+    gRules.forEach(function(r) { lines.push('  - "' + r.rule_name + '"'); });
+    lines.push('');
+  }
+  if (cRules.length) {
+    lines.push('Rules already applied to other CDEs in this CDS' + (cdsName ? ' ("' + cdsName + '")' : '') + ':');
+    cRules.forEach(function(r) { lines.push('  - "' + r.rule_name + '"' + (r.dimension ? ' (' + r.dimension + ')' : '')); });
+    lines.push('');
+  }
+  if (ceRules.length) {
+    lines.push('Rules already allocated to this specific CDE (do not re-suggest):');
+    ceRules.forEach(function(r) { lines.push('  - "' + r.rule_name + '"' + (r.dimension ? ' (' + r.dimension + ')' : '')); });
+    lines.push('');
+  }
+  return lines.join('\n').replace(/\n+$/, '');
+}
+
+function buildOutputSchemaPrompt() {
+  return [
+    'OUTPUT SCHEMA:',
+    'Each element of the array is either a NEW suggestion or a REUSE suggestion.',
+    '',
+    'NEW (no equivalent exists in the catalogue):',
+    '{',
+    '  "rule_name": "prefix + assertive statement -- see RULE NAMING CONVENTIONS above",',
+    '  "dimension": "one of: Completeness, Validity, Uniqueness, Consistency, Timeliness, Accuracy",',
+    '  "description": "business rule statement, starting with \'As a business rule, \' -- plain',
+    '                  English only, no SQL, thresholds, or technical implementation details",',
+    '  "basis": "what in the profiling evidence triggered this suggestion",',
+    '  "sql_code": "the business-logic query -- see engine mechanics and coding standards above",',
+    '  "sql_code_sample": "the unfiltered sample query -- see engine mechanics above"',
+    '}',
+    '',
+    'REUSE (an existing catalogue rule already covers this concern):',
+    '{',
+    '  "reuse": true,',
+    '  "existing_rule_name": "exact name copied from the catalogue above",',
+    '  "dimension": "one of: Completeness, Validity, Uniqueness, Consistency, Timeliness, Accuracy",',
+    '  "basis": "why this existing rule applies here, and what in the profiling evidence confirms it"',
+    '}'
+  ].join('\n');
+}
+
+function buildGeneratorWorkedExamplePrompt() {
+  return [
+    'WORKED EXAMPLE:',
+    'Profiling evidence (abridged) -- field "email": 12% of values are NULL; top malformed values',
+    'include entries with no "@" character.',
+    'Existing catalogue -- Generic rule "GENERIC - Values for this field cannot be null or empty"',
+    'already exists.',
+    '',
+    'Expected output:',
+    '[',
+    '  {',
+    '    "reuse": true,',
+    '    "existing_rule_name": "GENERIC - Values for this field cannot be null or empty",',
+    '    "dimension": "Completeness",',
+    '    "basis": "12% of values are NULL, matching an existing generic completeness rule -- no new rule needed"',
+    '  },',
+    '  {',
+    '    "rule_name": "email - values must contain an @ character",',
+    '    "dimension": "Validity",',
+    '    "description": "As a business rule, every populated email value must contain an \'@\' character to be considered a valid email address.",',
+    '    "basis": "Top values include entries with no \'@\' character, indicating malformed emails not covered by any existing rule",',
+    '    "sql_code": "SELECT COUNT(*) FROM {SOURCE_DATABASE_NAME}.{SOURCE_TABLE_NAME} WHERE NULLIF(TRIM({SOURCE_FIELD_NAME}), \'\') IS NOT NULL AND {SOURCE_FIELD_NAME} NOT LIKE \'%@%\'",',
+    '    "sql_code_sample": "SELECT * FROM {SOURCE_DATABASE_NAME}.{SOURCE_TABLE_NAME}"',
+    '  }',
+    ']'
+  ].join('\n');
+}
+
+function buildSuggestionPrompt(cde, ddlCols, profRecord, cdsName, existingRulesCtx) {
+  var db    = cde.source_database_name || '';
+  var tbl   = cde.source_table_name    || '';
+  var field = cde.source_field_name    || '';
+  var snap  = cde.source_snapshot_filter || '';
+  var ddlMatch = (ddlCols || []).find(function(c) { return c.name === field; }) || '';
+  var phys  = (ddlMatch && ddlMatch.type) || profRecord.physical_data_type || 'UNKNOWN';
+  var sem   = profRecord.semantic_type || '';
+
+  var lines = [
+    'You are a data quality expert helping a Data Steward define SQL-based data quality rules',
+    'for a single Critical Data Element (CDE), for execution on AWS Athena.',
+    '',
+    'FIELD UNDER REVIEW:',
+    '  Field name:      ' + field,
+    '  Database:        ' + db,
+    '  Table:           ' + tbl,
+    '  Physical type:   ' + phys
+  ];
+  if (sem) {
+    lines.push('  Semantic type:   ' + sem);
+  }
+  lines.push('  Snapshot filter: ' + (snap || 'none'));
+
+  lines.push('');
+  lines.push(buildAthenaDialectPrompt());
+
+  lines.push('');
+  lines.push(buildEngineMechanicsPrompt());
+  if (snap) {
+    lines.push('');
+    lines.push('This field\'s snapshot filter is: "' + snap + '". Be aware of it when reasoning about');
+    lines.push('the WHERE clause logic above, but do NOT include it in either query yourself.');
+  }
+
+  lines.push('');
+  lines.push(buildSqlStandardsPrompt());
+
+  lines.push('');
+  lines.push(buildGeneratorNamingConventionsPrompt(field));
+
+  var evidenceBlocks = buildProfilingEvidenceBlock(profRecord);
+  if (evidenceBlocks.length) {
+    lines.push('');
+    lines.push('PROFILING INSTRUCTIONS:');
+    lines.push('Base every suggestion on the following evidence -- do not suggest anything it does not support.');
+    lines.push('');
+    lines.push('PROFILING EVIDENCE:');
+    lines.push('');
+    lines.push(evidenceBlocks);
+    lines.push('');
+  } else {
+    lines.push('PROFILING EVIDENCE:');
+    lines.push('');
+    lines.push('No profiling evidence is available for this field.');
+  }
+
+  var cataloguePrompt = buildRuleCataloguePrompt(existingRulesCtx, cdsName);
+  if (cataloguePrompt) {
+    lines.push('');
+    lines.push(cataloguePrompt);
+  }
+
+  lines.push('');
+  lines.push(buildGeneratorWorkedExamplePrompt());
+
+  lines.push('');
+  lines.push('DECISION PROCEDURE:');
+  lines.push('For each data quality concern you identify from the profiling evidence:');
+  lines.push('1. Check the existing rule catalogue above first (if provided).');
+  lines.push('2. If an existing rule at any level (Generic, CDS, or CDE) already covers the same');
+  lines.push('   concern, output a REUSE suggestion referencing it -- do not also create a NEW');
+  lines.push('   suggestion for the same concern. Prefer REUSE over NEW whenever both are possible.');
+  lines.push('3. Only if no existing rule covers the concern, output a NEW suggestion, following the');
+  lines.push('   dialect constraint, engine mechanics, and coding standards above exactly.');
+  lines.push('4. If the profiling evidence above is empty, or too sparse to support any specific,');
+  lines.push('   evidence-based suggestion, do not invent one -- return an empty array [] instead.');
+
+  lines.push('');
+  lines.push(buildOutputSchemaPrompt());
+
+  lines.push('');
+  lines.push('REQUIRED OUTPUT FORMAT:');
+  lines.push('Respond with ONLY a single valid JSON array mixing NEW and REUSE elements as appropriate.');
+  lines.push('No explanation, no markdown, no code fences, no text before or after the array. If there');
+  lines.push('is nothing to suggest (see step 4 above), respond with exactly: []');
+
+  return lines.join('\n');
+}
 const AppContext = createContext(null);
 let _allocSearchHint = '';
 function useApp() { return useContext(AppContext); }
@@ -2556,7 +2679,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260825-2316</div>
+              <div className="header-app-sub">build-20260902-1039</div>
             </div>
           </div>
         </div>
@@ -17388,6 +17511,8 @@ function DashboardScreen() {
 
 function ExportScreen() {
   const { data, isMaster, stewardIdentity, canEdit } = useApp();
+
+  const [tab,                setTab]               = useState(() => isMaster ? 'master' : 'delta');
   const [includeSoftDeleted, setIncludeSoftDeleted] = useState(false);
   const [exporting,          setExporting]          = useState(false);
   const [exportingGroup,     setExportingGroup]     = useState(null);
@@ -17395,6 +17520,18 @@ function ExportScreen() {
   const [baseVersion,        setBaseVersion]        = useState(() => loadBaseVersion());
   const [baseSnapshot,       setBaseSnapshot]       = useState(() => loadBaseSnapshot());
   const [exportingDelta,     setExportingDelta]     = useState(false);
+
+  const tabs = isMaster
+    ? [
+        { id: 'master',   label: 'Master'   },
+        { id: 'uploader', label: 'Uploader' },
+        { id: 'backup',   label: 'Backup'   },
+        { id: 'tables',   label: 'Tables'   },
+      ]
+    : [
+        { id: 'delta',  label: 'Delta'  },
+        { id: 'backup', label: 'Backup' },
+      ];
 
   const handleExportMaster = async () => {
     setExportingMaster(true);
@@ -17458,6 +17595,7 @@ function ExportScreen() {
       await saveWithPicker(blob, filename, 'ZIP Archive', '.zip');
     } finally { setExporting(false); }
   };
+
   const handleExportGroup = async (group) => {
     setExportingGroup(group.id);
     try {
@@ -17478,8 +17616,152 @@ function ExportScreen() {
       <div className="page-title">Export</div>
       <div className="page-sub">Download individual CSVs or the full dataset as a zip for AWS import.</div>
 
-      {/* Delta export -- steward copies only */}
-      {!isMaster && (
+      {/* Tab bar */}
+      <div style={{ display:'flex', gap:0, marginBottom:20, borderBottom:'1px solid var(--border)' }}>
+        {tabs.map(function(t) {
+          const active = tab === t.id;
+          return (
+            <button key={t.id} onClick={function() { setTab(t.id); }} style={{
+              padding:'8px 20px', fontSize:13, fontWeight: active ? 700 : 400,
+              color: active ? 'var(--accent)' : 'var(--text3)',
+              background:'transparent', border:'none',
+              borderBottom: active ? '2px solid var(--accent)' : '2px solid transparent',
+              cursor:'pointer', marginBottom:'-1px', transition:'color 0.15s',
+            }}>{t.label}</button>
+          );
+        })}
+      </div>
+
+      {/* Tab: Master */}
+      {tab === 'master' && (
+        <div className="card" style={{ marginBottom:20, borderLeft:'3px solid #f5a623' }}>
+          <div className="card-title">
+            <span style={{ width:3, height:14, borderRadius:2,
+              background:'var(--amber)', display:'inline-block', marginRight:8 }}/>
+            Master export
+            <span style={{ fontSize:9, fontFamily:'var(--mono)', fontWeight:700,
+              color:'var(--amber)', background:'rgba(245,166,35,0.12)',
+              border:'1px solid rgba(245,166,35,0.4)',
+              borderRadius:3, padding:'1px 6px', marginLeft:8 }}>
+              MASTER
+            </span>
+          </div>
+          <div style={{ fontSize:11, color:'var(--text3)', marginBottom:10 }}>
+            Exports the full dataset as a versioned JSON master file for distribution to stewards.
+            Each export increments the version counter.
+          </div>
+          {baseVersion && (
+            <div style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--text3)',
+              marginBottom:10 }}>
+              Current version: <span style={{ color:'var(--amber)' }}>{baseVersion}</span>
+            </div>
+          )}
+          <button className="btn btn-primary" onClick={handleExportMaster}
+            disabled={exportingMaster}
+            style={{ background:'var(--amber)', borderColor:'var(--amber)', color:'#000' }}>
+            <Icon.Download/>
+            {exportingMaster ? 'Preparing...' : `Export master JSON${baseVersion ? ` (next: ${nextMasterVersion(baseVersion)})` : ''}`}
+          </button>
+        </div>
+      )}
+
+      {/* Tab: Uploader */}
+      {tab === 'uploader' && <UploaderExportTab />}
+
+      {/* Tab: Backup */}
+      {tab === 'backup' && (
+        <div>
+          {!canEdit && (
+            <div style={{ marginBottom:20, padding:'10px 14px', background:'var(--amber-bg)',
+              border:'1px solid rgba(245,166,35,0.4)', borderRadius:'var(--radius)',
+              fontSize:12, color:'var(--amber)' }}>
+              Exports are disabled in read-only mode. Register as a steward to enable exports.
+            </div>
+          )}
+          <div className="card" style={{ marginBottom:20 }}>
+            <div className="card-title"><span className="dot"/>Backup export</div>
+            <div className="toggle-row" style={{ borderTop:'none', marginTop:0, paddingTop:0 }}>
+              <label className="toggle">
+                <input type="checkbox" checked={includeSoftDeleted}
+                  onChange={e => setIncludeSoftDeleted(e.target.checked)}/>
+                <div className="toggle-track"/><div className="toggle-thumb"/>
+              </label>
+              <span className="toggle-label">Include soft-deleted records</span>
+              <span style={{ marginLeft:'auto' }}
+                className={`badge ${includeSoftDeleted?'badge-amber':'badge-green'}`}>
+                {includeSoftDeleted?'all records':'live only'}
+              </span>
+            </div>
+            <div style={{ marginTop:12, padding:'8px 12px', background:'var(--bg)',
+              borderRadius:'var(--radius)', fontSize:11, color:'var(--text3)',
+              fontFamily:'var(--mono)' }}>
+              {allTables.length} CSV files {'-'} {total.toLocaleString()} total records {'-'} bundled as dq_export_YYYYMMDD_HHMMSS.zip
+            </div>
+            <div style={{ marginTop:12 }}>
+              <button className="btn btn-green" onClick={handleExportAll}
+                disabled={exporting || !canEdit}>
+                <Icon.Download/>{exporting ? 'Preparing backup...' : 'Export backup'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab: Tables */}
+      {tab === 'tables' && (
+        <div>
+          {TABLE_GROUPS.map(group => {
+            const groupTotal = group.tables.reduce((s,t) => s+(counts[t]||0), 0);
+            const isExp = exportingGroup===group.id;
+            return (
+              <div key={group.id} style={{ marginBottom:20 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:10,
+                  marginBottom:8, paddingBottom:8, borderBottom:'1px solid var(--border)' }}>
+                  <div style={{ width:3, height:16, borderRadius:2, background:group.accent }}/>
+                  <span style={{ fontSize:13, fontWeight:600 }}>{group.label}</span>
+                  <span style={{ fontSize:11, color:'var(--text3)' }}>
+                    {group.tables.length} tables {'-'} {groupTotal.toLocaleString()} rows
+                  </span>
+                  <div style={{ marginLeft:'auto' }}>
+                    <button className="btn btn-ghost"
+                      style={{ padding:'2px 7px', fontSize:11 }}
+                      onClick={() => handleExportGroup(group)}
+                      disabled={isExp || !canEdit}
+                      title={`Download ${group.label}`}>
+                      <Icon.Download/>
+                    </button>
+                  </div>
+                </div>
+                <div style={{ display:'flex', flexDirection:'column', gap:3 }}>
+                  {group.tables.map(t => (
+                    <div key={t} style={{ display:'flex', alignItems:'center',
+                      padding:'7px 12px', background:'var(--bg2)',
+                      border:'1px solid var(--border)',
+                      borderLeft:`3px solid ${group.accent}`,
+                      borderRadius:'var(--radius)', gap:10 }}>
+                      <div style={{ fontFamily:'var(--mono)', fontSize:11,
+                        color:'var(--text2)', flex:1 }}>{t}.csv</div>
+                      <div style={{ fontSize:11, color:'var(--text3)',
+                        minWidth:55, textAlign:'right' }}>
+                        {counts[t].toLocaleString()} rows
+                      </div>
+                      <button className="btn btn-ghost"
+                        style={{ padding:'2px 7px', fontSize:11 }}
+                        onClick={() => exportSingleCSV(t, data, includeSoftDeleted)}
+                        disabled={!canEdit} title={`Download ${t}.csv`}>
+                        <Icon.Download/>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Tab: Delta */}
+      {tab === 'delta' && (
         <div className="card" style={{ marginBottom:20, borderLeft:'3px solid var(--accent)' }}>
           <div className="card-title">
             <span style={{ width:3, height:14, borderRadius:2,
@@ -17522,113 +17804,428 @@ function ExportScreen() {
           )}
         </div>
       )}
-
-      {/* Master JSON export -- master copy only */}
-      {isMaster && (
-        <div className="card" style={{ marginBottom:20,
-          borderLeft:'3px solid #f5a623' }}>
-          <div className="card-title">
-            <span style={{ width:3, height:14, borderRadius:2,
-              background:'var(--amber)', display:'inline-block', marginRight:8 }}/>
-            Master export
-            <span style={{ fontSize:9, fontFamily:'var(--mono)', fontWeight:700,
-              color:'var(--amber)', background:'rgba(245,166,35,0.12)',
-              border:'1px solid rgba(245,166,35,0.4)',
-              borderRadius:3, padding:'1px 6px', marginLeft:8 }}>
-              MASTER
-            </span>
-          </div>
-          <div style={{ fontSize:11, color:'var(--text3)', marginBottom:10 }}>
-            Exports the full dataset as a versioned JSON master file for distribution to stewards.
-            Each export increments the version counter.
-          </div>
-          {baseVersion && (
-            <div style={{ fontSize:11, fontFamily:'var(--mono)', color:'var(--text3)',
-              marginBottom:10 }}>
-              Current version: <span style={{ color:'var(--amber)' }}>{baseVersion}</span>
-            </div>
-          )}
-          <button className="btn btn-primary" onClick={handleExportMaster}
-            disabled={exportingMaster}
-            style={{ background:'var(--amber)', borderColor:'var(--amber)', color:'#000' }}>
-            <Icon.Download/>
-            {exportingMaster ? 'Preparing...' : `Export master JSON${baseVersion ? ` (next: ${nextMasterVersion(baseVersion)})` : ''}`}
-          </button>
-        </div>
-      )}
-
-      {!canEdit && (
-        <div style={{ marginBottom:20, padding:'10px 14px', background:'var(--amber-bg)',
-          border:'1px solid rgba(245,166,35,0.4)', borderRadius:'var(--radius)',
-          fontSize:12, color:'var(--amber)' }}>
-          Exports are disabled in read-only mode. Register as a steward to enable exports.
-        </div>
-      )}
-
-      <div className="card" style={{ marginBottom:20 }}>
-        <div className="card-title"><span className="dot"/>Backup export</div>
-        <div className="toggle-row" style={{ borderTop:'none', marginTop:0, paddingTop:0 }}>
-          <label className="toggle">
-            <input type="checkbox" checked={includeSoftDeleted} onChange={e => setIncludeSoftDeleted(e.target.checked)}/>
-            <div className="toggle-track"/><div className="toggle-thumb"/>
-          </label>
-          <span className="toggle-label">Include soft-deleted records</span>
-          <span style={{ marginLeft:'auto' }} className={`badge ${includeSoftDeleted?'badge-amber':'badge-green'}`}>
-            {includeSoftDeleted?'all records':'live only'}
-          </span>
-        </div>
-        <div style={{ marginTop:12, padding:'8px 12px', background:'var(--bg)', borderRadius:'var(--radius)',
-          fontSize:11, color:'var(--text3)', fontFamily:'var(--mono)' }}>
-          {allTables.length} CSV files - {total.toLocaleString()} total records - bundled as dq_export_YYYYMMDD_HHMMSS.zip
-        </div>
-        <div style={{ marginTop:12 }}>
-          <button className="btn btn-green" onClick={handleExportAll} disabled={exporting || !canEdit}>
-            <Icon.Download/>{exporting ? 'Preparing backup...' : 'Export backup'}
-          </button>
-        </div>
-      </div>
-
-      {isMaster && TABLE_GROUPS.map(group => {
-        const groupTotal = group.tables.reduce((s,t) => s+(counts[t]||0), 0);
-        const isExp = exportingGroup===group.id;
-        return (
-          <div key={group.id} style={{ marginBottom:20 }}>
-            <div style={{ display:'flex', alignItems:'center', gap:10,
-              marginBottom:8, paddingBottom:8, borderBottom:'1px solid var(--border)' }}>
-              <div style={{ width:3, height:16, borderRadius:2, background:group.accent }}/>
-              <span style={{ fontSize:13, fontWeight:600 }}>{group.label}</span>
-              <span style={{ fontSize:11, color:'var(--text3)' }}>{group.tables.length} tables - {groupTotal.toLocaleString()} rows</span>
-              <div style={{ marginLeft:'auto' }}>
-                <button className="btn btn-ghost" style={{ padding:'2px 7px', fontSize:11 }}
-                  onClick={() => handleExportGroup(group)} disabled={isExp || !canEdit}
-                  title={`Download ${group.label}`}>
-                  <Icon.Download/>
-                </button>
-              </div>
-            </div>
-            <div style={{ display:'flex', flexDirection:'column', gap:3 }}>
-              {group.tables.map(t => (
-                <div key={t} style={{ display:'flex', alignItems:'center',
-                  padding:'7px 12px', background:'var(--bg2)',
-                  border:'1px solid var(--border)', borderLeft:`3px solid ${group.accent}`,
-                  borderRadius:'var(--radius)', gap:10 }}>
-                  <div style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--text2)', flex:1 }}>{t}.csv</div>
-                  <div style={{ fontSize:11, color:'var(--text3)', minWidth:55, textAlign:'right' }}>{counts[t].toLocaleString()} rows</div>
-                  <button className="btn btn-ghost" style={{ padding:'2px 7px', fontSize:11 }}
-                    onClick={() => exportSingleCSV(t, data, includeSoftDeleted)}
-                    disabled={!canEdit} title={`Download ${t}.csv`}>
-                    <Icon.Download/>
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      })}
     </div>
   );
 }
 
+// ===============================================================================
+// UPLOADER EXPORT VALIDATION
+// Pure functions only. No JSX, no state, no side effects.
+// Used by: 232_uploader_export.js (UploaderExportTab)
+// ===============================================================================
+
+// -----------------------------------------------------------------------
+// computeUploaderExclusions(data, includeSoftDeleted)
+// -----------------------------------------------------------------------
+// Classifies every data_quality_rule_allocation record as included or
+// excluded for the uploader ZIP.
+//
+// includeSoftDeleted behaviour:
+//   false -> soft-deleted allocations are skipped entirely (not in output)
+//   true  -> soft-deleted allocations bypass validation and go to included
+//            (the engine never executes retired allocations so validity is moot)
+//
+// Returns { included, excluded, totalEvaluated }
+//   included       - raw allocation records that will appear in the ZIP
+//   excluded       - { allocation, rule, cde, cds, reasons[] } objects
+//   totalEvaluated - count of allocations actually processed (included + excluded)
+// -----------------------------------------------------------------------
+function computeUploaderExclusions(data, includeSoftDeleted) {
+  const allocations = data.data_quality_rule_allocation || [];
+  const rules       = data.data_quality_rule            || [];
+  const cdes        = data.critical_data_element        || [];
+  const cdss        = data.critical_data_set            || [];
+
+  const ruleMap = {};
+  for (const r of rules) ruleMap[r.data_quality_rule_id] = r;
+  const cdeMap = {};
+  for (const c of cdes) cdeMap[c.critical_data_element_id] = c;
+  const cdsMap = {};
+  for (const c of cdss) cdsMap[c.critical_data_set_id] = c;
+
+  const included = [];
+  const excluded = [];
+
+  for (const alloc of allocations) {
+    const isSoftDeleted = !!alloc.retiring_timestamp;
+
+    if (isSoftDeleted && !includeSoftDeleted) continue;
+
+    if (isSoftDeleted) {
+      included.push(alloc);
+      continue;
+    }
+
+    const reasons = [];
+    const rule = ruleMap[alloc.data_quality_rule_id]      || null;
+    const cde  = cdeMap[alloc.critical_data_element_id]   || null;
+    const cds  = cde ? (cdsMap[cde.critical_data_set_id] || null) : null;
+
+    // -- Rule checks -------------------------------------------------
+    if (!rule) {
+      reasons.push('Linked rule record not found (ID: ' + alloc.data_quality_rule_id + ')');
+    } else if (!(rule.sql_code || '').trim()) {
+      reasons.push('Rule has no SQL code');
+    }
+
+    // -- CDE checks --------------------------------------------------
+    if (!cde) {
+      reasons.push('Linked CDE record not found (ID: ' + alloc.critical_data_element_id + ')');
+    } else {
+      if (!(cde.source_database_name || '').trim()) reasons.push('Missing source_database_name on CDE');
+      if (!(cde.source_table_name    || '').trim()) reasons.push('Missing source_table_name on CDE');
+      if (!(cde.source_field_name    || '').trim()) reasons.push('Missing source_field_name on CDE');
+    }
+
+    // -- Substitution + sanity checks (only when no prior reasons) ---
+    if (reasons.length === 0) {
+      const substituted = rule.sql_code
+        .replace(/\{SOURCE_DATABASE_NAME\}/g, cde.source_database_name)
+        .replace(/\{SOURCE_TABLE_NAME\}/g,    cde.source_table_name)
+        .replace(/\{SOURCE_FIELD_NAME\}/g,    cde.source_field_name);
+
+      if (rule.sql_code.indexOf('{SOURCE_DATABASE_NAME}') === -1)
+        reasons.push('Missing placeholder {SOURCE_DATABASE_NAME} in sql_code');
+      if (rule.sql_code.indexOf('{SOURCE_TABLE_NAME}') === -1)
+        reasons.push('Missing placeholder {SOURCE_TABLE_NAME} in sql_code');
+      if (rule.sql_code.indexOf('{SOURCE_FIELD_NAME}') === -1)
+        reasons.push('Missing placeholder {SOURCE_FIELD_NAME} in sql_code');
+
+      if (!substituted.trim())
+        reasons.push('SQL is empty after field substitution');
+
+      let sqCount = 0, dqCount = 0, parenDepth = 0;
+      for (let i = 0; i < substituted.length; i++) {
+        const ch = substituted[i];
+        if      (ch === "'") sqCount++;
+        else if (ch === '"') dqCount++;
+        else if (ch === '(') parenDepth++;
+        else if (ch === ')') parenDepth--;
+      }
+      if (sqCount % 2 !== 0) reasons.push('Unbalanced single quotes in sql_code');
+      if (dqCount % 2 !== 0) reasons.push('Unbalanced double quotes in sql_code');
+      if (parenDepth !== 0)  reasons.push('Unbalanced parentheses in sql_code');
+    }
+
+    if (reasons.length > 0) {
+      excluded.push({ allocation: alloc, rule, cde, cds, reasons });
+    } else {
+      included.push(alloc);
+    }
+  }
+
+  return {
+    included,
+    excluded,
+    totalEvaluated: included.length + excluded.length,
+  };
+}
+
+// -----------------------------------------------------------------------
+// buildUploaderReceipt(excluded, totalEvaluated)
+// -----------------------------------------------------------------------
+// Builds a JSON Blob documenting every excluded allocation with full CDE
+// details and the specific reason(s) for exclusion.
+// Called only when excluded.length > 0.
+// -----------------------------------------------------------------------
+function buildUploaderReceipt(excluded, totalEvaluated) {
+  const receipt = {
+    _type:            'uploader_exclusion_receipt',
+    _generated_at:    new Date().toISOString(),
+    _total_evaluated: totalEvaluated,
+    _total_included:  totalEvaluated - excluded.length,
+    _total_excluded:  excluded.length,
+    excluded_allocations: excluded.map(item => ({
+      data_quality_rule_allocation_id: item.allocation.data_quality_rule_allocation_id,
+      critical_data_element_id:        item.allocation.critical_data_element_id,
+      critical_data_set_id:            item.cde  ? item.cde.critical_data_set_id           : null,
+      critical_data_set_name:          item.cds  ? (item.cds.data_set_name              || '-') : '-',
+      source_database_name:            item.cde  ? (item.cde.source_database_name       || '-') : '-',
+      source_table_name:               item.cde  ? (item.cde.source_table_name          || '-') : '-',
+      source_field_name:               item.cde  ? (item.cde.source_field_name          || '-') : '-',
+      data_element_definition:         item.cde  ? (item.cde.data_element_definition    || '-') : '-',
+      data_quality_rule_id:            item.allocation.data_quality_rule_id,
+      data_quality_rule_name:          item.rule ? (item.rule.rule_name                 || '-') : '-',
+      reasons:                         item.reasons,
+    })),
+  };
+  return new Blob([JSON.stringify(receipt, null, 2)], { type: 'application/json' });
+}
+
+// ===============================================================================
+// UPLOADER EXPORT TAB
+// UI only. All validation logic lives in 231_uploader_validation.js.
+// ===============================================================================
+
+function UploaderExportTab() {
+  const { data, canEdit } = useApp();
+
+  const [view,               setView]              = useState('settings');
+  const [includeSoftDeleted, setIncludeSoftDeleted] = useState(false);
+  const [reviewResult,       setReviewResult]       = useState(null);
+  const [exporting,          setExporting]          = useState(false);
+  const [showExcluded,       setShowExcluded]       = useState(true);
+  const [showIncluded,       setShowIncluded]       = useState(false);
+
+  const cdeMap = useMemo(() => {
+    const m = {};
+    for (const c of (data.critical_data_element || [])) m[c.critical_data_element_id] = c;
+    return m;
+  }, [data]);
+
+  const ruleMap = useMemo(() => {
+    const m = {};
+    for (const r of (data.data_quality_rule || [])) m[r.data_quality_rule_id] = r;
+    return m;
+  }, [data]);
+
+  const cdsMap = useMemo(() => {
+    const m = {};
+    for (const c of (data.critical_data_set || [])) m[c.critical_data_set_id] = c;
+    return m;
+  }, [data]);
+
+  const totalCount = useMemo(() => {
+    return Object.keys(SCHEMA).reduce((s, t) => {
+      const rows = data[t] || [];
+      return s + (includeSoftDeleted ? rows.length : rows.filter(r => !r.retiring_timestamp).length);
+    }, 0);
+  }, [data, includeSoftDeleted]);
+
+  const handleAnalyse = () => {
+    const result = computeUploaderExclusions(data, includeSoftDeleted);
+    setReviewResult(result);
+    setShowExcluded(true);
+    setShowIncluded(false);
+    setView('review');
+  };
+
+  const handleConfirm = async () => {
+    setExporting(true);
+    try {
+      const ts = new Date().toISOString().replace(/[:\-T.Z]/g, '').slice(0, 14);
+      const filteredData = { ...data, data_quality_rule_allocation: reviewResult.included };
+
+      const zip    = new JSZip();
+      const folder = zip.folder('dq_uploader_' + ts);
+      for (const tableName of Object.keys(SCHEMA)) {
+        folder.file(tableName + '.csv', tableToCSV(tableName, filteredData, includeSoftDeleted));
+      }
+      const zipBlob  = await zip.generateAsync({ type: 'blob' });
+      const zipSaved = await saveWithPicker(zipBlob, 'dq_uploader_' + ts + '.zip', 'ZIP Archive', '.zip');
+
+      if (zipSaved) {
+        if (reviewResult.excluded.length > 0) {
+          const receiptBlob = buildUploaderReceipt(reviewResult.excluded, reviewResult.totalEvaluated);
+          await saveWithPicker(receiptBlob, 'dq_uploader_receipt_' + ts + '.json', 'JSON File', '.json');
+        }
+        setView('settings');
+        setReviewResult(null);
+      }
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // ---- Settings view -------------------------------------------------------
+  if (view === 'settings') {
+    return (
+      <div>
+        <div style={{ fontSize:12, color:'var(--text3)', marginBottom:20, lineHeight:1.6 }}>
+          Produces a ZIP for upload to the DQ engine. Rule allocations that have missing SQL,
+          incomplete CDE source fields, or unresolvable placeholders are excluded before export.
+          A receipt listing every excluded allocation is downloaded alongside the ZIP when
+          exclusions exist.
+        </div>
+
+        <div className="card" style={{ marginBottom:20 }}>
+          <div className="card-title">
+            <span className="dot"/>Uploader export
+          </div>
+
+          <div className="toggle-row" style={{ borderTop:'none', marginTop:0, paddingTop:0 }}>
+            <label className="toggle">
+              <input type="checkbox" checked={includeSoftDeleted}
+                onChange={e => setIncludeSoftDeleted(e.target.checked)}/>
+              <div className="toggle-track"/><div className="toggle-thumb"/>
+            </label>
+            <span className="toggle-label">Include soft-deleted records</span>
+            <span style={{ marginLeft:'auto' }}
+              className={'badge ' + (includeSoftDeleted ? 'badge-amber' : 'badge-green')}>
+              {includeSoftDeleted ? 'all records' : 'live only'}
+            </span>
+          </div>
+
+          <div style={{ marginTop:12, padding:'8px 12px', background:'var(--bg)',
+            borderRadius:'var(--radius)', fontSize:11, color:'var(--text3)',
+            fontFamily:'var(--mono)' }}>
+            {Object.keys(SCHEMA).length} CSV files {'-'} {totalCount.toLocaleString()} total records {'-'} bundled as dq_uploader_YYYYMMDDHHMMSS.zip
+          </div>
+
+          <div style={{ marginTop:12 }}>
+            <button className="btn btn-primary" onClick={handleAnalyse} disabled={!canEdit}>
+              <Icon.Download/>Export for Uploader
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ---- Review view ---------------------------------------------------------
+  const { included, excluded, totalEvaluated } = reviewResult;
+  const hasExclusions = excluded.length > 0;
+  const confirmLabel  = exporting ? 'Exporting...' : 'Export File';
+
+  const sectionHeaderStyle = {
+    display:'flex', alignItems:'center', justifyContent:'space-between',
+    padding:'8px 12px',
+    background:'var(--bg2)', border:'1px solid var(--border)',
+    borderRadius:'var(--radius)', cursor:'pointer',
+    fontSize:12, fontWeight:600,
+    userSelect:'none',
+  };
+
+  const rowStyle = {
+    padding:'8px 12px',
+    border:'1px solid var(--border)', borderTop:'none',
+    fontSize:11, color:'var(--text2)',
+  };
+
+  return (
+    <div>
+      {/* Headline */}
+      <div style={{
+        padding:'12px 16px', marginBottom:16,
+        background:'var(--bg2)', border:'1px solid var(--border)',
+        borderRadius:'var(--radius)', fontSize:13,
+      }}>
+        <span style={{ fontWeight:700 }}>{included.length}</span>
+        {' of '}
+        <span style={{ fontWeight:700 }}>{totalEvaluated}</span>
+        {' Rule Allocations will be included. '}
+        {hasExclusions
+          ? <span style={{ color:'var(--red)', fontWeight:700 }}>{excluded.length}{' excluded.'}</span>
+          : <span style={{ color:'var(--green)' }}>None excluded.</span>
+        }
+      </div>
+
+      {/* Excluded section */}
+      {hasExclusions && (
+        <div style={{ marginBottom:16 }}>
+          <div style={{ ...sectionHeaderStyle,
+            borderBottom: showExcluded ? 'none' : '1px solid var(--border)',
+            borderRadius: showExcluded ? 'var(--radius) var(--radius) 0 0' : 'var(--radius)',
+            color:'var(--red)',
+          }}
+            onClick={() => setShowExcluded(v => !v)}>
+            <span>{'Excluded (' + excluded.length + ')'}</span>
+            <span style={{ fontFamily:'var(--mono)', fontSize:14 }}>{showExcluded ? '-' : '+'}</span>
+          </div>
+          {showExcluded && (
+            <div style={{
+              border:'1px solid var(--border)', borderTop:'none',
+              borderRadius:'0 0 var(--radius) var(--radius)',
+              overflow:'hidden',
+            }}>
+              {excluded.map((item, i) => (
+                <div key={i} style={{
+                  ...rowStyle,
+                  borderTop: i > 0 ? '1px solid var(--border)' : 'none',
+                }}>
+                  <div style={{ fontWeight:600, marginBottom:4, color:'var(--text1)' }}>
+                    {item.cds  ? item.cds.data_set_name      : '-'}
+                    {' / '}
+                    {item.cde  ? item.cde.source_field_name  : '-'}
+                    {' / '}
+                    {item.rule ? item.rule.rule_name          : '-'}
+                  </div>
+                  <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
+                    {item.reasons.map((reason, j) => (
+                      <div key={j} style={{
+                        display:'flex', alignItems:'flex-start', gap:6,
+                        fontSize:11, color:'var(--red)',
+                      }}>
+                        <span style={{ fontFamily:'var(--mono)', flexShrink:0 }}>{'!'}</span>
+                        <span>{reason}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Included section */}
+      <div style={{ marginBottom:20 }}>
+        <div style={{ ...sectionHeaderStyle,
+          borderBottom: showIncluded ? 'none' : '1px solid var(--border)',
+          borderRadius: showIncluded ? 'var(--radius) var(--radius) 0 0' : 'var(--radius)',
+          color:'var(--green)',
+        }}
+          onClick={() => setShowIncluded(v => !v)}>
+          <span>{'Included (' + included.length + ')'}</span>
+          <span style={{ fontFamily:'var(--mono)', fontSize:14 }}>{showIncluded ? '-' : '+'}</span>
+        </div>
+        {showIncluded && (
+          <div style={{
+            border:'1px solid var(--border)', borderTop:'none',
+            borderRadius:'0 0 var(--radius) var(--radius)',
+            overflow:'hidden',
+          }}>
+            {included.length === 0
+              ? (
+                <div style={{ ...rowStyle, color:'var(--text3)', fontStyle:'italic' }}>
+                  No allocations will be included.
+                </div>
+              )
+              : included.map((alloc, i) => {
+                  const cde  = cdeMap[alloc.critical_data_element_id];
+                  const cds  = cde ? cdsMap[cde.critical_data_set_id] : null;
+                  const rule = ruleMap[alloc.data_quality_rule_id];
+                  return (
+                    <div key={i} style={{
+                      ...rowStyle,
+                      borderTop: i > 0 ? '1px solid var(--border)' : 'none',
+                      display:'flex', alignItems:'center', gap:6,
+                    }}>
+                      {alloc.retiring_timestamp && (
+                        <span style={{
+                          fontSize:9, fontFamily:'var(--mono)', fontWeight:700,
+                          color:'var(--text3)', background:'var(--bg)',
+                          border:'1px solid var(--border)',
+                          borderRadius:3, padding:'1px 5px', flexShrink:0,
+                        }}>RETIRED</span>
+                      )}
+                      <span>
+                        {cds  ? cds.data_set_name      : '-'}
+                        {' / '}
+                        {cde  ? cde.source_field_name  : '-'}
+                        {' / '}
+                        {rule ? rule.rule_name          : '-'}
+                      </span>
+                    </div>
+                  );
+                })
+            }
+          </div>
+        )}
+      </div>
+
+      {/* Action buttons */}
+      <div style={{ display:'flex', gap:10 }}>
+        <button className="btn btn-primary" onClick={handleConfirm} disabled={exporting}>
+          <Icon.Download/>{confirmLabel}
+        </button>
+        <button className="btn btn-ghost" onClick={() => setView('settings')} disabled={exporting}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
 
 // ===============================================================================
 // NO-DATA SCREEN

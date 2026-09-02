@@ -11,6 +11,17 @@
 // Shared building blocks
 // ---------------------------------------------------------------------------
 
+function buildAthenaDialectPrompt() {
+  return [
+    'SQL DIALECT CONSTRAINT:',
+    'All SQL you write must be valid AWS Athena SQL (Presto/Trino engine) -- this is the only',
+    'engine the DQ Accelerator executes against. Do not use syntax, functions, or conventions',
+    'valid in other dialects (e.g. T-SQL, MySQL, PostgreSQL-only functions) if they are not also',
+    'valid in Athena. If a standard\'s example syntax is ever ambiguous between dialects, prefer',
+    'the Athena-valid form.'
+  ].join('\n');
+}
+
 function buildEngineMechanicsPrompt() {
   return [
     'HOW THE DQ ENGINE EXECUTES THIS SQL (read before proposing any fix):',
@@ -46,9 +57,7 @@ function buildSqlStandardsPrompt() {
   ].join('\n');
 }
 
-function buildNamingConventionsPrompt(opts) {
-  var cdsName   = (opts && opts.cdsName)   || null;
-  var fieldName = (opts && opts.fieldName) || null;
+function buildNamingConventionsPrompt() {
   return [
     'RULE NAMING CONVENTIONS (follow strictly):',
     'Rule names must be assertive -- they state what is enforced, not what is checked.',
@@ -101,7 +110,7 @@ function buildWorkedExamplePrompt() {
     '',
     'Expected output:',
     '### Clarifying Questions',
-    '(none -- intent is unambiguous)',
+    'Nothing to ask',
     '',
     '### Corrected sql_code',
     'SELECT COUNT(*) FROM {SOURCE_DATABASE_NAME}.{SOURCE_TABLE_NAME} WHERE NULLIF(TRIM({SOURCE_FIELD_NAME}), \'\') IS NULL',
@@ -110,7 +119,7 @@ function buildWorkedExamplePrompt() {
     'No change needed',
     '',
     '### Additional Observations',
-    '(none)',
+    'Nothing to add',
     '',
     '### Name Assessment',
     'Compliant: No',
@@ -140,7 +149,7 @@ function buildOutputFormatPromptForRuleAssistantPrompt() {
     'Respond in exactly this structure, so the output can be parsed and pasted back into the form:',
     '',
     '### Clarifying Questions',
-    '(bullet list, max 3 -- omit this section entirely if none)',
+    '(bullet list, max 3 -- report "Nothing to ask" if none)',
     '',
     '### Corrected sql_code',
     '(single SQL statement, "No change needed", or -- if the rule is blocked per Step 1 --',
@@ -151,7 +160,7 @@ function buildOutputFormatPromptForRuleAssistantPrompt() {
     '"Cannot be determined until Clarifying Questions are answered")',
     '',
     '### Additional Observations',
-    '(bullet list of anything noticed outside the listed warnings -- omit if none)',
+    '(bullet list of anything noticed outside the listed warnings -- report "Nothing to add" if nothing noticed)',
     '',
     '### Name Assessment',
     'Compliant: Yes / No / Cannot be determined until Clarifying Questions are answered',
@@ -165,6 +174,53 @@ function buildOutputFormatPromptForRuleAssistantPrompt() {
 // Context: user is reviewing / fixing an existing or new rule in the form panel.
 // No CDE or CDS context is available -- only the rule fields themselves.
 // ---------------------------------------------------------------------------
+
+function buildWithWarningsTaskPrompt() {
+  return [
+    'TASK:',
+    'Work through these steps in order:',
+    '1. Check for real intent, and decide if the rule is BLOCKED. If the Name, Explanation,',
+    '   and SQL together give no genuine business context to work from (e.g. placeholder',
+    '   text, gibberish, or a query with no recoverable logic), this rule is blocked: do not',
+    '   invent a plausible-sounding fix. Go straight to step 2 to ask what the rule is meant',
+    '   to check, then STOP -- do not attempt steps 3 and 4 in this turn. Still complete step',
+    '   5 if the name can be judged independently of the SQL\'s intent; if the name is equally',
+    '   meaningless, say so there instead of guessing. If the rule is not blocked, continue.',
+    '2. Clarify if genuinely needed. Ask at most 2-3 clarifying questions -- either because',
+    '   the rule is blocked per step 1, or because a fix cannot otherwise proceed without an',
+    '   answer. Do not ask questions you could reasonably infer.',
+    '3. Correct the SQL (skip entirely if step 1 found the rule blocked). Provide corrected',
+    '   sql_code and/or sql_code_sample that resolve every warning listed above, in Athena-',
+    '   valid SQL, following the engine mechanics, coding standards, and scope rules above.',
+    '4. Self-check before responding (skip if blocked). Confirm silently: no trailing',
+    '   semicolon; no CAST(); no snapshot/timestamp condition added by you; all three',
+    '   placeholders present where relevant; NULLIF(TRIM(...)) pattern used for null/empty',
+    '   checks; SQL is Athena-valid. Fix anything that fails before outputting.',
+    '5. Assess the name. Check the Name above against the naming convention above. If it',
+    '   does not comply, state what is wrong and recommend a corrected name -- but do not',
+    '   apply it. The user will update the Name field manually.'
+  ].join('\n');
+}
+
+function buildPassingRuleTaskPrompt() {
+  return [
+    'TASK:',
+    'The SQL passes all automated validation checks. Work through these steps in order:',
+    '1. Check for real intent, and decide if the rule is BLOCKED. Automated checks only',
+    '   confirm structural correctness, not that the SQL is meaningful. If the Name,',
+    '   Explanation, and SQL together give no genuine business context (e.g. gibberish table,',
+    '   column, or field names with no recoverable logic), this rule is blocked: do not',
+    '   invent a plausible-sounding review -- ask what the rule is meant to check instead,',
+    '   then STOP. Still complete step 3 if the name can be judged independently; if it is',
+    '   equally meaningless, say so there instead of guessing. If not blocked, continue.',
+    '2. Confirm the SQL is correct, is valid Athena SQL, and follows all standards above.',
+    '   Suggest any optimisations if relevant, but do not change the logic unless something',
+    '   above is actually violated.',
+    '3. Assess the name. Check the Name above against the naming convention above. If it',
+    '   does not comply, state what is wrong and recommend a corrected name -- but do not',
+    '   apply it. The user will update the Name field manually.'
+  ].join('\n');
+}
 
 function buildRuleAssistantPrompt(values, warnings) {
   var lines = [
@@ -189,13 +245,7 @@ function buildRuleAssistantPrompt(values, warnings) {
   }
 
   lines.push('');
-  lines.push('SQL DIALECT CONSTRAINT:');
-  lines.push('All SQL you write must be valid AWS Athena SQL (Presto/Trino engine) -- this is the only');
-  lines.push('engine the DQ Accelerator executes against. Do not use syntax, functions, or conventions');
-  lines.push('valid in other dialects (e.g. T-SQL, MySQL, PostgreSQL-only functions) if they are not also');
-  lines.push('valid in Athena. If a standard\'s example syntax is ever ambiguous between dialects, prefer');
-  lines.push('the Athena-valid form.');
-
+  lines.push(buildAthenaDialectPrompt());
   lines.push('');
   lines.push(buildEngineMechanicsPrompt());
   lines.push('');
@@ -203,9 +253,9 @@ function buildRuleAssistantPrompt(values, warnings) {
   lines.push('');
   lines.push(buildNamingConventionsPrompt());
   lines.push('');
-  lines.push(buildWorkedExamplePrompt());
-  lines.push('');
   lines.push(buildScopePromptForRuleAssistantPrompt());
+  lines.push('');
+  lines.push(buildWorkedExamplePrompt());
 
   if (warnings && warnings.length > 0) {
     lines.push('');
@@ -214,47 +264,11 @@ function buildRuleAssistantPrompt(values, warnings) {
       lines.push('  [' + w.level + '] ' + w.msg);
     });
     lines.push('');
-    lines.push('TASK:');
-    lines.push('Work through these steps in order:');
-    lines.push('1. Check for real intent, and decide if the rule is BLOCKED. If the Name, Explanation,');
-    lines.push('   and SQL together give no genuine business context to work from (e.g. placeholder');
-    lines.push('   text, gibberish, or a query with no recoverable logic), this rule is blocked: do not');
-    lines.push('   invent a plausible-sounding fix. Go straight to step 2 to ask what the rule is meant');
-    lines.push('   to check, then STOP -- do not attempt steps 3 and 4 in this turn. Still complete step');
-    lines.push('   5 if the name can be judged independently of the SQL\'s intent; if the name is equally');
-    lines.push('   meaningless, say so there instead of guessing. If the rule is not blocked, continue.');
-    lines.push('2. Clarify if genuinely needed. Ask at most 2-3 clarifying questions -- either because');
-    lines.push('   the rule is blocked per step 1, or because a fix cannot otherwise proceed without an');
-    lines.push('   answer. Do not ask questions you could reasonably infer.');
-    lines.push('3. Correct the SQL (skip entirely if step 1 found the rule blocked). Provide corrected');
-    lines.push('   sql_code and/or sql_code_sample that resolve every warning listed above, in Athena-');
-    lines.push('   valid SQL, following the engine mechanics, coding standards, and scope rules above.');
-    lines.push('4. Self-check before responding (skip if blocked). Confirm silently: no trailing');
-    lines.push('   semicolon; no CAST(); no snapshot/timestamp condition added by you; all three');
-    lines.push('   placeholders present where relevant; NULLIF(TRIM(...)) pattern used for null/empty');
-    lines.push('   checks; SQL is Athena-valid. Fix anything that fails before outputting.');
-    lines.push('5. Assess the name. Check the Name above against the naming convention above. If it');
-    lines.push('   does not comply, state what is wrong and recommend a corrected name -- but do not');
-    lines.push('   apply it. The user will update the Name field manually.');
+    lines.push(buildWithWarningsTaskPrompt());
   } else {
     lines.push('');
-    lines.push('TASK:');
-    lines.push('The SQL passes all automated validation checks. Work through these steps in order:');
-    lines.push('1. Check for real intent, and decide if the rule is BLOCKED. Automated checks only');
-    lines.push('   confirm structural correctness, not that the SQL is meaningful. If the Name,');
-    lines.push('   Explanation, and SQL together give no genuine business context (e.g. gibberish table,');
-    lines.push('   column, or field names with no recoverable logic), this rule is blocked: do not');
-    lines.push('   invent a plausible-sounding review -- ask what the rule is meant to check instead,');
-    lines.push('   then STOP. Still complete step 3 if the name can be judged independently; if it is');
-    lines.push('   equally meaningless, say so there instead of guessing. If not blocked, continue.');
-    lines.push('2. Confirm the SQL is correct, is valid Athena SQL, and follows all standards above.');
-    lines.push('   Suggest any optimisations if relevant, but do not change the logic unless something');
-    lines.push('   above is actually violated.');
-    lines.push('3. Assess the name. Check the Name above against the naming convention above. If it');
-    lines.push('   does not comply, state what is wrong and recommend a corrected name -- but do not');
-    lines.push('   apply it. The user will update the Name field manually.');
- }
-
+    lines.push(buildPassingRuleTaskPrompt());
+  }
   lines.push('');
   lines.push(buildOutputFormatPromptForRuleAssistantPrompt());
 
@@ -268,117 +282,227 @@ function buildRuleAssistantPrompt(values, warnings) {
 // rules. Response must be a JSON array the application can parse and import.
 // ---------------------------------------------------------------------------
 
-function buildSuggestionPrompt(cde, ddlCols, profRecord, cdsName, existingRulesCtx) {
-  const db    = cde.source_database_name || '';
-  const tbl   = cde.source_table_name    || '';
-  const field = cde.source_field_name    || '';
-  const snap  = cde.source_snapshot_filter || '';
-  const phys  = ddlCols.find(c => c.name === field)?.type || profRecord.physical_data_type || 'UNKNOWN';
-  const sem   = profRecord.semantic_type || '';
-
-  const lines = [
-    'You are a data quality expert helping define SQL-based data quality rules for AWS Athena.',
+function buildGeneratorNamingConventionsPrompt(field) {
+  return [
+    'RULE NAMING CONVENTIONS (follow strictly):',
+    'Rule names must be assertive -- they state what is enforced, not what is checked.',
+    '  GOOD: "Values for this field cannot be null or empty"',
+    '  BAD:  "Check if the value is null or empty" / "Validate null values"',
     '',
-    'FIELD DETAILS:',
-    'Field name:      ' + field,
-    'Database:        ' + db,
-    'Table:           ' + tbl,
-    'Physical type:   ' + phys,
-    sem ? ('Semantic type:   ' + sem) : '',
-    'Snapshot filter: ' + (snap || 'none'),
+    'You may only use one of these two prefix forms when naming a suggestion:',
+    '  1. "GENERIC - "        : the rule is fully generic (applies to any field).',
+    '  2. "' + field + ' - " : use this CDE\'s own name ("' + field + '") directly as the prefix.',
+    '                       Indicates the rule only works for this specific CDE. If the name is',
+    '                       long, shorten it in a way that stays logical and recognisable.',
     '',
-  ];
+    'You do NOT have visibility into other CDEs in this CDS -- only this field\'s profiling data.',
+    'For that reason, NEVER propose a CDS-level prefix (a rule spanning multiple CDEs), and NEVER',
+    'omit the prefix entirely (an unprefixed name is a legacy form used elsewhere, not valid for',
+    'suggestions you produce). If a concern you identify feels like it might actually be CDS-wide',
+    '(e.g. a cross-field consistency issue), still propose the best Generic or CDE-specific version',
+    'of it you can, and say so explicitly in "basis" so the Steward can escalate it manually.',
+    '',
+    'Do not name a specific field directly in the rule name unless the rule cannot possibly be',
+    'parameterised -- rules are reusable templates, and naming a field directly signals a one-off.'
+  ].join('\n');
+}
 
+function buildProfilingEvidenceBlock(profRecord) {
+  var blocks = [];
   if (profRecord.summary_raw) {
-    lines.push('PROFILING SUMMARY:');
-    lines.push(profRecord.summary_raw);
-    lines.push('');
+    blocks.push('Summary:\n' + profRecord.summary_raw);
   }
   if (profRecord.type_patterns_raw) {
-    lines.push('TYPE PATTERNS:');
-    lines.push(profRecord.type_patterns_raw);
-    lines.push('');
+    blocks.push('Type patterns:\n' + profRecord.type_patterns_raw);
   }
   if (profRecord.top_values_raw) {
-    lines.push('TOP VALUES:');
-    lines.push(profRecord.top_values_raw);
-    lines.push('');
+    blocks.push('Top values:\n' + profRecord.top_values_raw);
   }
   if (profRecord.length_distribution_raw) {
-    lines.push('LENGTH DISTRIBUTION:');
-    lines.push(profRecord.length_distribution_raw);
-    lines.push('');
+    blocks.push('Length distribution:\n' + profRecord.length_distribution_raw);
   }
   if (profRecord.profiling_notes) {
-    lines.push('NOTES:');
-    lines.push(profRecord.profiling_notes);
-    lines.push('');
+    blocks.push('Steward notes:\n' + profRecord.profiling_notes);
+  }
+  return blocks.join('\n\n');
+}
+
+function buildRuleCataloguePrompt(existingRulesCtx, cdsName) {
+  var rCtx    = existingRulesCtx || {};
+  var gRules  = rCtx.genericRules || [];
+  var cRules  = rCtx.cdsRules     || [];
+  var ceRules = rCtx.cdeRules     || [];
+
+  if (!gRules.length && !cRules.length && !ceRules.length) {
+    return null;
   }
 
-  const rCtx    = existingRulesCtx || {};
-  const gRules  = rCtx.genericRules || [];
-  const cRules  = rCtx.cdsRules     || [];
-  const ceRules = rCtx.cdeRules     || [];
-  if (gRules.length || cRules.length || ceRules.length) {
-    lines.push('EXISTING RULES IN CATALOGUE -- DO NOT DUPLICATE:');
-    lines.push('If a suggestion you would make is equivalent to any rule listed below, omit it entirely.');
-    lines.push('For Generic rules: do NOT create a new Generic rule that overlaps with one already listed.');
-    lines.push('Reuse the exact existing rule name where applicable -- do not paraphrase it.');
+  var lines = [
+    'EXISTING RULE CATALOGUE -- AVOID DUPLICATES:',
+    'If a suggestion you would make is equivalent to any rule listed below, do not create a new',
+    'one -- output a REUSE suggestion referencing it instead, using its exact existing name (do not',
+    'paraphrase it). This applies especially to Generic rules: never create a new Generic rule that',
+    'overlaps with one already listed.',
+    ''
+  ];
+  if (gRules.length) {
+    lines.push('Generic rules (reusable across any field -- exact names, do not reinvent these):');
+    gRules.forEach(function(r) { lines.push('  - "' + r.rule_name + '"'); });
     lines.push('');
-    if (gRules.length) {
-      lines.push('Generic rules (reusable across any field -- exact names, do not reinvent these):');
-      gRules.forEach(r => lines.push('  - "' + r.rule_name + '"'));
-      lines.push('');
-    }
-    if (cRules.length) {
-      lines.push('Rules already applied to other CDEs in this Critical Data Set' + (cdsName ? ' ("' + cdsName + '")' : '') + ':');
-      cRules.forEach(r => lines.push('  - "' + r.rule_name + '"' + (r.dimension ? ' (' + r.dimension + ')' : '')));
-      lines.push('');
-    }
-    if (ceRules.length) {
-      lines.push('Rules already allocated to this specific CDE (do not re-suggest):');
-      ceRules.forEach(r => lines.push('  - "' + r.rule_name + '"' + (r.dimension ? ' (' + r.dimension + ')' : '')));
-      lines.push('');
-    }
+  }
+  if (cRules.length) {
+    lines.push('Rules already applied to other CDEs in this CDS' + (cdsName ? ' ("' + cdsName + '")' : '') + ':');
+    cRules.forEach(function(r) { lines.push('  - "' + r.rule_name + '"' + (r.dimension ? ' (' + r.dimension + ')' : '')); });
+    lines.push('');
+  }
+  if (ceRules.length) {
+    lines.push('Rules already allocated to this specific CDE (do not re-suggest):');
+    ceRules.forEach(function(r) { lines.push('  - "' + r.rule_name + '"' + (r.dimension ? ' (' + r.dimension + ')' : '')); });
+    lines.push('');
+  }
+  return lines.join('\n').replace(/\n+$/, '');
+}
+
+function buildOutputSchemaPrompt() {
+  return [
+    'OUTPUT SCHEMA:',
+    'Each element of the array is either a NEW suggestion or a REUSE suggestion.',
+    '',
+    'NEW (no equivalent exists in the catalogue):',
+    '{',
+    '  "rule_name": "prefix + assertive statement -- see RULE NAMING CONVENTIONS above",',
+    '  "dimension": "one of: Completeness, Validity, Uniqueness, Consistency, Timeliness, Accuracy",',
+    '  "description": "business rule statement, starting with \'As a business rule, \' -- plain',
+    '                  English only, no SQL, thresholds, or technical implementation details",',
+    '  "basis": "what in the profiling evidence triggered this suggestion",',
+    '  "sql_code": "the business-logic query -- see engine mechanics and coding standards above",',
+    '  "sql_code_sample": "the unfiltered sample query -- see engine mechanics above"',
+    '}',
+    '',
+    'REUSE (an existing catalogue rule already covers this concern):',
+    '{',
+    '  "reuse": true,',
+    '  "existing_rule_name": "exact name copied from the catalogue above",',
+    '  "dimension": "one of: Completeness, Validity, Uniqueness, Consistency, Timeliness, Accuracy",',
+    '  "basis": "why this existing rule applies here, and what in the profiling evidence confirms it"',
+    '}'
+  ].join('\n');
+}
+
+function buildGeneratorWorkedExamplePrompt() {
+  return [
+    'WORKED EXAMPLE:',
+    'Profiling evidence (abridged) -- field "email": 12% of values are NULL; top malformed values',
+    'include entries with no "@" character.',
+    'Existing catalogue -- Generic rule "GENERIC - Values for this field cannot be null or empty"',
+    'already exists.',
+    '',
+    'Expected output:',
+    '[',
+    '  {',
+    '    "reuse": true,',
+    '    "existing_rule_name": "GENERIC - Values for this field cannot be null or empty",',
+    '    "dimension": "Completeness",',
+    '    "basis": "12% of values are NULL, matching an existing generic completeness rule -- no new rule needed"',
+    '  },',
+    '  {',
+    '    "rule_name": "email - values must contain an @ character",',
+    '    "dimension": "Validity",',
+    '    "description": "As a business rule, every populated email value must contain an \'@\' character to be considered a valid email address.",',
+    '    "basis": "Top values include entries with no \'@\' character, indicating malformed emails not covered by any existing rule",',
+    '    "sql_code": "SELECT COUNT(*) FROM {SOURCE_DATABASE_NAME}.{SOURCE_TABLE_NAME} WHERE NULLIF(TRIM({SOURCE_FIELD_NAME}), \'\') IS NOT NULL AND {SOURCE_FIELD_NAME} NOT LIKE \'%@%\'",',
+    '    "sql_code_sample": "SELECT * FROM {SOURCE_DATABASE_NAME}.{SOURCE_TABLE_NAME}"',
+    '  }',
+    ']'
+  ].join('\n');
+}
+
+function buildSuggestionPrompt(cde, ddlCols, profRecord, cdsName, existingRulesCtx) {
+  var db    = cde.source_database_name || '';
+  var tbl   = cde.source_table_name    || '';
+  var field = cde.source_field_name    || '';
+  var snap  = cde.source_snapshot_filter || '';
+  var ddlMatch = (ddlCols || []).find(function(c) { return c.name === field; }) || '';
+  var phys  = (ddlMatch && ddlMatch.type) || profRecord.physical_data_type || 'UNKNOWN';
+  var sem   = profRecord.semantic_type || '';
+
+  var lines = [
+    'You are a data quality expert helping a Data Steward define SQL-based data quality rules',
+    'for a single Critical Data Element (CDE), for execution on AWS Athena.',
+    '',
+    'FIELD UNDER REVIEW:',
+    '  Field name:      ' + field,
+    '  Database:        ' + db,
+    '  Table:           ' + tbl,
+    '  Physical type:   ' + phys
+  ];
+  if (sem) {
+    lines.push('  Semantic type:   ' + sem);
+  }
+  lines.push('  Snapshot filter: ' + (snap || 'none'));
+
+  lines.push('');
+  lines.push(buildAthenaDialectPrompt());
+
+  lines.push('');
+  lines.push(buildEngineMechanicsPrompt());
+  if (snap) {
+    lines.push('');
+    lines.push('This field\'s snapshot filter is: "' + snap + '". Be aware of it when reasoning about');
+    lines.push('the WHERE clause logic above, but do NOT include it in either query yourself.');
   }
 
-  lines.push('TASK:');
-  lines.push('Based on the profiling data above, suggest data quality rules for this field.');
-  lines.push('Each rule must be implementable as an Athena SQL SELECT COUNT(*) query counting failing records.');
-  lines.push('Use these exact placeholders in the SQL: {SOURCE_DATABASE_NAME}, {SOURCE_TABLE_NAME}, {SOURCE_FIELD_NAME}.');
   lines.push('');
   lines.push(buildSqlStandardsPrompt());
-  if (snap) lines.push('Note: the snapshot filter for this table is "' + snap + '" -- be aware of it when designing the WHERE clause logic, but do NOT include it in either query.');
-  lines.push('');
-  lines.push('Respond ONLY with a valid JSON array. No explanation, no markdown, no code fences.');
-  lines.push(buildNamingConventionsPrompt({ cdsName: cdsName, fieldName: field }));
-  lines.push('');
-  lines.push('Each element is either a NEW rule or a REUSE suggestion -- choose based on the catalogue above.');
-  lines.push('');
-  lines.push('NEW rule (no equivalent exists in the catalogue):');
-  lines.push('[');
-  lines.push('  {');
-  lines.push('    "rule_name": "prefix + assertive statement, e.g. \'Generic - field values cannot be null or empty\' or \'CDE ' + field + ' - values must match the expected pattern\'",');
-  lines.push('    "dimension": "one of: Completeness, Validity, Uniqueness, Consistency, Timeliness, Accuracy",');
-  lines.push('    "description": "business rule statement -- must start with \'As a business rule, \' and complete the sentence in plain English. Do not mention SQL, thresholds, or technical implementation details.",');
-  lines.push('    "basis": "what in the profiling data triggered this suggestion",');
-  lines.push('    "sql_code": "SELECT COUNT(*) FROM {SOURCE_DATABASE_NAME}.{SOURCE_TABLE_NAME} WHERE <business logic only -- no snapshot filter -- no semicolon>",');
-  lines.push('    "sql_code_sample": "SELECT * FROM {SOURCE_DATABASE_NAME}.{SOURCE_TABLE_NAME} LIMIT 100 (no WHERE clause -- no semicolon)"');
-  lines.push('  }');
-  lines.push(']');
-  lines.push('');
-  lines.push('REUSE suggestion (an existing rule from the catalogue already covers this concern):');
-  lines.push('[');
-  lines.push('  {');
-  lines.push('    "reuse": true,');
-  lines.push('    "existing_rule_name": "exact rule name copied from the catalogue list above",');
-  lines.push('    "dimension": "one of: Completeness, Validity, Uniqueness, Consistency, Timeliness, Accuracy",');
-  lines.push('    "basis": "why this existing rule applies to this CDE, and what in the profiling confirms it"');
-  lines.push('  }');
-  lines.push(']');
-  lines.push('');
-  lines.push('Return a single JSON array mixing both types as appropriate.');
-  lines.push('For each concern you identify, prefer REUSE over NEW if an equivalent rule exists in the catalogue.');
 
-  return lines.filter(l => l !== null).join('\n');
+  lines.push('');
+  lines.push(buildGeneratorNamingConventionsPrompt(field));
+
+  var evidenceBlocks = buildProfilingEvidenceBlock(profRecord);
+  if (evidenceBlocks.length) {
+    lines.push('');
+    lines.push('PROFILING INSTRUCTIONS:');
+    lines.push('Base every suggestion on the following evidence -- do not suggest anything it does not support.');
+    lines.push('');
+    lines.push('PROFILING EVIDENCE:');
+    lines.push('');
+    lines.push(evidenceBlocks);
+    lines.push('');
+  } else {
+    lines.push('PROFILING EVIDENCE:');
+    lines.push('');
+    lines.push('No profiling evidence is available for this field.');
+  }
+
+  var cataloguePrompt = buildRuleCataloguePrompt(existingRulesCtx, cdsName);
+  if (cataloguePrompt) {
+    lines.push('');
+    lines.push(cataloguePrompt);
+  }
+
+  lines.push('');
+  lines.push(buildGeneratorWorkedExamplePrompt());
+
+  lines.push('');
+  lines.push('DECISION PROCEDURE:');
+  lines.push('For each data quality concern you identify from the profiling evidence:');
+  lines.push('1. Check the existing rule catalogue above first (if provided).');
+  lines.push('2. If an existing rule at any level (Generic, CDS, or CDE) already covers the same');
+  lines.push('   concern, output a REUSE suggestion referencing it -- do not also create a NEW');
+  lines.push('   suggestion for the same concern. Prefer REUSE over NEW whenever both are possible.');
+  lines.push('3. Only if no existing rule covers the concern, output a NEW suggestion, following the');
+  lines.push('   dialect constraint, engine mechanics, and coding standards above exactly.');
+  lines.push('4. If the profiling evidence above is empty, or too sparse to support any specific,');
+  lines.push('   evidence-based suggestion, do not invent one -- return an empty array [] instead.');
+
+  lines.push('');
+  lines.push(buildOutputSchemaPrompt());
+
+  lines.push('');
+  lines.push('REQUIRED OUTPUT FORMAT:');
+  lines.push('Respond with ONLY a single valid JSON array mixing NEW and REUSE elements as appropriate.');
+  lines.push('No explanation, no markdown, no code fences, no text before or after the array. If there');
+  lines.push('is nothing to suggest (see step 4 above), respond with exactly: []');
+
+  return lines.join('\n');
 }
