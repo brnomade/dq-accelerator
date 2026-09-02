@@ -5,6 +5,24 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260902-1613 — Fix: delta export soft-delete leak
+
+**Date:** 2026-09-02
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Bug investigation: soft-deleted rows in delta export | 20 min | 0 min | 0 min | |
+| Write DESIGN_DELTA_SOFT_DELETE_FIX.md and PLAN_DELTA_SOFT_DELETE_FIX.md | 0 min | 10 min | 0 min | |
+| Implement guard in buildDelta() | 0 min | 0 min | 5 min | |
+| **Total** | **20 min** | **10 min** | **5 min** | |
+
+### Changes delivered
+- `src/71_master_version.js`: guard added in `buildDelta()` — skip new rows with `retiring_timestamp`
+- `designs/DESIGN_DELTA_SOFT_DELETE_FIX.md`: new design document
+- `plans/PLAN_DELTA_SOFT_DELETE_FIX.md`: new implementation plan
+
+---
+
 ## build-20260902-1248 — Enhancement: sortable columns and user guide update
 
 **Date:** 2026-09-02

@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260902-1613 — Fix: delta export leaking born-and-died steward records as inserts
+
+### Fixed
+- **`src/71_master_version.js`** -- `buildDelta()` no longer includes newly-created rows that have `retiring_timestamp` set in the `inserted` array. Such rows were created and soft-deleted entirely within a steward's working session and were never published to the master; the master has no record of them and should not receive an instruction to insert them. The fix adds a single guard: `if (!row.retiring_timestamp) inserted.push(row)`. Rows that existed in the base snapshot and were subsequently retired continue to appear in `retired` (by id only) as before — that path is unaffected.
+
+---
+
 ## build-20260902-1248 — Enhancement: sortable columns and user guide update for uploader review
 
 ### Changed

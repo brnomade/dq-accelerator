@@ -90,7 +90,7 @@ function buildDelta(data, snapshot) {
       const hash    = hashRecord(row);
       const wasSnap = snap[id] !== undefined;
       if (!wasSnap) {
-        inserted.push(row);
+        if (!row.retiring_timestamp) inserted.push(row);
       } else if (hash !== snap[id]) {
         if (row.retiring_timestamp) {
           retired.push(id);
