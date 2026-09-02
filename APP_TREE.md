@@ -120,6 +120,8 @@ All panels render at App level (outside scroll container) to avoid `position:fix
 | `40_storage.js` | localStorage read/write (`loadFromStorage`, `saveToStorage`, `loadStewardIdentity`) |
 | `45_rule_sql_warnings.js` | `computeRuleSqlWarnings(sql, sample)` pure function; `RuleSqlWarningNotices` display component |
 | `46_prompt_helpers.js` | All AI prompt construction: shared building blocks (`buildSqlStandardsPrompt`, `buildNamingConventionsPrompt`) plus full prompt builders (`buildRuleAssistantPrompt` for Rule Form Panel, `buildSuggestionPrompt` for Rule Generator). Edit this file to tune any AI prompt. |
+| `231_uploader_validation.js` | `computeUploaderExclusions(data, includeSoftDeleted)`, `buildUploaderReceipt(excluded, totalEvaluated)` -- allocation validity filter and receipt builder; pure logic, no UI |
+| `232_uploader_export.js` | `UploaderExportTab` -- uploader export tab component (settings + review views); calls into `231_uploader_validation.js` |
 | `50_context.js` | `AppContext` definition + `useApp()` hook |
 | `60_icons.js` | `Icon.*` SVG components |
 | `70_header_footer.js` | `AppHeader`, `AppFooter`, settings panel |
