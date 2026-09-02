@@ -35,6 +35,10 @@ h2{font-size:15px;font-weight:600;margin-top:36px;margin-bottom:12px;color:var(-
 .check-list{list-style:none;padding:0;display:flex;flex-direction:column;gap:6px;margin-top:10px}
 .check-list li{font-size:13px;color:var(--text2);line-height:1.5;padding-left:16px;position:relative}
 .check-list li::before{content:'*';position:absolute;left:0;color:var(--text3);font-family:var(--mono)}
+.col-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
+.col-table th{text-align:left;padding:6px 10px;background:var(--bg3);color:var(--text2);border:1px solid var(--border);font-weight:600}
+.col-table td{padding:6px 10px;border:1px solid var(--border);color:var(--text3);vertical-align:top}
+.col-table td:first-child{font-family:var(--mono);color:var(--text2);white-space:nowrap}
 footer{border-top:1px solid var(--border);padding:18px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
 </style>
 </head>
@@ -55,8 +59,9 @@ footer{border-top:1px solid var(--border);padding:18px 40px;font-size:11px;color
   <p class="lead">
     The Uploader export packages the dataset as a ZIP of CSV files ready for the DQ engine.
     Before generating the file, the tool checks every rule allocation for validity and shows
-    a review screen listing any allocations that will be excluded. This ensures the engine
-    never receives a malformed SQL definition.
+    a review screen listing any failed allocations. Failed allocations are excluded by default
+    to prevent the engine receiving malformed SQL definitions. The Master Steward can override
+    individual exclusions to accept the risk and force-include them.
   </p>
 
   <div class="master-badge">
@@ -85,9 +90,8 @@ footer{border-top:1px solid var(--border);padding:18px 40px;font-size:11px;color
         Choose whether to include soft-deleted records using the
         <span class="f">Include soft-deleted records</span> toggle.
         <div class="sub">
-          When off (default), only live records are included. Soft-deleted allocations
-          are excluded from the ZIP regardless of this setting even when the toggle is on,
-          unless they pass validation.
+          Default is off (live records only). Soft-deleted allocations bypass validation
+          and are included when the toggle is on.
         </div>
       </div>
     </li>
@@ -96,114 +100,163 @@ footer{border-top:1px solid var(--border);padding:18px 40px;font-size:11px;color
       <div class="sbody">
         Click <span class="f">Export for Uploader</span>.
         <div class="sub">
-          The tool analyses all rule allocations against the validity criteria and
-          transitions to the review screen.
+          The tool analyses all rule allocations and transitions to the review screen.
         </div>
       </div>
     </li>
   </ol>
 
-  <h2>Step 2 &mdash; Read the review screen</h2>
+  <h2>Step 2 &mdash; Review the failed allocations</h2>
   <ol class="steps">
     <li>
       <div class="snum">5</div>
       <div class="sbody">
-        The headline shows how many allocations will be included and how many are excluded.
+        The headline shows how many allocations were evaluated and how many failed.
         <div class="sub">
-          Example: <span class="mono">42 of 51 Rule Allocations will be included. 9 excluded.</span>
+          If no allocations failed, a green confirmation is shown and you can export immediately.
         </div>
       </div>
     </li>
     <li>
       <div class="snum">6</div>
       <div class="sbody">
-        If any allocations are excluded, the <span class="r">Excluded</span> section is expanded
-        by default. Each entry shows the Data Set name, field name, and rule name, followed by
-        the specific reason(s) for exclusion.
+        Failed allocations are displayed in a table grouped by
+        <span class="f">Agency</span> and <span class="f">CDS</span>.
+        Click any Agency or CDS header to collapse or expand that group.
       </div>
     </li>
     <li>
       <div class="snum">7</div>
       <div class="sbody">
-        Click <span class="g">Included (N)</span> to expand the list of allocations that
-        will be exported. This section is collapsed by default.
+        Each row shows one failed allocation with six check columns. A green tick means the
+        check passed; a red cross means it failed.
+        <table class="col-table" style="margin-top:10px">
+          <tr><th>Column</th><th>What it checks</th></tr>
+          <tr><td>DB</td><td>Source database name is present, not a placeholder, and contains no spaces</td></tr>
+          <tr><td>Table</td><td>Source table name is present, not a placeholder, and contains no spaces</td></tr>
+          <tr><td>Field</td><td>Source field name is present, not a placeholder, and contains no spaces</td></tr>
+          <tr><td>SQL</td><td>Rule SQL code is present and non-empty</td></tr>
+          <tr><td>PH</td><td>All three source tokens ({SOURCE_DATABASE_NAME}, {SOURCE_TABLE_NAME}, {SOURCE_FIELD_NAME}) appear in the SQL</td></tr>
+          <tr><td>Bal</td><td>Single quotes, double quotes, and parentheses are balanced in the SQL</td></tr>
+        </table>
+        <div class="sub" style="margin-top:6px">
+          Hover over a column header for a full description.
+          Placeholder values (TBD, TBC, To Be Confirmed) and values containing spaces are
+          treated as missing for the DB, Table, and Field checks.
+        </div>
       </div>
     </li>
-  </ol>
-
-  <h2>What causes an allocation to be excluded</h2>
-  <p style="font-size:13px;color:var(--text3);margin-bottom:10px;line-height:1.6">
-    An allocation is excluded when any of the following are true:
-  </p>
-  <ul class="check-list">
-    <li>The linked rule has no SQL code defined.</li>
-    <li>The linked rule record cannot be found.</li>
-    <li>The linked Critical Data Element cannot be found.</li>
-    <li>The CDE is missing <span class="mono">source_database_name</span>.</li>
-    <li>The CDE is missing <span class="mono">source_table_name</span>.</li>
-    <li>The CDE is missing <span class="mono">source_field_name</span>.</li>
-    <li>The rule SQL is missing a required placeholder (<span class="mono">{SOURCE_DATABASE_NAME}</span>, <span class="mono">{SOURCE_TABLE_NAME}</span>, or <span class="mono">{SOURCE_FIELD_NAME}</span>).</li>
-    <li>The SQL is empty after substitution.</li>
-    <li>The SQL has unbalanced single quotes, double quotes, or parentheses.</li>
-  </ul>
-
-  <h2>Step 3 &mdash; Fix exclusions (if any)</h2>
-  <ol class="steps">
     <li>
       <div class="snum">8</div>
       <div class="sbody">
-        If you want to fix an excluded allocation before exporting, click
-        <span class="f">Cancel</span> to return to the Uploader tab settings.
-        <div class="sub">The toggle state is preserved.</div>
-      </div>
-    </li>
-    <li>
-      <div class="snum">9</div>
-      <div class="sbody">
-        Navigate to the relevant screen (Rules Explorer to fix SQL, Data and Stewardship
-        to fill in missing CDE source fields), make the corrections, then return to the
-        Export page and repeat from Step 1.
+        Click any column header to sort the rows by that column. Click the same header again
+        to reverse the sort direction. The active sort column shows a triangle indicator.
+        <div class="sub">
+          CDE and Rule sort alphabetically. Check columns (DB, Table, Field, SQL, PH, Bal)
+          sort with failures first in ascending order and passes first in descending order.
+          The sort applies across all expanded CDS groups simultaneously.
+        </div>
       </div>
     </li>
   </ol>
 
-  <h2>Step 4 &mdash; Confirm and download</h2>
+  <h2>Step 3 &mdash; Override exclusions (optional)</h2>
   <ol class="steps">
+    <li>
+      <div class="snum">9</div>
+      <div class="sbody">
+        To include a failed allocation despite its failures, tick the
+        <span class="f">Include?</span> checkbox on that row.
+        <div class="sub">
+          This is a deliberate accept-risk action. The allocation will be included in the
+          ZIP but the receipt will document that it was manually included with known failures.
+          This does not fix the underlying data issue.
+        </div>
+      </div>
+    </li>
     <li>
       <div class="snum">10</div>
       <div class="sbody">
-        When you are satisfied with the review, click the confirm button.
-        <ul style="margin-top:6px;list-style:disc;padding-left:18px;font-size:13px;color:var(--text3)">
-          <li><span class="mono">Export ZIP</span> &mdash; when no allocations were excluded.</li>
-          <li><span class="mono">Export ZIP + receipt</span> &mdash; when some allocations were excluded.</li>
-        </ul>
+        To include all failed allocations within an Agency or CDS at once, tick
+        <span class="f">Select all</span> on the Agency or CDS header row.
+        <div class="sub">
+          Individual checkboxes can still be changed after a bulk selection.
+        </div>
       </div>
     </li>
     <li>
       <div class="snum">11</div>
       <div class="sbody">
-        The ZIP file is downloaded first, then the receipt (if exclusions exist).
-        Both files share the same timestamp:
-        <span class="mono">dq_uploader_YYYYMMDDHHMMSS.zip</span> and
-        <span class="mono">dq_uploader_receipt_YYYYMMDDHHMMSS.json</span>.
-        <div class="sub">The tab returns to the settings view after the download completes.</div>
+        The <span class="f">summary bar</span> at the bottom of the page shows the live
+        count: how many are still excluded, how many have been overridden to include.
       </div>
     </li>
   </ol>
 
-  <h2>About the exclusion receipt</h2>
+  <h2>Step 4 &mdash; Fix exclusions instead of overriding (recommended)</h2>
+  <ol class="steps">
+    <li>
+      <div class="snum">12</div>
+      <div class="sbody">
+        To fix the underlying data rather than override, click <span class="f">Cancel</span>
+        to return to the Uploader tab settings.
+      </div>
+    </li>
+    <li>
+      <div class="snum">13</div>
+      <div class="sbody">
+        Navigate to the relevant screen to make corrections:
+        <ul style="margin-top:6px;list-style:disc;padding-left:18px;font-size:13px;color:var(--text3)">
+          <li>DB / Table / Field failures: open the CDE record and fill in the source fields.</li>
+          <li>SQL / PH / Bal failures: open the Rule record and correct the SQL template.</li>
+        </ul>
+        <div class="sub">Then return to Export and repeat from Step 1.</div>
+      </div>
+    </li>
+  </ol>
+
+  <h2>Step 5 &mdash; Confirm and download</h2>
+  <ol class="steps">
+    <li>
+      <div class="snum">14</div>
+      <div class="sbody">
+        Click the confirm button when satisfied with the review.
+        <ul style="margin-top:6px;list-style:disc;padding-left:18px;font-size:13px;color:var(--text3)">
+          <li><span class="mono">Export ZIP</span> &mdash; when no allocations remain excluded.</li>
+          <li><span class="mono">Export ZIP + receipt</span> &mdash; when some allocations are still excluded or were overridden.</li>
+        </ul>
+      </div>
+    </li>
+    <li>
+      <div class="snum">15</div>
+      <div class="sbody">
+        The ZIP file downloads first, then the receipt (when applicable).
+        Both share the same timestamp:
+        <span class="mono">dq_uploader_YYYYMMDDHHMMSS.zip</span> and
+        <span class="mono">dq_uploader_receipt_YYYYMMDDHHMMSS.json</span>.
+        <div class="sub">The tab returns to the settings view after the download completes. Override selections are cleared.</div>
+      </div>
+    </li>
+  </ol>
+
+  <h2>About the receipt</h2>
   <p style="font-size:13px;color:var(--text3);line-height:1.6">
-    The receipt is a JSON file listing every excluded allocation with its CDE source fields
-    (<span class="mono">source_database_name</span>, <span class="mono">source_table_name</span>,
-    <span class="mono">source_field_name</span>, <span class="mono">data_element_definition</span>),
-    the rule name, and the specific reasons for exclusion.
+    The receipt is a JSON file produced when any allocations were excluded or manually overridden.
+    It contains two sections:
+  </p>
+  <ul class="check-list" style="margin-top:10px">
+    <li><strong style="color:var(--text2)">excluded_allocations</strong> &mdash; allocations that failed checks and were not overridden; absent from the ZIP.</li>
+    <li><strong style="color:var(--text2)">overridden_allocations</strong> &mdash; allocations that failed checks but were manually included; present in the ZIP with known failures noted.</li>
+  </ul>
+  <p style="font-size:13px;color:var(--text3);line-height:1.6;margin-top:12px">
     Share this file with field stewards to communicate which rules or CDEs need attention
     before the next uploader export cycle.
   </p>
 
   <div class="note">
     The uploader export does not store any validation status in the dataset. The validity
-    check runs fresh at export time from current field values. Stewards can leave rules or
+    check runs fresh at export time from current field values. Override selections are
+    session-only and are not remembered between export runs. Stewards can leave rules or
     CDEs partially built indefinitely without affecting the working dataset.
   </div>
 </main>

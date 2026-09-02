@@ -4,6 +4,26 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260902-1248 — Enhancement: sortable columns and user guide update for uploader review
+
+### Changed
+- **`src/232_uploader_export.js`** -- Clicking any column header (CDE, Rule, DB, Table, Field, SQL, PH, Bal) sorts all allocation rows across all expanded CDS groups. Clicking the active column again reverses direction. Active sort column shown with a triangle indicator. Default sort is CDE ascending. For check columns ascending puts failures first; descending puts passes first.
+- **`documentation/user-guide/import-export/uploader-export.html`** -- Step added documenting column sort behaviour; subsequent step numbers updated.
+
+---
+
+## build-20260902-1227 — Feature: Uploader review screen redesign with hierarchical navigation and override
+
+### Changed
+- **`src/231_uploader_validation.js`** -- Extended CDE source field checks to fail on placeholder values (TBD, TBC, To Be Confirmed — exact case-insensitive match) and on any value containing spaces, since real SQL identifiers never contain spaces. Added `buildSourceFieldReason()` to produce distinct failure messages for blank, placeholder, and spaces cases. Added `isInvalidSourceField()` helper. Added structured `checks{}` boolean flags to each excluded item (dbOk, tableOk, fieldOk, sqlOk, placeholdersOk, balancedOk) so the UI can render tick/cross columns without parsing reason strings. Updated `buildUploaderReceipt()` signature to accept both `excluded` and `overridden` arrays; adds `_total_overridden` field and `overridden_allocations` section to the receipt.
+- **`src/232_uploader_export.js`** -- Completely redesigned review view. Replaced flat Excluded/Included accordion sections with a two-level collapsable table grouped by Agency then CDS. Each CDS section has its own column header row (DB, Table, Field, SQL, PH, Bal) with hover tooltips. Each failed allocation row shows a tick/cross per check and an Include? checkbox for the Master Steward to override individual exclusions. Agency and CDS headers each have a Select All checkbox for bulk override. Live summary bar shows total failed / overridden / still excluded. Export button label reflects whether a receipt will be produced. Settings view unchanged.
+
+### Added
+- Session-only override mechanism: Master Steward can tick Include? on any failed allocation to accept the engine risk and force-include it in the export. Override state is cleared on Cancel or after export completes.
+- Extended receipt format: `overridden_allocations` section documents any allocations that were manually included despite failing checks, including which checks they failed.
+
+---
+
 ## build-20260902-1038 — Fix: validation placeholder check and user guide correction
 
 ### Fixed

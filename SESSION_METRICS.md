@@ -5,6 +5,40 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260902-1248 — Enhancement: sortable columns and user guide update
+
+**Date:** 2026-09-02
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Sortable columns + agency display fixes + user guide | 5 min | 0 min | 20 min | |
+| **Total** | **5 min** | **0 min** | **20 min** | |
+
+### Changes delivered
+- `src/232_uploader_export.js`: sortable columns, agency acronym+name display, alphabetical sort, collapsed-by-default, checkmark fix
+- `documentation/user-guide/import-export/uploader-export.html`: sort step added, step numbers updated
+
+---
+
+## build-20260902-1227 — Feature: Uploader review screen redesign
+
+**Date:** 2026-09-02
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Design exploration: hierarchical review, override semantics, Q&A | 60 min | 0 min | 0 min | |
+| Write DESIGN_UPLOADER_REVIEW_V2.md and PLAN_UPLOADER_REVIEW_V2.md | 0 min | 20 min | 0 min | |
+| Implement validation and UI changes | 0 min | 0 min | 30 min | |
+| **Total** | **60 min** | **20 min** | **30 min** | |
+
+### Changes delivered
+- `src/231_uploader_validation.js`: TBD/spaces source field validation; structured checks flags; updated receipt function
+- `src/232_uploader_export.js`: full review view rewrite with Agency>CDS collapsable table, check columns, tooltips, override checkboxes, bulk-tick, live summary bar
+- `designs/DESIGN_UPLOADER_REVIEW_V2.md`: new design document
+- `plans/PLAN_UPLOADER_REVIEW_V2.md`: new implementation plan
+
+---
+
 ## build-20260902-1038 — Fix: validation placeholder check and user guide correction
 
 **Date:** 2026-09-02
