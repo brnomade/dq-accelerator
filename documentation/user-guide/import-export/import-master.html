@@ -114,11 +114,26 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
     <li><div class="snum">1</div><div class="sbody">Click <span class="f">Import</span> in the left sidebar, under Database Actions. If you have just reset the application, it opens on the Import screen automatically.</div></li>
     <li><div class="snum">2</div><div class="sbody">Drag the master data file onto the drop zone, or click the zone to browse for the file. Make sure you select the latest version as described above.</div></li>
     <li><div class="snum">3</div><div class="sbody">If a warning appears about uncommitted changes, stop. Export your delta first, reset, then return to step 1.<div class="sub">See <a href="export-delta.html" style="color:var(--blue)">How to export your delta</a>.</div></div></li>
-    <li><div class="snum">4</div><div class="sbody">The data loads and the application moves to the Dashboard. The record counts in the header confirm what was loaded.</div></li>
-    <li><div class="snum">5</div><div class="sbody">Set your <span class="f">steward identity</span> before making any changes.<div class="sub">See <a href="../getting-started/set-steward-identity.html" style="color:var(--blue)">How to set your steward identity</a>.</div></div></li>
+    <li><div class="snum">4</div><div class="sbody">Review the import log before clicking <span class="f">Proceed</span>. Green rows confirm a successful load. <strong>Yellow warning rows indicate a problem in the master file</strong> &mdash; read them carefully and act before proceeding.<div class="sub">See the note below on duplicate record warnings.</div></div></li>
+    <li><div class="snum">5</div><div class="sbody">Click <span class="f">Proceed</span>. The application moves to the Dashboard. The record counts in the header confirm what was loaded.</div></li>
+    <li><div class="snum">6</div><div class="sbody">Set your <span class="f">steward identity</span> before making any changes.<div class="sub">See <a href="../getting-started/set-steward-identity.html" style="color:var(--blue)">How to set your steward identity</a>.</div></div></li>
   </ol>
 
   <div class="note">The master data file is a <span class="mono">.json</span> file, not an Excel file. If you only have an Excel spreadsheet, contact your master steward to obtain the correct file.</div>
+
+  <h2>Duplicate record warnings</h2>
+
+  <p style="font-size:14px;color:var(--text2);margin-bottom:16px;line-height:1.6">A yellow warning row in the import log that mentions <strong>duplicate PKs</strong> means the master file contains two or more records with the same ID in the same table. This is a data quality problem in the master file itself.</p>
+
+  <p style="font-size:14px;color:var(--text2);margin-bottom:16px;line-height:1.6">The warning names the affected table, how many duplicate IDs were found, and the specific ID values. For example:</p>
+
+  <div class="note" style="margin-top:0;margin-bottom:16px;color:var(--amber);border-color:rgba(245,166,35,0.3);background:rgba(245,166,35,0.06)">
+    CDE Criticality: 4 duplicate PKs detected (cde_criticality_id: 182, 183, 184, 185). Delta export will produce phantom updates until fixed. Run Data Health Check.
+  </div>
+
+  <p style="font-size:14px;color:var(--text2);margin-bottom:16px;line-height:1.6"><strong>What this means for your work:</strong> If you export a delta immediately after import, those records will appear as <em>updated</em> even though you have not changed them. This is a false positive caused by the duplicate entries in the source file.</p>
+
+  <p style="font-size:14px;color:var(--text2);margin-bottom:0;line-height:1.6"><strong>What to do:</strong> Note the table name and IDs shown in the warning, then contact your master steward and share the warning text. Do not proceed with editing or exporting a delta until the master steward has corrected the file and issued a new version. Import the corrected file before starting work.</p>
 
   <div class="related">
     <div class="rtitle">Related guides</div>

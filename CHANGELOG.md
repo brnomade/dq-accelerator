@@ -4,6 +4,24 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260902-1807 — Enhancement: duplicate PK warning shown in import log UI
+
+### Added
+- **`src/71_master_version.js`** -- `checkDeltaDuplicates(data)` function: scans all delta-tracked tables for duplicate primary keys and returns a list of `{ level: 'warn', msg }` log entries, one per affected table, naming the table, PK field, and duplicate IDs.
+- **`src/210_screen_import.js`** -- Both master JSON import paths (normal and override-uncommitted-changes) now call `checkDeltaDuplicates` and append any warnings to the `importLog` array. The warnings appear in the amber import result panel alongside the success messages, visible before the steward proceeds.
+
+---
+
+## build-20260902-1804 — Fix: warn on duplicate PKs in master JSON snapshot
+
+### Fixed
+- **`src/71_master_version.js`** -- `buildSnapshot()` now emits a `console.warn` when a duplicate primary key is encountered in any delta-tracked table. Previously, the second record silently overwrote the first in the snapshot map, causing those records to appear as phantom `updated` entries in every subsequent delta export despite no user operations. The warning names the table, field, and PK value and directs the user to run the Data Health Check to locate duplicates. The duplicate itself is still written (last-one-wins, as before), so import is not broken.
+
+### Investigation finding
+- Phantom `cde_criticality` updates (IDs 182–185) after fresh master JSON import were caused by duplicate PK records in the source file: each ID appeared twice with different `critical_data_element_id` values (62 and 107). `buildSnapshot` overwrote the first hash with the second; `buildDelta` then saw the first-occurrence records and computed a different hash → false `updated`. Root cause was corrupt data in the specific master JSON file; switching to a clean master eliminated the issue.
+
+---
+
 ## build-20260902-1653 — Feature: cascading retirement with confirmation panel (Part 1 — CDE)
 
 ### Added

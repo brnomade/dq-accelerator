@@ -722,6 +722,38 @@ const SCHEMA = {
   },
 };
 
+const RETIRE_CASCADE = {
+  executive_agency: [
+    { table: 'directorate',               fk: 'executive_agency_id' },
+    { table: 'data_patron',               fk: 'executive_agency_id' },
+    { table: 'criticality_group_weight',  fk: 'executive_agency_id' },
+    { table: 'quality_dimension_weight',  fk: 'executive_agency_id' },
+  ],
+  directorate: [
+    { table: 'critical_data_set', fk: 'directorate_id' },
+    { table: 'data_owner',        fk: 'directorate_id' },
+    { table: 'shortlist_group',   fk: 'directorate_id' },
+  ],
+  critical_data_set: [
+    { table: 'critical_data_element', fk: 'critical_data_set_id' },
+    { table: 'stewardship',           fk: 'critical_data_set_id' },
+  ],
+  critical_data_element: [
+    { table: 'cde_criticality',              fk: 'critical_data_element_id' },
+    { table: 'data_quality_rule_allocation', fk: 'critical_data_element_id' },
+    { table: 'cde_shortlist_tag',            fk: 'critical_data_element_id' },
+  ],
+  shortlist_group: [
+    { table: 'cde_shortlist_tag', fk: 'shortlist_group_id' },
+  ],
+  data_quality_rule: [
+    { table: 'data_quality_rule_allocation', fk: 'data_quality_rule_id' },
+  ],
+  data_steward: [
+    { table: 'stewardship', fk: 'data_steward_id' },
+  ],
+};
+
 // Excel sheet name -> internal table name mapping
 const SHEET_MAP = {
   'Critical Data Set':            'critical_data_set',
@@ -2370,6 +2402,36 @@ function hashRecord(record) {
   return h.toString(36);
 }
 
+// Check delta-tracked tables for duplicate PKs.
+// Returns an array of { level: 'warn', msg: '...' } entries, one per affected table.
+function checkDeltaDuplicates(data) {
+  var warnings = [];
+  for (var i = 0; i < DELTA_TABLES.length; i++) {
+    var tbl    = DELTA_TABLES[i];
+    var schema = SCHEMA[tbl];
+    if (!schema || !schema.pk) continue;
+    var pk   = schema.pk;
+    var rows = data[tbl] || [];
+    var seen  = new Set();
+    var dupes = new Set();
+    for (var j = 0; j < rows.length; j++) {
+      var v = rows[j][pk];
+      if (v === null || v === undefined) continue;
+      if (seen.has(v)) dupes.add(v);
+      else seen.add(v);
+    }
+    if (dupes.size > 0) {
+      var dupeList = Array.from(dupes).sort(function(a, b) { return a - b; }).join(', ');
+      warnings.push({
+        level: 'warn',
+        msg: (schema.label || tbl) + ': ' + dupes.size + ' duplicate PK' + (dupes.size > 1 ? 's' : '') +
+             ' detected (' + pk + ': ' + dupeList + '). Delta export will produce phantom updates until fixed. Run Data Health Check.',
+      });
+    }
+  }
+  return warnings;
+}
+
 // Build snapshot: { table: { pk: hash } } for delta-editable tables
 function buildSnapshot(data) {
   const snap = {};
@@ -2377,7 +2439,11 @@ function buildSnapshot(data) {
     snap[tbl] = {};
     const schema = SCHEMA[tbl];
     for (const row of (data[tbl] || [])) {
-      snap[tbl][row[schema.pk]] = hashRecord(row);
+      const pkVal = row[schema.pk];
+      if (snap[tbl][pkVal] !== undefined) {
+        console.warn('[buildSnapshot] Duplicate PK in ' + tbl + ': ' + schema.pk + '=' + pkVal + '. Snapshot will be corrupt -- phantom delta records will occur. Run Data Health Check.');
+      }
+      snap[tbl][pkVal] = hashRecord(row);
     }
   }
   return snap;
@@ -2439,7 +2505,7 @@ function buildDelta(data, snapshot) {
       const hash    = hashRecord(row);
       const wasSnap = snap[id] !== undefined;
       if (!wasSnap) {
-        inserted.push(row);
+        if (!row.retiring_timestamp) inserted.push(row);
       } else if (hash !== snap[id]) {
         if (row.retiring_timestamp) {
           retired.push(id);
@@ -2679,7 +2745,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260902-1248</div>
+              <div className="header-app-sub">build-20260902-1817</div>
             </div>
           </div>
         </div>
@@ -2725,7 +2791,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           </button>
           {totalRows > 0 && (
             <button className="btn btn-ghost" style={{ fontSize:12 }} onClick={onShowReset}>
-              <Icon.Trash/> Reset data
+              <Icon.Trash/> Reset Data
             </button>
           )}
         </div>
@@ -3162,6 +3228,107 @@ function SqlPanel({ panel, onClose }) {
               </pre>
             </div>
           )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ===============================================================================
+// RETIRE CONFIRM PANEL
+// ===============================================================================
+function getRecordDisplayName(tableName, record) {
+  if (!record) return '';
+  const map = {
+    critical_data_element:        function(r) { return [r.source_database_name, r.source_table_name, r.source_field_name].filter(Boolean).join('.'); },
+    critical_data_set:            function(r) { return r.data_set_name || ''; },
+    data_quality_rule:            function(r) { return r.rule_name || ''; },
+    data_quality_rule_allocation: function(r) { return 'Allocation #' + r.data_quality_rule_allocation_id; },
+    cde_criticality:              function(r) { return 'Criticality #' + r.cde_criticality_id; },
+    stewardship:                  function(r) { return 'Stewardship #' + r.stewardship_id; },
+    executive_agency:             function(r) { return [r.agency_acronymn, r.agency_name].filter(Boolean).join(' - '); },
+    directorate:                  function(r) { return r.directorate_name || r.directorate_acronymn || ''; },
+    data_patron:                  function(r) { return r.data_patron_name || ''; },
+    data_owner:                   function(r) { return r.data_owner_name || ''; },
+    data_steward:                 function(r) { return r.data_steward_name || ''; },
+    shortlist_group:              function(r) { return r.shortlist_group_label || ''; },
+    cde_shortlist_tag:            function(r) { return 'Tag #' + r.cde_shortlist_tag_id; },
+    source_table_ddl:             function(r) { return [r.source_database_name, r.source_table_name].filter(Boolean).join('.'); },
+    field_profiling:              function(r) { return [r.source_database_name, r.source_table_name, r.source_field_name].filter(Boolean).join('.'); },
+    criticality_group_weight:     function(r) { return 'Weight #' + r.criticality_group_weight_id; },
+    quality_dimension_weight:     function(r) { return 'Weight #' + r.quality_dimension_weight_id; },
+  };
+  var fn = map[tableName];
+  return fn ? fn(record) : '#' + record[SCHEMA[tableName] && SCHEMA[tableName].pk];
+}
+
+function RetireConfirmPanel({ confirm, onConfirm, onCancel }) {
+  var tableName     = confirm.tableName;
+  var record        = confirm.record;
+  var cascadeSummary = confirm.cascadeSummary;
+  var schema        = SCHEMA[tableName];
+  var displayName   = getRecordDisplayName(tableName, record);
+  var hasCascade    = cascadeSummary.length > 0;
+
+  return (
+    <>
+      <div onClick={onCancel} style={{ position:'fixed', inset:0, zIndex:500, background:'var(--overlay-sm)' }}/>
+      <div style={{
+        position:'fixed', top:'50%', left:'50%', transform:'translate(-50%,-50%)',
+        zIndex:501, width:'min(480px,90vw)', background:'var(--bg2)',
+        border:'1px solid var(--border2)', borderRadius:'var(--radius)',
+        boxShadow:'0 8px 32px var(--overlay-md)', padding:24,
+      }}>
+
+        <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:16 }}>
+          <span style={{ color:'var(--amber)', flexShrink:0, width:18, height:18 }}><Icon.Warning/></span>
+          <div style={{ fontSize:15, fontWeight:600 }}>
+            Retire {schema && schema.label}
+          </div>
+        </div>
+
+        <div style={{
+          fontSize:12, fontFamily:'var(--mono)', color:'var(--text2)',
+          background:'var(--bg3)', border:'1px solid var(--border)',
+          borderRadius:'var(--radius)', padding:'8px 12px', marginBottom:16,
+        }}>
+          {displayName}
+        </div>
+
+        {hasCascade ? (
+          <div style={{
+            background:'var(--amber-bg)', border:'1px solid rgba(245,166,35,0.4)',
+            borderRadius:'var(--radius)', padding:'10px 14px', marginBottom:20,
+          }}>
+            <div style={{ fontSize:12, fontWeight:600, color:'var(--amber)', marginBottom:6 }}>
+              This will also retire:
+            </div>
+            {cascadeSummary.map(function(item) {
+              return (
+                <div key={item.tbl} style={{
+                  fontSize:12, color:'var(--text2)',
+                  display:'flex', alignItems:'center', gap:8, marginTop:4,
+                }}>
+                  <span style={{
+                    width:4, height:4, borderRadius:'50%',
+                    background:'var(--amber)', flexShrink:0, display:'inline-block',
+                  }}/>
+                  {item.count} {SCHEMA[item.tbl] && SCHEMA[item.tbl].label} {item.count === 1 ? 'record' : 'records'}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{ fontSize:12, color:'var(--text3)', marginBottom:20 }}>
+            No dependent records will be affected. This can be undone by restoring the record.
+          </div>
+        )}
+
+        <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
+          <button className="btn btn-ghost" onClick={onCancel}>Cancel</button>
+          <button className="btn btn-danger" onClick={onConfirm}>
+            <Icon.EyeOff/> Confirm retirement
+          </button>
         </div>
       </div>
     </>
@@ -5936,7 +6103,7 @@ function CriticalDataElementFormPanel({ record, isEdit, preCdsId, preTableName, 
 // ===============================================================================
 
 function CriticalDataElementView({ initialSearch }) {
-  const { data, upsertRecord, retireRecord, restoreRecord, openCdeForm, openForm, nextPk, canEdit, stewardIdentity, isMaster, openSqlPanel } = useApp();
+  const { data, upsertRecord, retireRecord, restoreRecord, openCdeForm, openForm, nextPk, canEdit, stewardIdentity, isMaster, openSqlPanel, openRetireConfirm } = useApp();
   const dp = !canEdit ? { style:{ opacity:0.35, cursor:'not-allowed', pointerEvents:'none' }, title:'Set your steward identity in Settings to make changes' } : {};
 
   const [search,      setSearch]      = useState(initialSearch || '');
@@ -6667,7 +6834,7 @@ function CriticalDataElementView({ initialSearch }) {
                                                   ) : (
                                                     <button {...dp} className="btn btn-ghost"
                                                       style={{ fontSize:10, padding:'2px 6px' }}
-                                                      onClick={() => canEdit && retireRecord('critical_data_element', pk)}
+                                                      onClick={() => canEdit && openRetireConfirm('critical_data_element', pk)}
                                                       title="Retire">
                                                       <Icon.EyeOff/>
                                                     </button>
@@ -15804,9 +15971,11 @@ function ImportScreen({ onImport, onMerge }) {
           saveBaseSnapshot(buildSnapshot(importedData));
           await new Promise(r => setTimeout(r, 200));
           setProgress(100);
+          const dupWarnings = checkDeltaDuplicates(importedData);
           const importLog = [
             { level:'ok', msg:`Master import successful. Version: ${version}` },
             { level:'ok', msg:`Base snapshot recorded for ${DELTA_TABLES.length} delta-tracked tables.` },
+            ...dupWarnings,
           ];
           setLog(importLog);
           onImport(importedData, importLog);
@@ -15964,10 +16133,12 @@ function ImportScreen({ onImport, onMerge }) {
       const importedData = payload.data;
       saveBaseVersion(version);
       saveBaseSnapshot(buildSnapshot(importedData));
+      const dupWarnings = checkDeltaDuplicates(importedData);
       const importLog = [
         { level:'warn', msg:`Imported over ${totalChanges} uncommitted change${totalChanges !== 1 ? 's' : ''}.` },
         { level:'ok',  msg:`Master import successful. Version: ${version}` },
         { level:'ok',  msg:`Base snapshot recorded for ${DELTA_TABLES.length} delta-tracked tables.` },
+        ...dupWarnings,
       ];
       setPendingMasterImport(null);
       setLog(importLog);
@@ -18683,6 +18854,22 @@ function Breadcrumb({ route }) {
 // ===============================================================================
 // ROOT APP -- single source of state, also provides AppContext directly
 // ===============================================================================
+function collectCascadeRetirements(data, tableName, pkValue) {
+  var result = [{ tbl: tableName, pk: pkValue }];
+  var cascades = RETIRE_CASCADE[tableName] || [];
+  for (var i = 0; i < cascades.length; i++) {
+    var table = cascades[i].table;
+    var fk    = cascades[i].fk;
+    var childPkField = SCHEMA[table].pk;
+    var children = (data[table] || []).filter(function(r) { return r[fk] === pkValue && !r.retiring_timestamp; });
+    for (var j = 0; j < children.length; j++) {
+      var sub = collectCascadeRetirements(data, table, children[j][childPkField]);
+      for (var k = 0; k < sub.length; k++) result.push(sub[k]);
+    }
+  }
+  return result;
+}
+
 function App() {
   // -- Core state ------------------------------------------
   const stored = useMemo(function() {
@@ -18740,12 +18927,16 @@ function App() {
 
   const retireRecord = useCallback((tableName, pkValue) => {
     if (!stewardIdentity) return;
-    const pk = SCHEMA[tableName]?.pk;
-    if (!pk) return;
     setData(prev => {
-      const rows = prev[tableName] || [];
-      const next = rows.map(r => r[pk]===pkValue ? {...r, retiring_timestamp:new Date().toISOString()} : r);
-      const n = {...prev, [tableName]:next}; persist(n); return n;
+      const toRetire = collectCascadeRetirements(prev, tableName, pkValue);
+      const ts = new Date().toISOString();
+      let next = { ...prev };
+      for (const { tbl, pk } of toRetire) {
+        const pkField = SCHEMA[tbl].pk;
+        next = { ...next, [tbl]: next[tbl].map(r => r[pkField] === pk ? { ...r, retiring_timestamp: ts } : r) };
+      }
+      persist(next);
+      return next;
     });
   }, [persist, stewardIdentity]);
 
@@ -18971,6 +19162,22 @@ function App() {
     setCritFormPreAgency(null); setCritFormPreDir(null); setCritFormPreCds(null);
   }, []);
 
+  // Retire confirmation panel state
+  const [retireConfirm, setRetireConfirm] = useState(null);
+
+  const openRetireConfirm = useCallback((tableName, pkValue) => {
+    if (!stewardIdentity || !data) return;
+    const pkField = SCHEMA[tableName]?.pk;
+    if (!pkField) return;
+    const record = (data[tableName] || []).find(r => r[pkField] === pkValue);
+    if (!record) return;
+    const toRetire = collectCascadeRetirements(data, tableName, pkValue);
+    const childCounts = {};
+    for (const { tbl } of toRetire.slice(1)) childCounts[tbl] = (childCounts[tbl] || 0) + 1;
+    const cascadeSummary = Object.entries(childCounts).map(([tbl, count]) => ({ tbl, count }));
+    setRetireConfirm({ tableName, pkValue, record, cascadeSummary });
+  }, [stewardIdentity, data]);
+
   // Rule allocation form state
   const [allocFormRecord, setAllocFormRecord] = useState(null);
   const [allocFormIsEdit, setAllocFormIsEdit] = useState(false);
@@ -19056,9 +19263,10 @@ function App() {
     data, lookups, savedAt, hasData,
     updateTable, upsertRecord, retireRecord, restoreRecord, bulkSetRetiring, nextPk, designateAsMaster,
     openForm, openCritForm, openSqlPanel, openAllocForm, openCdeForm, navigate, openDdlForm,
+    openRetireConfirm,
     isMaster, stewardIdentity,
     canEdit: !!stewardIdentity,
-  }), [data, lookups, savedAt, hasData, updateTable, upsertRecord, retireRecord, restoreRecord, bulkSetRetiring, nextPk, designateAsMaster, openForm, openCritForm, openSqlPanel, openAllocForm, openCdeForm, navigate, openDdlForm, isMaster, stewardIdentity]);
+  }), [data, lookups, savedAt, hasData, updateTable, upsertRecord, retireRecord, restoreRecord, bulkSetRetiring, nextPk, designateAsMaster, openForm, openCritForm, openSqlPanel, openAllocForm, openCdeForm, navigate, openDdlForm, openRetireConfirm, isMaster, stewardIdentity]);
 
   // -- Screen renderer --------------------------------------
   const renderScreen = () => {
@@ -19271,6 +19479,15 @@ function App() {
           preCdsId={critFormPreCds}
           onClose={closeCritForm}
           data={data}
+        />
+      )}
+
+      {/* Retire confirmation panel -- rendered at App level */}
+      {retireConfirm && (
+        <RetireConfirmPanel
+          confirm={retireConfirm}
+          onConfirm={() => { retireRecord(retireConfirm.tableName, retireConfirm.pkValue); setRetireConfirm(null); }}
+          onCancel={() => setRetireConfirm(null)}
         />
       )}
     </AppContext.Provider>
