@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260902-1912 — Fix: CDE reassignment to a different CDS now allowed in edit mode
+
+### Changed
+- **`src/140_view_cde.js`** -- Critical Data Set field now renders the cascading Agency/Directorate/CDS dropdowns in both add and edit mode. The previous read-only display in edit mode prevented reassignment, including for CDEs orphaned by a CDS retirement (null FK). The dropdowns pre-populate with the current CDS on open, so normal edits are unaffected. Unused `editCds`, `editDir`, `editAgency` variables removed.
+
+---
+
 ## build-20260902-1856 — Feature: CDS retire button on Data and Stewardship page + legacy cleanup
 
 ### Added

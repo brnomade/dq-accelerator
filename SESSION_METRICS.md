@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260902-1912 — Fix: CDE reassignment to a different CDS
+
+**Date:** 2026-09-02
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Investigate null FK problem + discuss options | 10 min | 0 min | 0 min | |
+| Remove isEdit gate from CDS field in CDE form | 0 min | 0 min | 5 min | |
+| **Total** | **10 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/140_view_cde.js`: CDS cascading dropdowns shown in both add and edit mode; read-only edit block removed
+
+---
+
 ## build-20260902-1856 — Feature: CDS retire button + legacy cleanup
 
 **Date:** 2026-09-02

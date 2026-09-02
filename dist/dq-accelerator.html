@@ -2745,7 +2745,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260902-1856</div>
+              <div className="header-app-sub">build-20260902-1912</div>
             </div>
           </div>
         </div>
@@ -3337,7 +3337,7 @@ function RetireConfirmPanel({ confirm, onConfirm, onCancel }) {
             borderRadius:'var(--radius)', padding:'10px 14px', marginBottom:20,
           }}>
             <div style={{ fontSize:12, fontWeight:600, color:'var(--blue)', marginBottom:6 }}>
-              Will be unlinked (FK cleared, records kept {'&'} can be reassigned):
+              Depending records will be unlinked and must be manually reassigned:
             </div>
             {nullFkSummary.map(function(item) { return summaryRow(item, 'var(--blue)'); })}
           </div>
@@ -5763,11 +5763,6 @@ function CriticalDataElementFormPanel({ record, isEdit, preCdsId, preTableName, 
     [...cdSets].filter(d => !d.retiring_timestamp && d.directorate_id === filterDirId)
       .sort((a,b) => (a.data_set_name||'').localeCompare(b.data_set_name||'')), [cdSets, filterDirId]);
 
-  // Edit read-only labels
-  const editCds    = isEdit ? cdsById[values.critical_data_set_id] : null;
-  const editDir    = editCds ? dirById[editCds.directorate_id] : null;
-  const editAgency = editDir ? agencyById[editDir.executive_agency_id] : null;
-
   const validate = () => {
     const errs = {};
     if (!values.critical_data_set_id)                errs.critical_data_set_id    = 'Required';
@@ -5865,65 +5860,54 @@ function CriticalDataElementFormPanel({ record, isEdit, preCdsId, preTableName, 
         {/* Body */}
         <div style={{ flex:1, overflow:'auto', padding:'16px 18px' }}>
 
-          {/* Data Set -- cascading on Add, read-only on Edit */}
+          {/* Data Set -- cascading dropdowns, editable on both add and edit */}
           <div style={{ marginBottom:12 }}>
             <label style={{ display:'block', fontSize:11, fontWeight:600,
               color: errors.critical_data_set_id ? 'var(--red)' : 'var(--text2)', marginBottom:4 }}>
               Critical Data Set <span style={{ color:'var(--red)' }}>*</span>
             </label>
-            {isEdit ? (
-              <div style={{ padding:'7px 10px', background:'var(--bg3)',
-                border:'1px solid var(--border)', borderRadius:'var(--radius)',
-                fontSize:12, fontFamily:'var(--mono)', color:'var(--text)' }}>
-                <div style={{ fontSize:11, color:'var(--text3)', marginBottom:2 }}>
-                  {editAgency?.agency_acronymn}
+            <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+              <select value={filterAgencyId ?? ''} style={{ ...inputBase, cursor:'pointer', border:'1px solid var(--border)' }}
+                onChange={e => { const v = e.target.value ? parseInt(e.target.value) : null;
+                  setFilterAgencyId(v); setFilterDirId(null); set('critical_data_set_id', null); }}>
+                <option value="">-- select agency --</option>
+                {agencyOpts.map(a => <option key={a.executive_agency_id} value={a.executive_agency_id}>{a.agency_acronymn} - {a.agency_name}</option>)}
+              </select>
+              {filterAgencyId && dirOpts.length === 0 ? (
+                <div style={{ padding:'7px 10px', background:'var(--bg3)', border:'1px solid var(--amber)',
+                  borderRadius:'var(--radius)', fontSize:12, color:'var(--amber)',
+                  display:'flex', gap:6, alignItems:'center' }}>
+                  <span style={{ width:13, height:13 }}><Icon.Warning/></span>
+                  No directorates found for this agency.
                 </div>
-                <div>{editCds?.data_set_name}</div>
-              </div>
-            ) : (
-              <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
-                <select value={filterAgencyId ?? ''} style={{ ...inputBase, cursor:'pointer', border:'1px solid var(--border)' }}
+              ) : (
+                <select value={filterDirId ?? ''} disabled={!filterAgencyId}
+                  style={{ ...inputBase, cursor: filterAgencyId ? 'pointer' : 'not-allowed',
+                    opacity: filterAgencyId ? 1 : 0.5, border:'1px solid var(--border)' }}
                   onChange={e => { const v = e.target.value ? parseInt(e.target.value) : null;
-                    setFilterAgencyId(v); setFilterDirId(null); set('critical_data_set_id', null); }}>
-                  <option value="">-- select agency --</option>
-                  {agencyOpts.map(a => <option key={a.executive_agency_id} value={a.executive_agency_id}>{a.agency_acronymn} - {a.agency_name}</option>)}
+                    setFilterDirId(v); set('critical_data_set_id', null); }}>
+                  <option value="">{filterAgencyId ? '-- select directorate --' : '-- select agency first --'}</option>
+                  {dirOpts.map(d => <option key={d.directorate_id} value={d.directorate_id}>{d.directorate_name}</option>)}
                 </select>
-                {filterAgencyId && dirOpts.length === 0 ? (
-                  <div style={{ padding:'7px 10px', background:'var(--bg3)', border:'1px solid var(--amber)',
-                    borderRadius:'var(--radius)', fontSize:12, color:'var(--amber)',
-                    display:'flex', gap:6, alignItems:'center' }}>
-                    <span style={{ width:13, height:13 }}><Icon.Warning/></span>
-                    No directorates found for this agency.
-                  </div>
-                ) : (
-                  <select value={filterDirId ?? ''} disabled={!filterAgencyId}
-                    style={{ ...inputBase, cursor: filterAgencyId ? 'pointer' : 'not-allowed',
-                      opacity: filterAgencyId ? 1 : 0.5, border:'1px solid var(--border)' }}
-                    onChange={e => { const v = e.target.value ? parseInt(e.target.value) : null;
-                      setFilterDirId(v); set('critical_data_set_id', null); }}>
-                    <option value="">{filterAgencyId ? '-- select directorate --' : '-- select agency first --'}</option>
-                    {dirOpts.map(d => <option key={d.directorate_id} value={d.directorate_id}>{d.directorate_name}</option>)}
-                  </select>
-                )}
-                {filterDirId && cdsOpts.length === 0 ? (
-                  <div style={{ padding:'7px 10px', background:'var(--bg3)', border:'1px solid var(--amber)',
-                    borderRadius:'var(--radius)', fontSize:12, color:'var(--amber)',
-                    display:'flex', gap:6, alignItems:'center' }}>
-                    <span style={{ width:13, height:13 }}><Icon.Warning/></span>
-                    No data sets found in this directorate.
-                  </div>
-                ) : (
-                  <select value={values.critical_data_set_id ?? ''} disabled={!filterDirId}
-                    style={{ ...inputBase, cursor: filterDirId ? 'pointer' : 'not-allowed',
-                      opacity: filterDirId ? 1 : 0.5, ...borderFor('critical_data_set_id') }}
-                    onChange={e => set('critical_data_set_id', e.target.value ? parseInt(e.target.value) : null)}>
-                    <option value="">{filterDirId ? '-- select data set --' : '-- select directorate first --'}</option>
-                    {cdsOpts.map(d => <option key={d.critical_data_set_id} value={d.critical_data_set_id}>{d.data_set_name}</option>)}
-                  </select>
-                )}
-                {errors.critical_data_set_id && <div style={{ fontSize:11, color:'var(--red)', marginTop:2 }}>{errors.critical_data_set_id}</div>}
-              </div>
-            )}
+              )}
+              {filterDirId && cdsOpts.length === 0 ? (
+                <div style={{ padding:'7px 10px', background:'var(--bg3)', border:'1px solid var(--amber)',
+                  borderRadius:'var(--radius)', fontSize:12, color:'var(--amber)',
+                  display:'flex', gap:6, alignItems:'center' }}>
+                  <span style={{ width:13, height:13 }}><Icon.Warning/></span>
+                  No data sets found in this directorate.
+                </div>
+              ) : (
+                <select value={values.critical_data_set_id ?? ''} disabled={!filterDirId}
+                  style={{ ...inputBase, cursor: filterDirId ? 'pointer' : 'not-allowed',
+                    opacity: filterDirId ? 1 : 0.5, ...borderFor('critical_data_set_id') }}
+                  onChange={e => set('critical_data_set_id', e.target.value ? parseInt(e.target.value) : null)}>
+                  <option value="">{filterDirId ? '-- select data set --' : '-- select directorate first --'}</option>
+                  {cdsOpts.map(d => <option key={d.critical_data_set_id} value={d.critical_data_set_id}>{d.data_set_name}</option>)}
+                </select>
+              )}
+              {errors.critical_data_set_id && <div style={{ fontSize:11, color:'var(--red)', marginTop:2 }}>{errors.critical_data_set_id}</div>}
+            </div>
           </div>
 
           {/* Source fields group */}
