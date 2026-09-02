@@ -4,6 +4,23 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260902-1912 — Fix: CDE reassignment to a different CDS now allowed in edit mode
+
+### Changed
+- **`src/140_view_cde.js`** -- Critical Data Set field now renders the cascading Agency/Directorate/CDS dropdowns in both add and edit mode. The previous read-only display in edit mode prevented reassignment, including for CDEs orphaned by a CDS retirement (null FK). The dropdowns pre-populate with the current CDS on open, so normal edits are unaffected. Unused `editCds`, `editDir`, `editAgency` variables removed.
+
+---
+
+## build-20260902-1856 — Feature: CDS retire button on Data and Stewardship page + legacy cleanup
+
+### Added
+- **`src/141_view_cde_list.js`** -- Retire button added to CDS row header. Calls `openRetireConfirm('critical_data_set', id)` so the cascade confirmation panel is shown (stewardship retired, CDEs unlinked). Consistent with CDE retire button on the same page.
+
+### Removed from build
+- **`src/150_view_cds_dir.js`** -- Moved to `legacy/`. `CriticalDataSetView` was never routed or reachable via any navigation path. CDS management has been handled by `141_view_cde_list.js` for some time.
+
+---
+
 ## build-20260902-1840 — Enhancement: cascade retirement null_fk action (infrastructure + CDE test)
 
 ### Changed
