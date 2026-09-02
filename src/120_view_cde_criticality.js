@@ -343,7 +343,7 @@ function CdeCriticalityFormPanel({ cdeId, existingRows, preAgencyId, preDirId, p
 // CDE CRITICALITY VIEW -- one row per CDE, criticality boxes inline
 // ===============================================================================
 function CdeCriticalityView() {
-  const { data, retireRecord, restoreRecord, openCritForm, canEdit } = useApp();
+  const { data, restoreRecord, openCritForm, canEdit, openRetireConfirm } = useApp();
   const dp = !canEdit ? { style:{ opacity:0.35, cursor:'not-allowed', pointerEvents:'none' }, title:'Set your steward identity in Settings to make changes' } : {};
 
   const [search,      setSearch]      = useState('');
@@ -655,7 +655,7 @@ function CdeCriticalityView() {
                                       </button>
                                     ) : (
                                       <button {...dp} className="btn btn-ghost" style={{ padding:'1px 2px', fontSize:8 }}
-                                        onClick={() => canEdit && retireRecord('cde_criticality', pk)}>
+                                        onClick={() => canEdit && openRetireConfirm('cde_criticality', pk)}>
                                         <Icon.EyeOff/>
                                       </button>
                                     )}

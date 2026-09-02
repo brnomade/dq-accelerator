@@ -887,7 +887,7 @@ function CriticalDataElementView({ initialSearch }) {
                                                                 title="Retire allocation"
                                                                 onClick={e => {
                                                                   e.stopPropagation();
-                                                                  retireRecord('data_quality_rule_allocation', alloc.data_quality_rule_allocation_id);
+                                                                  openRetireConfirm('data_quality_rule_allocation', alloc.data_quality_rule_allocation_id);
                                                                 }}>
                                                                 <div style={{ width:11, height:11 }}><Icon.EyeOff/></div>
                                                               </button>

@@ -4,6 +4,26 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260902-1930 — Enhancement: all retire buttons route through cascade confirmation panel
+
+### Changed
+- **`src/100_view_weights_org.js`** -- Agency and Directorate retire buttons in `OwnershipOrgChart`, and `AggregatedWeightView` row retire buttons, now call `openRetireConfirm` instead of `retireRecord` directly. Confirmation panel shows cascade children before retirement executes.
+- **`src/120_view_cde_criticality.js`** -- CDE criticality row retire button migrated to `openRetireConfirm`.
+- **`src/141_view_cde_list.js`** -- Rule allocation retire button on the Data and Stewardship page migrated to `openRetireConfirm`.
+- **`src/145_view_rules.js`** -- Rule and rule allocation retire buttons migrated to `openRetireConfirm`.
+- **`src/151_view_directorate.js`** -- Directorate retire button migrated to `openRetireConfirm`.
+- **`src/161_view_generic.js`** -- All five generic table retire buttons migrated to `openRetireConfirm`. Inline two-step confirm state (`confirmRetire`/`setConfirmRetire`) removed entirely; the cascade panel is used instead for all tables.
+- **`src/200_screen_ddl.js`** -- DDL table retire button and orphan DDL retire handler migrated to `openRetireConfirm`.
+
+### Documentation
+- `documentation/user-guide/ownership-hierarchy/executive-agency-remove.html` -- Updated to describe confirmation panel and clarify that directorates and data patrons are unlinked (FK cleared) rather than retired.
+- `documentation/user-guide/ownership-hierarchy/directorate-remove.html` -- Updated to describe confirmation panel and clarify that CDS and data owners are unlinked rather than retired.
+- `documentation/user-guide/rules-explorer/rule-add-edit.html` -- Updated retire step to describe confirmation panel.
+- `documentation/user-guide/rules-explorer/allocation-manage.html` -- Updated retire step to describe confirmation panel.
+- `documentation/user-guide/profiling/table-remove.html` -- Updated retire step to describe confirmation panel.
+
+---
+
 ## build-20260902-1912 — Fix: CDE reassignment to a different CDS now allowed in edit mode
 
 ### Changed

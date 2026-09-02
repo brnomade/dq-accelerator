@@ -1,5 +1,5 @@
 function DirectorateView() {
-  const { data, retireRecord, restoreRecord, openForm, nextPk, canEdit } = useApp();
+  const { data, restoreRecord, openForm, nextPk, canEdit, openRetireConfirm } = useApp();
   const dp = !canEdit ? { style:{ opacity:0.35, cursor:'not-allowed', pointerEvents:'none' }, title:'Set your steward identity in Settings to make changes' } : {};
 
   const [search,      setSearch]      = useState('');
@@ -182,7 +182,7 @@ function DirectorateView() {
                           </button>
                         ) : (
                           <button {...dp} className="btn btn-ghost" style={{ fontSize:10, padding:'2px 6px' }}
-                            onClick={() => canEdit && retireRecord('directorate', pk)} title="Retire">
+                            onClick={() => canEdit && openRetireConfirm('directorate', pk)} title="Retire">
                             <Icon.EyeOff/>
                           </button>
                         )}

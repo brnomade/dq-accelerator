@@ -36,12 +36,11 @@ function resolveDisplayValue(tableName, fieldName, value, data) {
 }
 
 function GenericTableView({ tableName }) {
-  const { data, lookups, retireRecord, restoreRecord, upsertRecord, nextPk, openForm, canEdit } = useApp();
+  const { data, lookups, restoreRecord, upsertRecord, nextPk, openForm, canEdit, openRetireConfirm } = useApp();
   const dp = !canEdit ? { style:{ opacity:0.35, cursor:'not-allowed', pointerEvents:'none' }, title:'Set your steward identity in Settings to make changes' } : {};
 
-  const [search,        setSearch]        = useState('');
-  const [showRetired,   setShowRetired]   = useState(false);
-  const [confirmRetire, setConfirmRetire] = useState(null);
+  const [search,      setSearch]      = useState('');
+  const [showRetired, setShowRetired] = useState(false);
 
   const schema      = SCHEMA[tableName];
   const rows        = data?.[tableName] || [];
@@ -237,20 +236,9 @@ function GenericTableView({ tableName }) {
                         onClick={() => restoreRecord(tableName, pk)}>
                         <Icon.Eye/> Restore
                       </button>
-                    ) : confirmRetire === pk ? (
-                      <>
-                        <button className="btn btn-danger" style={{ fontSize:11, padding:'3px 8px' }}
-                          onClick={() => { retireRecord(tableName, pk); setConfirmRetire(null); }}>
-                          Confirm retire
-                        </button>
-                        <button className="btn btn-ghost" style={{ fontSize:11, padding:'3px 8px' }}
-                          onClick={() => setConfirmRetire(null)}>
-                          <Icon.X/>
-                        </button>
-                      </>
                     ) : (
                       <button {...dp} className="btn btn-ghost" style={{ fontSize:11, padding:'3px 8px' }}
-                        onClick={() => setConfirmRetire(pk)} title="Retire">
+                        onClick={() => openRetireConfirm(tableName, pk)} title="Retire">
                         <Icon.EyeOff/>
                       </button>
                     ))}
@@ -318,20 +306,9 @@ function GenericTableView({ tableName }) {
                         onClick={() => restoreRecord(tableName, pk)}>
                         <Icon.Eye/> Restore
                       </button>
-                    ) : confirmRetire === pk ? (
-                      <>
-                        <button className="btn btn-danger" style={{ fontSize:11, padding:'3px 8px' }}
-                          onClick={() => { retireRecord(tableName, pk); setConfirmRetire(null); }}>
-                          Confirm retire
-                        </button>
-                        <button className="btn btn-ghost" style={{ fontSize:11, padding:'3px 8px' }}
-                          onClick={() => setConfirmRetire(null)}>
-                          <Icon.X/>
-                        </button>
-                      </>
                     ) : (
                       <button {...dp} className="btn btn-ghost" style={{ fontSize:11, padding:'3px 8px' }}
-                        onClick={() => setConfirmRetire(pk)} title="Retire">
+                        onClick={() => openRetireConfirm(tableName, pk)} title="Retire">
                         <Icon.EyeOff/>
                       </button>
                     ))}
@@ -384,20 +361,9 @@ function GenericTableView({ tableName }) {
                         onClick={() => restoreRecord(tableName, pk)}>
                         <Icon.Eye/> Restore
                       </button>
-                    ) : confirmRetire === pk ? (
-                      <>
-                        <button className="btn btn-danger" style={{ fontSize:11, padding:'3px 8px' }}
-                          onClick={() => { retireRecord(tableName, pk); setConfirmRetire(null); }}>
-                          Confirm retire
-                        </button>
-                        <button className="btn btn-ghost" style={{ fontSize:11, padding:'3px 8px' }}
-                          onClick={() => setConfirmRetire(null)}>
-                          <Icon.X/>
-                        </button>
-                      </>
                     ) : (
                       <button {...dp} className="btn btn-ghost" style={{ fontSize:11, padding:'3px 8px' }}
-                        onClick={() => setConfirmRetire(pk)} title="Retire">
+                        onClick={() => openRetireConfirm(tableName, pk)} title="Retire">
                         <Icon.EyeOff/>
                       </button>
                     ))}
@@ -448,20 +414,9 @@ function GenericTableView({ tableName }) {
                         onClick={() => restoreRecord(tableName, pk)}>
                         <Icon.Eye/> Restore
                       </button>
-                    ) : confirmRetire === pk ? (
-                      <>
-                        <button className="btn btn-danger" style={{ fontSize:11, padding:'3px 8px' }}
-                          onClick={() => { retireRecord(tableName, pk); setConfirmRetire(null); }}>
-                          Confirm retire
-                        </button>
-                        <button className="btn btn-ghost" style={{ fontSize:11, padding:'3px 8px' }}
-                          onClick={() => setConfirmRetire(null)}>
-                          <Icon.X/>
-                        </button>
-                      </>
                     ) : (
                       <button {...dp} className="btn btn-ghost" style={{ fontSize:11, padding:'3px 8px' }}
-                        onClick={() => setConfirmRetire(pk)} title="Retire">
+                        onClick={() => openRetireConfirm(tableName, pk)} title="Retire">
                         <Icon.EyeOff/>
                       </button>
                     ))}
@@ -514,20 +469,9 @@ function GenericTableView({ tableName }) {
                       <Icon.Eye/> Restore
                     </button>
                   ) : (
-                    confirmRetire === pk ? (
-                      <>
-                        <button className="btn btn-danger" style={{ fontSize:11, padding:'3px 8px' }}
-                          onClick={() => { retireRecord(tableName, pk); setConfirmRetire(null); }}>
-                          Confirm retire
-                        </button>
-                        <button className="btn btn-ghost" style={{ fontSize:11, padding:'3px 8px' }}
-                          onClick={() => setConfirmRetire(null)}>
-                          <Icon.X/>
-                        </button>
-                      </>
-                    ) : (
+                    (
                       <button {...dp} className="btn btn-ghost" style={{ fontSize:11, padding:'3px 8px' }}
-                        onClick={() => setConfirmRetire(pk)}
+                        onClick={() => openRetireConfirm(tableName, pk)}
                         title="Retire record">
                         <Icon.EyeOff/>
                       </button>

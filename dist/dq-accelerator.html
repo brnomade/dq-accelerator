@@ -2745,7 +2745,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260902-1919</div>
+              <div className="header-app-sub">build-20260902-1930</div>
             </div>
           </div>
         </div>
@@ -3359,7 +3359,7 @@ function RetireConfirmPanel({ confirm, onConfirm, onCancel }) {
 // ===============================================================================
 
 function AggregatedWeightView({ tableName }) {
-  const { data, retireRecord, restoreRecord, openForm, nextPk, canEdit } = useApp();
+  const { data, retireRecord, restoreRecord, openForm, nextPk, canEdit, openRetireConfirm } = useApp();
   const dp = !canEdit ? { style:{ opacity:0.35, cursor:'not-allowed', pointerEvents:'none' }, title:'Set your steward identity in Settings to make changes' } : {};
 
 
@@ -3575,7 +3575,7 @@ function AggregatedWeightView({ tableName }) {
                           className="weight-box-action"
                           onClick={() => isRetired
                             ? restoreRecord(tableName, pk)
-                            : retireRecord(tableName, pk)
+                            : openRetireConfirm(tableName, pk)
                           }
                           title={isRetired ? 'Restore' : 'Retire'}
                         >
@@ -3631,7 +3631,7 @@ function OrgNone() {
 }
 
 function OwnershipOrgChart() {
-  const { data, openForm, retireRecord, restoreRecord, canEdit, nextPk, stewardIdentity, isMaster } = useApp();
+  const { data, openForm, restoreRecord, canEdit, nextPk, stewardIdentity, isMaster, openRetireConfirm } = useApp();
   const accent = '#18b4d4';
 
   const [showRetired,   setShowRetired]   = useState(false);
@@ -3937,7 +3937,7 @@ function OwnershipOrgChart() {
                     ) : (
                       <button title="Retire agency" className="btn btn-ghost"
                         style={{ padding:'2px 6px', fontSize:10 }}
-                        onClick={() => retireRecord('executive_agency', aid)}>
+                        onClick={() => openRetireConfirm('executive_agency', aid)}>
                         <Icon.EyeOff/>
                       </button>
                     )}
@@ -4031,7 +4031,7 @@ function OwnershipOrgChart() {
                                   ) : (
                                     <button title="Retire directorate" className="btn btn-ghost"
                                       style={{ padding:'2px 6px', fontSize:10 }}
-                                      onClick={() => retireRecord('directorate', dir.directorate_id)}>
+                                      onClick={() => openRetireConfirm('directorate', dir.directorate_id)}>
                                       <Icon.EyeOff/>
                                     </button>
                                   )}
@@ -4474,7 +4474,7 @@ function CdeCriticalityFormPanel({ cdeId, existingRows, preAgencyId, preDirId, p
 // CDE CRITICALITY VIEW -- one row per CDE, criticality boxes inline
 // ===============================================================================
 function CdeCriticalityView() {
-  const { data, retireRecord, restoreRecord, openCritForm, canEdit } = useApp();
+  const { data, restoreRecord, openCritForm, canEdit, openRetireConfirm } = useApp();
   const dp = !canEdit ? { style:{ opacity:0.35, cursor:'not-allowed', pointerEvents:'none' }, title:'Set your steward identity in Settings to make changes' } : {};
 
   const [search,      setSearch]      = useState('');
@@ -4786,7 +4786,7 @@ function CdeCriticalityView() {
                                       </button>
                                     ) : (
                                       <button {...dp} className="btn btn-ghost" style={{ padding:'1px 2px', fontSize:8 }}
-                                        onClick={() => canEdit && retireRecord('cde_criticality', pk)}>
+                                        onClick={() => canEdit && openRetireConfirm('cde_criticality', pk)}>
                                         <Icon.EyeOff/>
                                       </button>
                                     )}
@@ -6994,7 +6994,7 @@ function CriticalDataElementView({ initialSearch }) {
                                                                 title="Retire allocation"
                                                                 onClick={e => {
                                                                   e.stopPropagation();
-                                                                  retireRecord('data_quality_rule_allocation', alloc.data_quality_rule_allocation_id);
+                                                                  openRetireConfirm('data_quality_rule_allocation', alloc.data_quality_rule_allocation_id);
                                                                 }}>
                                                                 <div style={{ width:11, height:11 }}><Icon.EyeOff/></div>
                                                               </button>
@@ -7871,8 +7871,8 @@ function RulesRuleRow({ ruleEntry, critGroupsSorted, critLevelsById, dimensionsB
 // RuleExplorerView -- outer shell, state, toolbar
 // -------------------------------------------------------------------------------
 function RuleExplorerView() {
-  const { data, upsertRecord, retireRecord, restoreRecord, nextPk, canEdit,
-    stewardIdentity, isMaster, openSqlPanel } = useApp();
+  const { data, upsertRecord, restoreRecord, nextPk, canEdit,
+    stewardIdentity, isMaster, openSqlPanel, openRetireConfirm } = useApp();
 
   const accent = '#18b4d4';
 
@@ -7980,12 +7980,12 @@ function RuleExplorerView() {
   const handleEditRule        = (rule) => setRulePanel({ record: { ...rule } });
   const handleRuleSave        = (saved) => { upsertRecord('data_quality_rule', saved); setRulePanel(null); };
   const handleToggleAutomated = (rule) => { if (canEdit) upsertRecord('data_quality_rule', { ...rule, automated: !rule.automated }); };
-  const handleRetireRule  = (rule) => { if (canEdit) retireRecord('data_quality_rule', rule.data_quality_rule_id); };
+  const handleRetireRule  = (rule) => { if (canEdit) openRetireConfirm('data_quality_rule', rule.data_quality_rule_id); };
   const handleRestoreRule = (rule) => { if (canEdit) restoreRecord('data_quality_rule', rule.data_quality_rule_id); };
 
   const handleEditAlloc    = (alloc) => setAllocPanel({ record: { ...alloc }, isEdit: true });
   const handleAllocSave    = (saved) => { upsertRecord('data_quality_rule_allocation', saved); setAllocPanel(null); };
-  const handleRetireAlloc  = (alloc) => { if (canEdit) retireRecord('data_quality_rule_allocation', alloc.data_quality_rule_allocation_id); };
+  const handleRetireAlloc  = (alloc) => { if (canEdit) openRetireConfirm('data_quality_rule_allocation', alloc.data_quality_rule_allocation_id); };
   const handleRestoreAlloc = (alloc) => { if (canEdit) restoreRecord('data_quality_rule_allocation', alloc.data_quality_rule_allocation_id); };
 
   const handleOpenSql = useCallback((mode, rule, alloc, cde) => {
@@ -8118,7 +8118,7 @@ function RuleExplorerView() {
 }
 
 function DirectorateView() {
-  const { data, retireRecord, restoreRecord, openForm, nextPk, canEdit } = useApp();
+  const { data, restoreRecord, openForm, nextPk, canEdit, openRetireConfirm } = useApp();
   const dp = !canEdit ? { style:{ opacity:0.35, cursor:'not-allowed', pointerEvents:'none' }, title:'Set your steward identity in Settings to make changes' } : {};
 
   const [search,      setSearch]      = useState('');
@@ -8301,7 +8301,7 @@ function DirectorateView() {
                           </button>
                         ) : (
                           <button {...dp} className="btn btn-ghost" style={{ fontSize:10, padding:'2px 6px' }}
-                            onClick={() => canEdit && retireRecord('directorate', pk)} title="Retire">
+                            onClick={() => canEdit && openRetireConfirm('directorate', pk)} title="Retire">
                             <Icon.EyeOff/>
                           </button>
                         )}
@@ -8602,12 +8602,11 @@ function resolveDisplayValue(tableName, fieldName, value, data) {
 }
 
 function GenericTableView({ tableName }) {
-  const { data, lookups, retireRecord, restoreRecord, upsertRecord, nextPk, openForm, canEdit } = useApp();
+  const { data, lookups, restoreRecord, upsertRecord, nextPk, openForm, canEdit, openRetireConfirm } = useApp();
   const dp = !canEdit ? { style:{ opacity:0.35, cursor:'not-allowed', pointerEvents:'none' }, title:'Set your steward identity in Settings to make changes' } : {};
 
-  const [search,        setSearch]        = useState('');
-  const [showRetired,   setShowRetired]   = useState(false);
-  const [confirmRetire, setConfirmRetire] = useState(null);
+  const [search,      setSearch]      = useState('');
+  const [showRetired, setShowRetired] = useState(false);
 
   const schema      = SCHEMA[tableName];
   const rows        = data?.[tableName] || [];
@@ -8803,20 +8802,9 @@ function GenericTableView({ tableName }) {
                         onClick={() => restoreRecord(tableName, pk)}>
                         <Icon.Eye/> Restore
                       </button>
-                    ) : confirmRetire === pk ? (
-                      <>
-                        <button className="btn btn-danger" style={{ fontSize:11, padding:'3px 8px' }}
-                          onClick={() => { retireRecord(tableName, pk); setConfirmRetire(null); }}>
-                          Confirm retire
-                        </button>
-                        <button className="btn btn-ghost" style={{ fontSize:11, padding:'3px 8px' }}
-                          onClick={() => setConfirmRetire(null)}>
-                          <Icon.X/>
-                        </button>
-                      </>
                     ) : (
                       <button {...dp} className="btn btn-ghost" style={{ fontSize:11, padding:'3px 8px' }}
-                        onClick={() => setConfirmRetire(pk)} title="Retire">
+                        onClick={() => openRetireConfirm(tableName, pk)} title="Retire">
                         <Icon.EyeOff/>
                       </button>
                     ))}
@@ -8884,20 +8872,9 @@ function GenericTableView({ tableName }) {
                         onClick={() => restoreRecord(tableName, pk)}>
                         <Icon.Eye/> Restore
                       </button>
-                    ) : confirmRetire === pk ? (
-                      <>
-                        <button className="btn btn-danger" style={{ fontSize:11, padding:'3px 8px' }}
-                          onClick={() => { retireRecord(tableName, pk); setConfirmRetire(null); }}>
-                          Confirm retire
-                        </button>
-                        <button className="btn btn-ghost" style={{ fontSize:11, padding:'3px 8px' }}
-                          onClick={() => setConfirmRetire(null)}>
-                          <Icon.X/>
-                        </button>
-                      </>
                     ) : (
                       <button {...dp} className="btn btn-ghost" style={{ fontSize:11, padding:'3px 8px' }}
-                        onClick={() => setConfirmRetire(pk)} title="Retire">
+                        onClick={() => openRetireConfirm(tableName, pk)} title="Retire">
                         <Icon.EyeOff/>
                       </button>
                     ))}
@@ -8950,20 +8927,9 @@ function GenericTableView({ tableName }) {
                         onClick={() => restoreRecord(tableName, pk)}>
                         <Icon.Eye/> Restore
                       </button>
-                    ) : confirmRetire === pk ? (
-                      <>
-                        <button className="btn btn-danger" style={{ fontSize:11, padding:'3px 8px' }}
-                          onClick={() => { retireRecord(tableName, pk); setConfirmRetire(null); }}>
-                          Confirm retire
-                        </button>
-                        <button className="btn btn-ghost" style={{ fontSize:11, padding:'3px 8px' }}
-                          onClick={() => setConfirmRetire(null)}>
-                          <Icon.X/>
-                        </button>
-                      </>
                     ) : (
                       <button {...dp} className="btn btn-ghost" style={{ fontSize:11, padding:'3px 8px' }}
-                        onClick={() => setConfirmRetire(pk)} title="Retire">
+                        onClick={() => openRetireConfirm(tableName, pk)} title="Retire">
                         <Icon.EyeOff/>
                       </button>
                     ))}
@@ -9014,20 +8980,9 @@ function GenericTableView({ tableName }) {
                         onClick={() => restoreRecord(tableName, pk)}>
                         <Icon.Eye/> Restore
                       </button>
-                    ) : confirmRetire === pk ? (
-                      <>
-                        <button className="btn btn-danger" style={{ fontSize:11, padding:'3px 8px' }}
-                          onClick={() => { retireRecord(tableName, pk); setConfirmRetire(null); }}>
-                          Confirm retire
-                        </button>
-                        <button className="btn btn-ghost" style={{ fontSize:11, padding:'3px 8px' }}
-                          onClick={() => setConfirmRetire(null)}>
-                          <Icon.X/>
-                        </button>
-                      </>
                     ) : (
                       <button {...dp} className="btn btn-ghost" style={{ fontSize:11, padding:'3px 8px' }}
-                        onClick={() => setConfirmRetire(pk)} title="Retire">
+                        onClick={() => openRetireConfirm(tableName, pk)} title="Retire">
                         <Icon.EyeOff/>
                       </button>
                     ))}
@@ -9080,20 +9035,9 @@ function GenericTableView({ tableName }) {
                       <Icon.Eye/> Restore
                     </button>
                   ) : (
-                    confirmRetire === pk ? (
-                      <>
-                        <button className="btn btn-danger" style={{ fontSize:11, padding:'3px 8px' }}
-                          onClick={() => { retireRecord(tableName, pk); setConfirmRetire(null); }}>
-                          Confirm retire
-                        </button>
-                        <button className="btn btn-ghost" style={{ fontSize:11, padding:'3px 8px' }}
-                          onClick={() => setConfirmRetire(null)}>
-                          <Icon.X/>
-                        </button>
-                      </>
-                    ) : (
+                    (
                       <button {...dp} className="btn btn-ghost" style={{ fontSize:11, padding:'3px 8px' }}
-                        onClick={() => setConfirmRetire(pk)}
+                        onClick={() => openRetireConfirm(tableName, pk)}
                         title="Retire record">
                         <Icon.EyeOff/>
                       </button>
@@ -13504,7 +13448,7 @@ function OrphanDdlRow({ ddl, accent, canEdit, onEdit, onRetire }) {
 }
 
 function ProfilingView() {
-  const { data, retireRecord, restoreRecord, openDdlForm, canEdit, stewardIdentity, isMaster } = useApp();
+  const { data, restoreRecord, openDdlForm, canEdit, stewardIdentity, isMaster, openRetireConfirm } = useApp();
   const accent = 'var(--purple)';
 
   const myStewardCdsIds = useMemo(() => getMyStewardCdsIds(data, stewardIdentity), [data, stewardIdentity]);
@@ -13689,7 +13633,7 @@ function ProfilingView() {
 
   // DDL inline actions (Task 7 wiring)
   const handleEditDDL    = (tg) => openDdlForm(tg.ddl);
-  const handleRetireDDL  = (tg) => retireRecord('source_table_ddl', tg.ddl.source_table_ddl_id);
+  const handleRetireDDL  = (tg) => openRetireConfirm('source_table_ddl', tg.ddl.source_table_ddl_id);
   const handleAddDDL     = (tg) => openDdlForm({
     source_database_name: tg.db || '',
     source_table_name:    tg.table,
@@ -13887,7 +13831,7 @@ function ProfilingView() {
                 accent={accent}
                 canEdit={canEdit}
                 onEdit={() => openDdlForm(ddl)}
-                onRetire={() => retireRecord('source_table_ddl', ddl.source_table_ddl_id)}
+                onRetire={() => openRetireConfirm('source_table_ddl', ddl.source_table_ddl_id)}
               />
             ))}
           </div>

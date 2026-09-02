@@ -45,11 +45,13 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
   <ol class="steps">
     <li><div class="snum">1</div><div class="sbody">Click <span class="f">Organisation</span> in the left sidebar.</div></li>
     <li><div class="snum">2</div><div class="sbody">Find the agency card you want to remove.</div></li>
-    <li><div class="snum">3</div><div class="sbody">Click the <span class="f">eye-off icon</span> on the right of the agency card header. The agency is retired immediately.</div></li>
+    <li><div class="snum">3</div><div class="sbody">Click the <span class="f">eye-off icon</span> on the right of the agency card header. A confirmation panel appears showing the records that will be affected.</div></li>
+    <li><div class="snum">4</div><div class="sbody">Review the summary and click <span class="f">Confirm retirement</span>. Weight records (Criticality Group Weights and Quality Dimension Weights) are retired. Directorates and Data Patrons belonging to the agency are unlinked &mdash; their agency field is cleared so they can be reassigned to another agency.</div></li>
   </ol>
 
   <div class="note">
     Removing an agency retires it &mdash; it is hidden from active lists and can no longer be selected in forms. It is not permanently deleted.<br><br>
+    Directorates and Data Patrons are not retired when an agency is removed. They are kept active with their agency field cleared, so they can be reassigned. Edit each one to assign a new agency.<br><br>
     To see retired agencies, enable <strong>Show retired</strong> on the Organisation page. To restore a retired agency, click the eye icon that appears next to it.
   </div>
 

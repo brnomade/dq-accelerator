@@ -46,10 +46,10 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
   <ol class="steps">
     <li><div class="snum">1</div><div class="sbody">Click <span class="f">Profiling</span> in the left sidebar, under Database Actions.</div></li>
     <li><div class="snum">2</div><div class="sbody">Find the table. Profiled tables show a purple left border and a <span class="mono">profiled</span> badge.</div></li>
-    <li><div class="snum">3</div><div class="sbody">Click the <span class="f">eye-off icon</span> on the right side of the table row header. The table profile is retired immediately.</div></li>
+    <li><div class="snum">3</div><div class="sbody">Click the <span class="f">eye-off icon</span> on the right side of the table row header. A confirmation panel appears. Table profiles have no dependent records, so the panel will show no cascade items. Click <span class="f">Confirm retirement</span>.</div></li>
   </ol>
 
-  <div class="warn"><strong>Removal is immediate and cannot be undone in this session.</strong> Retiring a table profile does not remove the field profiles saved for that table, but those fields will no longer have type information available when generating SQL.</div>
+  <div class="warn"><strong>Retirement cannot be undone in this session.</strong> Retiring a table profile does not remove the field profiles saved for that table, but those fields will no longer have type information available when generating SQL.</div>
 
   <div class="note">If CDEs still reference the table, the table row reappears with an amber border indicating it needs to be profiled again. Re-add it using the Profile button.</div>
 
