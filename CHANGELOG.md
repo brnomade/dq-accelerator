@@ -4,6 +4,14 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260902-1248 — Enhancement: sortable columns and user guide update for uploader review
+
+### Changed
+- **`src/232_uploader_export.js`** -- Clicking any column header (CDE, Rule, DB, Table, Field, SQL, PH, Bal) sorts all allocation rows across all expanded CDS groups. Clicking the active column again reverses direction. Active sort column shown with a triangle indicator. Default sort is CDE ascending. For check columns ascending puts failures first; descending puts passes first.
+- **`documentation/user-guide/import-export/uploader-export.html`** -- Step added documenting column sort behaviour; subsequent step numbers updated.
+
+---
+
 ## build-20260902-1227 — Feature: Uploader review screen redesign with hierarchical navigation and override
 
 ### Changed

@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260902-1248 — Enhancement: sortable columns and user guide update
+
+**Date:** 2026-09-02
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Sortable columns + agency display fixes + user guide | 5 min | 0 min | 20 min | |
+| **Total** | **5 min** | **0 min** | **20 min** | |
+
+### Changes delivered
+- `src/232_uploader_export.js`: sortable columns, agency acronym+name display, alphabetical sort, collapsed-by-default, checkmark fix
+- `documentation/user-guide/import-export/uploader-export.html`: sort step added, step numbers updated
+
+---
+
 ## build-20260902-1227 — Feature: Uploader review screen redesign
 
 **Date:** 2026-09-02
