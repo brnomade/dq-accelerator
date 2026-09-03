@@ -101,7 +101,12 @@ function computeUploaderExclusions(data, includeSoftDeleted) {
 
     // -- Substitution + sanity checks (only when no prior reasons) ---
     var placeholdersOk = false;
+    var phFieldOk      = false;
     var balancedOk     = false;
+    var noLimitSql     = false;
+    var hasCountSql    = false;
+    var noLimitSample  = true;
+    var hasCountSample = true;
 
     if (reasons.length === 0) {
       var substituted = rule.sql_code
@@ -116,7 +121,8 @@ function computeUploaderExclusions(data, includeSoftDeleted) {
       if (!phDb)    reasons.push('Missing placeholder {SOURCE_DATABASE_NAME} in sql_code');
       if (!phTable) reasons.push('Missing placeholder {SOURCE_TABLE_NAME} in sql_code');
       if (!phField) reasons.push('Missing placeholder {SOURCE_FIELD_NAME} in sql_code');
-      placeholdersOk = phDb && phTable && phField;
+      placeholdersOk = phDb && phTable;
+      phFieldOk      = phField;
 
       if (!substituted.trim()) reasons.push('SQL is empty after field substitution');
 
@@ -132,16 +138,29 @@ function computeUploaderExclusions(data, includeSoftDeleted) {
       if (dqCount % 2 !== 0) reasons.push('Unbalanced double quotes in sql_code');
       if (parenDepth !== 0)  reasons.push('Unbalanced parentheses in sql_code');
       balancedOk = (sqCount % 2 === 0) && (dqCount % 2 === 0) && (parenDepth === 0);
+
+      noLimitSql  = !/\bLIMIT\b/i.test(rule.sql_code);
+      hasCountSql = /\bCOUNT\s*\(/i.test(rule.sql_code);
+      if (!noLimitSql)  reasons.push('sql_code contains a LIMIT keyword - not supported by the DQ engine');
+      if (!hasCountSql) reasons.push('sql_code uses plain SELECT without COUNT - the DQ engine requires SELECT COUNT(...)');
+
+      if (rule.sql_code_sample && rule.sql_code_sample.trim()) {
+        noLimitSample  = !/\bLIMIT\b/i.test(rule.sql_code_sample);
+        hasCountSample = /\bCOUNT\s*\(/i.test(rule.sql_code_sample);
+        if (!noLimitSample)  reasons.push('sql_code_sample contains a LIMIT keyword - not supported by the DQ engine');
+        if (!hasCountSample) reasons.push('sql_code_sample uses plain SELECT without COUNT - the DQ engine requires SELECT COUNT(...)');
+      }
     }
 
     // -- Build structured checks flags for UI column rendering ------
     var checks = {
-      dbOk:          !dbFail && !!cde,
-      tableOk:       !tableFail && !!cde,
-      fieldOk:       !fieldFail && !!cde,
-      sqlOk:         sqlOk,
+      dbOk:           !dbFail && !!cde,
+      tableOk:        !tableFail && !!cde,
+      fieldOk:        !fieldFail && !!cde,
+      sqlOk:          sqlOk,
       placeholdersOk: placeholdersOk,
-      balancedOk:    balancedOk,
+      phFieldOk:      phFieldOk,
+      engOk:          balancedOk && noLimitSql && hasCountSql && noLimitSample && hasCountSample,
     };
 
     if (reasons.length > 0) {

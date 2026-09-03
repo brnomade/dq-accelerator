@@ -5,6 +5,42 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260903-1945 — Fix: PHF column; PHF-only failures pre-included
+
+**Date:** 2026-09-03
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Diagnose false positive; Q&amp;A on approach | 10 min | 0 min | 0 min | |
+| Implement PHF split, pre-check logic, column, widths, user guide | 0 min | 0 min | 15 min | |
+| **Total** | **10 min** | **0 min** | **15 min** | |
+
+### Changes delivered
+- `src/231_uploader_validation.js`: `placeholdersOk` split; `phFieldOk` added to checks
+- `src/232_uploader_export.js`: PHF column added; pre-check initialisation in `handleAnalyse`; colgroup widths updated
+- `documentation/user-guide/import-export/uploader-export.html`: PHF row + pre-include note
+
+---
+
+## build-20260903-1926 — Fix: LIMIT and no-COUNT SQL engine checks
+
+**Date:** 2026-09-03
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Diagnose errors; review 5 source files; Q&amp;A with user | 15 min | 0 min | 0 min | |
+| Write PLAN_SQL_ENGINE_CHECKS.md | 0 min | 10 min | 0 min | |
+| Implement checks in 45, 231, 232; update user guide | 0 min | 0 min | 15 min | |
+| **Total** | **15 min** | **10 min** | **15 min** | |
+
+### Changes delivered
+- `src/45_rule_sql_warnings.js`: LIMIT + no-COUNT CRITICAL checks for `sql_code` and `sql_code_sample`
+- `src/231_uploader_validation.js`: same checks as exclusion reasons; `balancedOk` → `engOk`
+- `src/232_uploader_export.js`: Bal column renamed to Eng with updated tooltip
+- `documentation/user-guide/import-export/uploader-export.html`: Bal → Eng throughout
+
+---
+
 ## build-20260903-1107 — Enhancement: auto-updates visible in delta merge panel
 
 **Date:** 2026-09-03

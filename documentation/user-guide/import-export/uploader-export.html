@@ -136,8 +136,9 @@ footer{border-top:1px solid var(--border);padding:18px 40px;font-size:11px;color
           <tr><td>Table</td><td>Source table name is present, not a placeholder, and contains no spaces</td></tr>
           <tr><td>Field</td><td>Source field name is present, not a placeholder, and contains no spaces</td></tr>
           <tr><td>SQL</td><td>Rule SQL code is present and non-empty</td></tr>
-          <tr><td>PH</td><td>All three source tokens ({SOURCE_DATABASE_NAME}, {SOURCE_TABLE_NAME}, {SOURCE_FIELD_NAME}) appear in the SQL</td></tr>
-          <tr><td>Bal</td><td>Single quotes, double quotes, and parentheses are balanced in the SQL</td></tr>
+          <tr><td>PH</td><td>{SOURCE_DATABASE_NAME} and {SOURCE_TABLE_NAME} appear in the SQL template</td></tr>
+          <tr><td>PHF</td><td>{SOURCE_FIELD_NAME} appears in the SQL template. Table-level rules that do not reference a specific field may legitimately omit this placeholder. If PHF is the only failure for an allocation, the Include? checkbox is pre-ticked automatically.</td></tr>
+          <tr><td>Eng</td><td>SQL engine checks: quotes and parentheses are balanced, no LIMIT keyword is present, and SELECT COUNT(...) appears in both sql_code and sql_code_sample (when defined)</td></tr>
         </table>
         <div class="sub" style="margin-top:6px">
           Hover over a column header for a full description.
@@ -152,7 +153,7 @@ footer{border-top:1px solid var(--border);padding:18px 40px;font-size:11px;color
         Click any column header to sort the rows by that column. Click the same header again
         to reverse the sort direction. The active sort column shows a triangle indicator.
         <div class="sub">
-          CDE and Rule sort alphabetically. Check columns (DB, Table, Field, SQL, PH, Bal)
+          CDE and Rule sort alphabetically. Check columns (DB, Table, Field, SQL, PH, PHF, Eng)
           sort with failures first in ascending order and passes first in descending order.
           The sort applies across all expanded CDS groups simultaneously.
         </div>
@@ -208,7 +209,7 @@ footer{border-top:1px solid var(--border);padding:18px 40px;font-size:11px;color
         Navigate to the relevant screen to make corrections:
         <ul style="margin-top:6px;list-style:disc;padding-left:18px;font-size:13px;color:var(--text3)">
           <li>DB / Table / Field failures: open the CDE record and fill in the source fields.</li>
-          <li>SQL / PH / Bal failures: open the Rule record and correct the SQL template.</li>
+          <li>SQL / PH / PHF / Eng failures: open the Rule record and correct the SQL template. Note: PHF-only failures are pre-included automatically and may not require action for table-level rules.</li>
         </ul>
         <div class="sub">Then return to Export and repeat from Step 1.</div>
       </div>
