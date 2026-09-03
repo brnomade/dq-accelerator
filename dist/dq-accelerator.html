@@ -1405,6 +1405,10 @@ function computeRuleSqlWarnings(sql, sample) {
     warns.push({ level: 'CRITICAL', msg: 'Rule SQL has no WHERE clause. The engine appends AND <snapshot_filter> to sql_code at run time, which requires a WHERE clause to be present.' });
   if (s.endsWith(';'))
     warns.push({ level: 'CRITICAL', msg: 'Rule SQL ends with a semicolon. The engine appends AND <snapshot_filter> after it, producing invalid SQL.' });
+  if (/\bLIMIT\b/i.test(s))
+    warns.push({ level: 'CRITICAL', msg: 'Rule SQL contains a LIMIT keyword. The engine does not support LIMIT in sql_code.' });
+  if (!/\bCOUNT\s*\(/i.test(s))
+    warns.push({ level: 'CRITICAL', msg: 'Rule SQL uses plain SELECT without COUNT. The engine requires SELECT COUNT(...) to return the number of failing records.' });
   if (/\bCAST\s*\(/i.test(s))
     warns.push({ level: 'SEVERE', msg: 'Rule SQL uses CAST(). TRY_CAST() is required to avoid runtime data conversion errors in Athena.' });
   const hasIsNull      = /\bIS\s+NULL\b/i.test(s);
@@ -1423,6 +1427,10 @@ function computeRuleSqlWarnings(sql, sample) {
       warns.push({ level: 'CRITICAL', msg: 'Sample SQL contains a WHERE clause. The engine appends WHERE <snapshot_filter> to sql_code_sample, which would produce a duplicate WHERE clause.' });
     if (p.endsWith(';'))
       warns.push({ level: 'CRITICAL', msg: 'Sample SQL ends with a semicolon. The engine appends WHERE <snapshot_filter> after it, producing invalid SQL.' });
+    if (/\bLIMIT\b/i.test(p))
+      warns.push({ level: 'CRITICAL', msg: 'Sample SQL contains a LIMIT keyword. The engine does not support LIMIT in sql_code_sample.' });
+    if (!/\bCOUNT\s*\(/i.test(p))
+      warns.push({ level: 'CRITICAL', msg: 'Sample SQL uses plain SELECT without COUNT. The engine requires SELECT COUNT(...) to return the number of failing records.' });
     if (/\bCAST\s*\(/i.test(p))
       warns.push({ level: 'SEVERE', msg: 'Sample SQL uses CAST(). TRY_CAST() is required to avoid runtime data conversion errors in Athena.' });
     if (p.indexOf('{SOURCE_DATABASE_NAME}') === -1)
@@ -2745,7 +2753,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260902-1930</div>
+              <div className="header-app-sub">build-20260903-1945</div>
             </div>
           </div>
         </div>
@@ -15329,6 +15337,157 @@ function DeltaConflictCard({ conflict, resolution, onResolve }) {
 }
 
 // ===============================================================================
+// AUTO-UPDATE CARD -- read-only diff card for a single auto-applied update
+// ===============================================================================
+function AutoUpdateCard({ table, row, masterRow }) {
+  const schema  = SCHEMA[table];
+  const pkField = schema.pk;
+  const [showAll, setShowAll] = useState(false);
+
+  const nonPkCols = (schema.cols || []).filter(col => col.name !== pkField);
+
+  const changedColNames = new Set(
+    nonPkCols
+      .filter(col => String(masterRow[col.name] ?? '') !== String(row[col.name] ?? ''))
+      .map(c => c.name)
+  );
+
+  const visibleCols = showAll ? nonPkCols : nonPkCols.filter(col => changedColNames.has(col.name));
+
+  const thStyle = {
+    fontSize:9, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.06em',
+    color:'var(--text3)', padding:'5px 10px', borderBottom:'1px solid var(--border)',
+    background:'var(--bg3)', textAlign:'left',
+  };
+  const cell = (extra) => Object.assign({
+    padding:'4px 10px', fontSize:11, fontFamily:'var(--mono)',
+    borderBottom:'1px solid var(--border)', verticalAlign:'middle',
+  }, extra || {});
+
+  return (
+    <div style={{ marginBottom:8, border:'1px solid rgba(34,201,142,0.3)',
+      borderRadius:'var(--radius)', background:'var(--bg2)', overflow:'hidden' }}>
+
+      {/* Header */}
+      <div style={{ display:'flex', alignItems:'center', gap:8,
+        padding:'7px 12px', borderBottom:'1px solid var(--border)', background:'var(--bg3)' }}>
+        <span style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--text2)' }}>{table}</span>
+        <span style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--text3)' }}>{' | '}</span>
+        <span style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--text2)', flex:1 }}>
+          {pkField}: {row[pkField]}
+        </span>
+        <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:3,
+          background:'rgba(34,201,142,0.12)', color:'var(--green)',
+          border:'1px solid rgba(34,201,142,0.3)' }}>
+          AUTO
+        </span>
+      </div>
+
+      {/* 3-column diff table */}
+      <table style={{ width:'100%', borderCollapse:'collapse' }}>
+        <thead>
+          <tr>
+            <th style={{ ...thStyle, width:'34%' }}>field</th>
+            <th style={{ ...thStyle, width:'33%' }}>before</th>
+            <th style={{ ...thStyle, width:'33%' }}>after</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          {/* PK row */}
+          <tr style={{ background:'var(--bg3)' }}>
+            <td style={cell({ color:'var(--text3)' })}>
+              {pkField}
+              <span style={{ fontSize:9, fontWeight:700, color:'var(--amber)',
+                background:'rgba(245,166,35,0.12)', border:'1px solid rgba(245,166,35,0.3)',
+                borderRadius:3, padding:'1px 4px', marginLeft:6 }}>PK</span>
+            </td>
+            <td style={cell({ color:'var(--text2)' })}>{String(masterRow[pkField] ?? '-')}</td>
+            <td style={cell({ color:'var(--text2)' })}>{String(row[pkField] ?? '-')}</td>
+          </tr>
+
+          {/* Changed / all field rows */}
+          {visibleCols.map(col => {
+            const isChanged = changedColNames.has(col.name);
+            return (
+              <tr key={col.name} style={{ background: isChanged ? 'rgba(34,201,142,0.04)' : 'transparent' }}>
+                <td style={cell({ color: isChanged ? 'var(--text2)' : 'var(--text3)' })}>{col.name}</td>
+                <td style={cell({ color: isChanged ? 'var(--text2)' : 'var(--text3)' })}>
+                  {String(masterRow[col.name] ?? '-')}
+                </td>
+                <td style={cell({ color: isChanged ? 'var(--green)' : 'var(--text3)', fontWeight: isChanged ? 500 : 400 })}>
+                  {String(row[col.name] ?? '-')}
+                </td>
+              </tr>
+            );
+          })}
+
+          {visibleCols.length === 0 && (
+            <tr>
+              <td colSpan={3} style={cell({ color:'var(--text3)' })}>No field-level differences detected</td>
+            </tr>
+          )}
+
+        </tbody>
+      </table>
+
+      {/* Footer toggle */}
+      <div style={{ display:'flex', padding:'5px 12px',
+        borderTop:'1px solid var(--border)', background:'var(--bg3)' }}>
+        <button className="btn btn-ghost" style={{ fontSize:11, padding:'2px 8px', marginLeft:'auto' }}
+          onClick={() => setShowAll(s => !s)}>
+          {showAll ? 'Collapse' : 'Show all fields'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ===============================================================================
+// AUTO-UPDATE SECTION -- collapsible wrapper for all auto-applied updates
+// ===============================================================================
+function AutoUpdateSection({ autoApplyUpdates, masterData }) {
+  const [expanded, setExpanded] = useState(false);
+
+  if (!autoApplyUpdates || autoApplyUpdates.length === 0) return null;
+
+  const n = autoApplyUpdates.length;
+
+  return (
+    <div style={{ marginTop:20, marginBottom:8 }}>
+      <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom: expanded ? 10 : 0,
+        cursor:'pointer', userSelect:'none' }}
+        onClick={() => setExpanded(e => !e)}>
+        <span style={{ fontSize:10, fontFamily:'var(--mono)', color:'var(--text3)', width:14 }}>
+          {expanded ? '[-]' : '[+]'}
+        </span>
+        <span style={{ fontSize:12, fontWeight:600, color:'var(--text2)', flex:1 }}>
+          {'Auto-updates \u2014 ' + n + ' applied automatically'}
+        </span>
+        <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:3,
+          background:'rgba(34,201,142,0.12)', color:'var(--green)',
+          border:'1px solid rgba(34,201,142,0.3)' }}>
+          AUTO
+        </span>
+      </div>
+      {expanded && autoApplyUpdates.map(function(entry, i) {
+        var tbl      = entry.table;
+        var row      = entry.row;
+        var schema   = SCHEMA[tbl];
+        if (!schema) return null;
+        var pkField  = schema.pk;
+        var masterRow = (masterData[tbl] || []).find(function(r) { return r[pkField] === row[pkField]; });
+        if (!masterRow) return null;
+        return (
+          <AutoUpdateCard key={tbl + ':' + row[pkField] + ':' + i}
+            table={tbl} row={row} masterRow={masterRow} />
+        );
+      })}
+    </div>
+  );
+}
+
+// ===============================================================================
 // INSERT REVIEW -- per-table group card
 // ===============================================================================
 function InsertTableGroup({ tableName, rows, selections, onToggleRow, onAcceptTable, onRejectTable }) {
@@ -15494,6 +15653,7 @@ function InsertReviewSection({ remappedInserts, selections, onToggleRow, onAccep
 // TASK 6 -- DELTA MERGE PANEL
 // ===============================================================================
 function DeltaMergePanel({ deltaResult, resolutions, onResolve, onApply, onCancel }) {
+  const { data } = useApp();
   const { delta, processResult, versionMismatch, masterVersion } = deltaResult;
   const { remappedInserts, autoApplyUpdates, conflicts } = processResult;
   const allResolved = conflicts.every(c => resolutions[`${c.table}:${c.pk}`]);
@@ -15632,6 +15792,9 @@ function DeltaMergePanel({ deltaResult, resolutions, onResolve, onApply, onCance
           ))}
         </>
       )}
+
+      {/* Auto-update section */}
+      <AutoUpdateSection autoApplyUpdates={autoApplyUpdates} masterData={data} />
 
       {/* Insert review section */}
       {totalInserts > 0 && (
@@ -17816,7 +17979,12 @@ function computeUploaderExclusions(data, includeSoftDeleted) {
 
     // -- Substitution + sanity checks (only when no prior reasons) ---
     var placeholdersOk = false;
+    var phFieldOk      = false;
     var balancedOk     = false;
+    var noLimitSql     = false;
+    var hasCountSql    = false;
+    var noLimitSample  = true;
+    var hasCountSample = true;
 
     if (reasons.length === 0) {
       var substituted = rule.sql_code
@@ -17831,7 +17999,8 @@ function computeUploaderExclusions(data, includeSoftDeleted) {
       if (!phDb)    reasons.push('Missing placeholder {SOURCE_DATABASE_NAME} in sql_code');
       if (!phTable) reasons.push('Missing placeholder {SOURCE_TABLE_NAME} in sql_code');
       if (!phField) reasons.push('Missing placeholder {SOURCE_FIELD_NAME} in sql_code');
-      placeholdersOk = phDb && phTable && phField;
+      placeholdersOk = phDb && phTable;
+      phFieldOk      = phField;
 
       if (!substituted.trim()) reasons.push('SQL is empty after field substitution');
 
@@ -17847,16 +18016,29 @@ function computeUploaderExclusions(data, includeSoftDeleted) {
       if (dqCount % 2 !== 0) reasons.push('Unbalanced double quotes in sql_code');
       if (parenDepth !== 0)  reasons.push('Unbalanced parentheses in sql_code');
       balancedOk = (sqCount % 2 === 0) && (dqCount % 2 === 0) && (parenDepth === 0);
+
+      noLimitSql  = !/\bLIMIT\b/i.test(rule.sql_code);
+      hasCountSql = /\bCOUNT\s*\(/i.test(rule.sql_code);
+      if (!noLimitSql)  reasons.push('sql_code contains a LIMIT keyword - not supported by the DQ engine');
+      if (!hasCountSql) reasons.push('sql_code uses plain SELECT without COUNT - the DQ engine requires SELECT COUNT(...)');
+
+      if (rule.sql_code_sample && rule.sql_code_sample.trim()) {
+        noLimitSample  = !/\bLIMIT\b/i.test(rule.sql_code_sample);
+        hasCountSample = /\bCOUNT\s*\(/i.test(rule.sql_code_sample);
+        if (!noLimitSample)  reasons.push('sql_code_sample contains a LIMIT keyword - not supported by the DQ engine');
+        if (!hasCountSample) reasons.push('sql_code_sample uses plain SELECT without COUNT - the DQ engine requires SELECT COUNT(...)');
+      }
     }
 
     // -- Build structured checks flags for UI column rendering ------
     var checks = {
-      dbOk:          !dbFail && !!cde,
-      tableOk:       !tableFail && !!cde,
-      fieldOk:       !fieldFail && !!cde,
-      sqlOk:         sqlOk,
+      dbOk:           !dbFail && !!cde,
+      tableOk:        !tableFail && !!cde,
+      fieldOk:        !fieldFail && !!cde,
+      sqlOk:          sqlOk,
       placeholdersOk: placeholdersOk,
-      balancedOk:    balancedOk,
+      phFieldOk:      phFieldOk,
+      engOk:          balancedOk && noLimitSql && hasCountSql && noLimitSample && hasCountSample,
     };
 
     if (reasons.length > 0) {
@@ -17972,8 +18154,16 @@ function UploaderExportTab() {
 
   const handleAnalyse = () => {
     const result = computeUploaderExclusions(data, includeSoftDeleted);
+    const preChecked = {};
+    for (var i = 0; i < result.excluded.length; i++) {
+      var item = result.excluded[i];
+      var c = item.checks;
+      if (!c.phFieldOk && c.dbOk && c.tableOk && c.fieldOk && c.sqlOk && c.placeholdersOk && c.engOk) {
+        preChecked[item.allocation.data_quality_rule_allocation_id] = true;
+      }
+    }
     setReviewResult(result);
-    setOverrides({});
+    setOverrides(preChecked);
     setAgencyExpanded({});
     setCdsExpanded({});
     setView('review');
@@ -18252,8 +18442,9 @@ function UploaderReviewView(props) {
     { key:'tableOk',       label:'Table', tip:'Source table name - must be a valid SQL identifier (no spaces, no placeholder values)' },
     { key:'fieldOk',       label:'Field', tip:'Source field name - must be a valid SQL identifier (no spaces, no placeholder values)' },
     { key:'sqlOk',         label:'SQL',   tip:'Rule SQL code - must be present and non-empty' },
-    { key:'placeholdersOk',label:'PH',    tip:'SQL placeholders - {SOURCE_DATABASE_NAME}, {SOURCE_TABLE_NAME} and {SOURCE_FIELD_NAME} must all appear in the SQL template' },
-    { key:'balancedOk',    label:'Bal',   tip:'SQL balance - single quotes, double quotes, and parentheses must be balanced' },
+    { key:'placeholdersOk',label:'PH',    tip:'Source placeholders - {SOURCE_DATABASE_NAME} and {SOURCE_TABLE_NAME} must appear in the SQL template' },
+    { key:'phFieldOk',     label:'PHF',   tip:'Field placeholder - {SOURCE_FIELD_NAME} should appear in the SQL template. Table-level rules that do not reference a specific field may legitimately omit it. If this is the only failure, the allocation is pre-included automatically.' },
+    { key:'engOk',         label:'Eng',   tip:'SQL engine checks - quotes and parentheses must be balanced, no LIMIT keyword, and SELECT COUNT(...) must be present in sql_code and sql_code_sample (when defined)' },
   ];
 
   function CheckMark(ok) {
@@ -18390,11 +18581,12 @@ function UploaderReviewView(props) {
                           <table style={{ width:'100%', borderCollapse:'collapse',
                             tableLayout:'fixed', fontSize:11 }}>
                             <colgroup>
+                              <col style={{ width:'20%' }}/>
                               <col style={{ width:'22%' }}/>
-                              <col style={{ width:'24%' }}/>
                               <col style={{ width:'6%'  }}/>
-                              <col style={{ width:'7%'  }}/>
-                              <col style={{ width:'7%'  }}/>
+                              <col style={{ width:'6%'  }}/>
+                              <col style={{ width:'6%'  }}/>
+                              <col style={{ width:'6%'  }}/>
                               <col style={{ width:'6%'  }}/>
                               <col style={{ width:'6%'  }}/>
                               <col style={{ width:'6%'  }}/>

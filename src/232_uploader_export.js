@@ -44,8 +44,16 @@ function UploaderExportTab() {
 
   const handleAnalyse = () => {
     const result = computeUploaderExclusions(data, includeSoftDeleted);
+    const preChecked = {};
+    for (var i = 0; i < result.excluded.length; i++) {
+      var item = result.excluded[i];
+      var c = item.checks;
+      if (!c.phFieldOk && c.dbOk && c.tableOk && c.fieldOk && c.sqlOk && c.placeholdersOk && c.engOk) {
+        preChecked[item.allocation.data_quality_rule_allocation_id] = true;
+      }
+    }
     setReviewResult(result);
-    setOverrides({});
+    setOverrides(preChecked);
     setAgencyExpanded({});
     setCdsExpanded({});
     setView('review');
@@ -324,8 +332,9 @@ function UploaderReviewView(props) {
     { key:'tableOk',       label:'Table', tip:'Source table name - must be a valid SQL identifier (no spaces, no placeholder values)' },
     { key:'fieldOk',       label:'Field', tip:'Source field name - must be a valid SQL identifier (no spaces, no placeholder values)' },
     { key:'sqlOk',         label:'SQL',   tip:'Rule SQL code - must be present and non-empty' },
-    { key:'placeholdersOk',label:'PH',    tip:'SQL placeholders - {SOURCE_DATABASE_NAME}, {SOURCE_TABLE_NAME} and {SOURCE_FIELD_NAME} must all appear in the SQL template' },
-    { key:'balancedOk',    label:'Bal',   tip:'SQL balance - single quotes, double quotes, and parentheses must be balanced' },
+    { key:'placeholdersOk',label:'PH',    tip:'Source placeholders - {SOURCE_DATABASE_NAME} and {SOURCE_TABLE_NAME} must appear in the SQL template' },
+    { key:'phFieldOk',     label:'PHF',   tip:'Field placeholder - {SOURCE_FIELD_NAME} should appear in the SQL template. Table-level rules that do not reference a specific field may legitimately omit it. If this is the only failure, the allocation is pre-included automatically.' },
+    { key:'engOk',         label:'Eng',   tip:'SQL engine checks - quotes and parentheses must be balanced, no LIMIT keyword, and SELECT COUNT(...) must be present in sql_code and sql_code_sample (when defined)' },
   ];
 
   function CheckMark(ok) {
@@ -462,11 +471,12 @@ function UploaderReviewView(props) {
                           <table style={{ width:'100%', borderCollapse:'collapse',
                             tableLayout:'fixed', fontSize:11 }}>
                             <colgroup>
+                              <col style={{ width:'20%' }}/>
                               <col style={{ width:'22%' }}/>
-                              <col style={{ width:'24%' }}/>
                               <col style={{ width:'6%'  }}/>
-                              <col style={{ width:'7%'  }}/>
-                              <col style={{ width:'7%'  }}/>
+                              <col style={{ width:'6%'  }}/>
+                              <col style={{ width:'6%'  }}/>
+                              <col style={{ width:'6%'  }}/>
                               <col style={{ width:'6%'  }}/>
                               <col style={{ width:'6%'  }}/>
                               <col style={{ width:'6%'  }}/>

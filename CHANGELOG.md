@@ -4,6 +4,36 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260903-1945 — Fix: PHF column separates field placeholder check; PHF-only failures pre-included
+
+### Changed
+- **`src/231_uploader_validation.js`** -- Split `placeholdersOk` into two flags. `placeholdersOk` (PH column) now covers `{SOURCE_DATABASE_NAME}` and `{SOURCE_TABLE_NAME}` only. New `phFieldOk` flag tracks `{SOURCE_FIELD_NAME}` separately; missing field placeholder still adds an exclusion reason but is reported via the dedicated PHF column.
+- **`src/232_uploader_export.js`** -- Added PHF check column to the review table after PH. On `handleAnalyse`, allocations where PHF is the sole failing check have their Include? override pre-initialised to true, so the steward sees the warning without needing to manually tick each row. Colgroup widths adjusted to accommodate the new column. PH tooltip updated to reflect DB + Table only.
+
+### Documentation
+- `documentation/user-guide/import-export/uploader-export.html` -- Added PHF row to check-column table with explanation of pre-include behaviour; updated sort hint and fix-guidance to include PHF.
+
+---
+
+## build-20260903-1926 — Fix: LIMIT and no-COUNT SQL engine checks
+
+### Changed
+- **`src/45_rule_sql_warnings.js`** -- Added two new CRITICAL checks to `computeRuleSqlWarnings`: (1) LIMIT keyword present in `sql_code` or `sql_code_sample`; (2) plain SELECT without COUNT in `sql_code` or `sql_code_sample`. These warnings now appear in RuleFormPanel (166), RuleAllocationFormPanel (130), and CdeAllocFormPanel (141) wherever `RuleSqlWarningNotices` is rendered.
+- **`src/231_uploader_validation.js`** -- Added the same four engine checks as uploader exclusion reasons inside `computeUploaderExclusions`. Renamed the `balancedOk` checks flag to `engOk`; it now encompasses balanced quotes/parens, no LIMIT in `sql_code`, SELECT COUNT present in `sql_code`, no LIMIT in `sql_code_sample` (when defined), and SELECT COUNT present in `sql_code_sample` (when defined).
+- **`src/232_uploader_export.js`** -- Renamed `CHECK_COLS` entry from `Bal` to `Eng` with updated tooltip describing the full set of engine checks.
+
+### Documentation
+- `documentation/user-guide/import-export/uploader-export.html` -- Updated check column table (Bal renamed to Eng with new description), sort reference, and fix-guidance section.
+
+---
+
+## build-20260903-1107 — Enhancement: auto-updates now visible in delta merge panel
+
+### Changed
+- **`src/210_screen_import.js`** -- Added `AutoUpdateCard` and `AutoUpdateSection` components to `DeltaMergePanel`. Auto-updates (steward changes applied without conflict) are now shown in a collapsible section (collapsed by default) between the conflict cards and the insert review. Each card renders a before/after diff of changed fields, with a "Show all fields" toggle. The section is absent when there are zero auto-updates. No change to merge logic.
+
+---
+
 ## build-20260902-1930 — Enhancement: all retire buttons route through cascade confirmation panel
 
 ### Changed

@@ -246,6 +246,157 @@ function DeltaConflictCard({ conflict, resolution, onResolve }) {
 }
 
 // ===============================================================================
+// AUTO-UPDATE CARD -- read-only diff card for a single auto-applied update
+// ===============================================================================
+function AutoUpdateCard({ table, row, masterRow }) {
+  const schema  = SCHEMA[table];
+  const pkField = schema.pk;
+  const [showAll, setShowAll] = useState(false);
+
+  const nonPkCols = (schema.cols || []).filter(col => col.name !== pkField);
+
+  const changedColNames = new Set(
+    nonPkCols
+      .filter(col => String(masterRow[col.name] ?? '') !== String(row[col.name] ?? ''))
+      .map(c => c.name)
+  );
+
+  const visibleCols = showAll ? nonPkCols : nonPkCols.filter(col => changedColNames.has(col.name));
+
+  const thStyle = {
+    fontSize:9, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.06em',
+    color:'var(--text3)', padding:'5px 10px', borderBottom:'1px solid var(--border)',
+    background:'var(--bg3)', textAlign:'left',
+  };
+  const cell = (extra) => Object.assign({
+    padding:'4px 10px', fontSize:11, fontFamily:'var(--mono)',
+    borderBottom:'1px solid var(--border)', verticalAlign:'middle',
+  }, extra || {});
+
+  return (
+    <div style={{ marginBottom:8, border:'1px solid rgba(34,201,142,0.3)',
+      borderRadius:'var(--radius)', background:'var(--bg2)', overflow:'hidden' }}>
+
+      {/* Header */}
+      <div style={{ display:'flex', alignItems:'center', gap:8,
+        padding:'7px 12px', borderBottom:'1px solid var(--border)', background:'var(--bg3)' }}>
+        <span style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--text2)' }}>{table}</span>
+        <span style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--text3)' }}>{' | '}</span>
+        <span style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--text2)', flex:1 }}>
+          {pkField}: {row[pkField]}
+        </span>
+        <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:3,
+          background:'rgba(34,201,142,0.12)', color:'var(--green)',
+          border:'1px solid rgba(34,201,142,0.3)' }}>
+          AUTO
+        </span>
+      </div>
+
+      {/* 3-column diff table */}
+      <table style={{ width:'100%', borderCollapse:'collapse' }}>
+        <thead>
+          <tr>
+            <th style={{ ...thStyle, width:'34%' }}>field</th>
+            <th style={{ ...thStyle, width:'33%' }}>before</th>
+            <th style={{ ...thStyle, width:'33%' }}>after</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          {/* PK row */}
+          <tr style={{ background:'var(--bg3)' }}>
+            <td style={cell({ color:'var(--text3)' })}>
+              {pkField}
+              <span style={{ fontSize:9, fontWeight:700, color:'var(--amber)',
+                background:'rgba(245,166,35,0.12)', border:'1px solid rgba(245,166,35,0.3)',
+                borderRadius:3, padding:'1px 4px', marginLeft:6 }}>PK</span>
+            </td>
+            <td style={cell({ color:'var(--text2)' })}>{String(masterRow[pkField] ?? '-')}</td>
+            <td style={cell({ color:'var(--text2)' })}>{String(row[pkField] ?? '-')}</td>
+          </tr>
+
+          {/* Changed / all field rows */}
+          {visibleCols.map(col => {
+            const isChanged = changedColNames.has(col.name);
+            return (
+              <tr key={col.name} style={{ background: isChanged ? 'rgba(34,201,142,0.04)' : 'transparent' }}>
+                <td style={cell({ color: isChanged ? 'var(--text2)' : 'var(--text3)' })}>{col.name}</td>
+                <td style={cell({ color: isChanged ? 'var(--text2)' : 'var(--text3)' })}>
+                  {String(masterRow[col.name] ?? '-')}
+                </td>
+                <td style={cell({ color: isChanged ? 'var(--green)' : 'var(--text3)', fontWeight: isChanged ? 500 : 400 })}>
+                  {String(row[col.name] ?? '-')}
+                </td>
+              </tr>
+            );
+          })}
+
+          {visibleCols.length === 0 && (
+            <tr>
+              <td colSpan={3} style={cell({ color:'var(--text3)' })}>No field-level differences detected</td>
+            </tr>
+          )}
+
+        </tbody>
+      </table>
+
+      {/* Footer toggle */}
+      <div style={{ display:'flex', padding:'5px 12px',
+        borderTop:'1px solid var(--border)', background:'var(--bg3)' }}>
+        <button className="btn btn-ghost" style={{ fontSize:11, padding:'2px 8px', marginLeft:'auto' }}
+          onClick={() => setShowAll(s => !s)}>
+          {showAll ? 'Collapse' : 'Show all fields'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ===============================================================================
+// AUTO-UPDATE SECTION -- collapsible wrapper for all auto-applied updates
+// ===============================================================================
+function AutoUpdateSection({ autoApplyUpdates, masterData }) {
+  const [expanded, setExpanded] = useState(false);
+
+  if (!autoApplyUpdates || autoApplyUpdates.length === 0) return null;
+
+  const n = autoApplyUpdates.length;
+
+  return (
+    <div style={{ marginTop:20, marginBottom:8 }}>
+      <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom: expanded ? 10 : 0,
+        cursor:'pointer', userSelect:'none' }}
+        onClick={() => setExpanded(e => !e)}>
+        <span style={{ fontSize:10, fontFamily:'var(--mono)', color:'var(--text3)', width:14 }}>
+          {expanded ? '[-]' : '[+]'}
+        </span>
+        <span style={{ fontSize:12, fontWeight:600, color:'var(--text2)', flex:1 }}>
+          {'Auto-updates \u2014 ' + n + ' applied automatically'}
+        </span>
+        <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:3,
+          background:'rgba(34,201,142,0.12)', color:'var(--green)',
+          border:'1px solid rgba(34,201,142,0.3)' }}>
+          AUTO
+        </span>
+      </div>
+      {expanded && autoApplyUpdates.map(function(entry, i) {
+        var tbl      = entry.table;
+        var row      = entry.row;
+        var schema   = SCHEMA[tbl];
+        if (!schema) return null;
+        var pkField  = schema.pk;
+        var masterRow = (masterData[tbl] || []).find(function(r) { return r[pkField] === row[pkField]; });
+        if (!masterRow) return null;
+        return (
+          <AutoUpdateCard key={tbl + ':' + row[pkField] + ':' + i}
+            table={tbl} row={row} masterRow={masterRow} />
+        );
+      })}
+    </div>
+  );
+}
+
+// ===============================================================================
 // INSERT REVIEW -- per-table group card
 // ===============================================================================
 function InsertTableGroup({ tableName, rows, selections, onToggleRow, onAcceptTable, onRejectTable }) {
@@ -411,6 +562,7 @@ function InsertReviewSection({ remappedInserts, selections, onToggleRow, onAccep
 // TASK 6 -- DELTA MERGE PANEL
 // ===============================================================================
 function DeltaMergePanel({ deltaResult, resolutions, onResolve, onApply, onCancel }) {
+  const { data } = useApp();
   const { delta, processResult, versionMismatch, masterVersion } = deltaResult;
   const { remappedInserts, autoApplyUpdates, conflicts } = processResult;
   const allResolved = conflicts.every(c => resolutions[`${c.table}:${c.pk}`]);
@@ -549,6 +701,9 @@ function DeltaMergePanel({ deltaResult, resolutions, onResolve, onApply, onCance
           ))}
         </>
       )}
+
+      {/* Auto-update section */}
+      <AutoUpdateSection autoApplyUpdates={autoApplyUpdates} masterData={data} />
 
       {/* Insert review section */}
       {totalInserts > 0 && (
