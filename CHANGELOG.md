@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260903-1107 — Enhancement: auto-updates now visible in delta merge panel
+
+### Changed
+- **`src/210_screen_import.js`** -- Added `AutoUpdateCard` and `AutoUpdateSection` components to `DeltaMergePanel`. Auto-updates (steward changes applied without conflict) are now shown in a collapsible section (collapsed by default) between the conflict cards and the insert review. Each card renders a before/after diff of changed fields, with a "Show all fields" toggle. The section is absent when there are zero auto-updates. No change to merge logic.
+
+---
+
 ## build-20260902-1930 — Enhancement: all retire buttons route through cascade confirmation panel
 
 ### Changed

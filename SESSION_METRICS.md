@@ -5,6 +5,22 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260903-1107 — Enhancement: auto-updates visible in delta merge panel
+
+**Date:** 2026-09-03
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Review auto-update display gap; agree approach | 5 min | 0 min | 0 min | |
+| Write plan (PLAN_auto_update_visibility.md) | 0 min | 10 min | 0 min | |
+| Implement AutoUpdateCard + AutoUpdateSection; wire into DeltaMergePanel | 0 min | 0 min | 20 min | |
+| **Total** | **5 min** | **10 min** | **20 min** | |
+
+### Changes delivered
+- `src/210_screen_import.js`: `AutoUpdateCard` and `AutoUpdateSection` added; `DeltaMergePanel` wired up
+
+---
+
 ## build-20260902-1930 — Enhancement: all retire buttons through cascade confirmation panel
 
 **Date:** 2026-09-02
