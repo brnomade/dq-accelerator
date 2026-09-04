@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260904-1253 — Fix: rule search filter applied to inline allocation panel on Data and Stewardship page
+
+### Changed
+- **`src/141_view_cde_list.js`** -- Applied the same rule search filter to the inline Add Allocation panel (the one opened from the CDE row on Data and Stewardship). This was missed in the previous build which only updated the standalone Rule Allocation view panel in `130_view_rule_allocation.js`.
+
+---
+
 ## build-20260904-1215 — Enhancement: rule search filter in allocation panel
 
 ### Changed

@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260904-1253 — Fix: rule search filter applied to inline allocation panel
+
+**Date:** 2026-09-04
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Identify missed component via image review | 5 min | 0 min | 0 min | |
+| Apply same changes to 141_view_cde_list.js | 0 min | 0 min | 5 min | |
+| **Total** | **5 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/141_view_cde_list.js`: `ruleSearch` state + `ruleDisplayOpts` memo; search input above rule select; count/no-match hint
+
+---
+
 ## build-20260904-1215 — Enhancement: rule search filter in allocation panel
 
 **Date:** 2026-09-04
