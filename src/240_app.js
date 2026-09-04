@@ -421,14 +421,6 @@ function App() {
     setRetireConfirm({ tableName: tableName, pkValue: pkValue, record: record, retireSummary: retireSummary, nullFkSummary: nullFkSummary });
   }, [stewardIdentity, data]);
 
-  // Rule allocation form state
-  const [allocFormRecord, setAllocFormRecord] = useState(null);
-  const [allocFormIsEdit, setAllocFormIsEdit] = useState(false);
-  const openAllocForm  = useCallback((record, isEdit) => {
-    if (!stewardIdentity) return;
-    setAllocFormRecord(record); setAllocFormIsEdit(!!isEdit);
-  }, [stewardIdentity]);
-
   // CDE form state
   const [cdeFormRecord,   setCdeFormRecord]   = useState(null);
   const [cdeFormIsEdit,   setCdeFormIsEdit]   = useState(false);
@@ -455,13 +447,6 @@ function App() {
     }
     closeCdeForm();
   }, [upsertRecord, closeCdeForm]);
-  const closeAllocForm = useCallback(() => {
-    setAllocFormRecord(null); setAllocFormIsEdit(false);
-  }, []);
-  const handleAllocSave = useCallback((record) => {
-    upsertRecord('data_quality_rule_allocation', record); closeAllocForm();
-  }, [upsertRecord, closeAllocForm]);
-
   // DDL form state
   const [ddlFormRecord, setDdlFormRecord] = useState(null);
   const openDdlForm  = useCallback((record) => {
@@ -505,11 +490,11 @@ function App() {
   const ctxValue = useMemo(() => ({
     data, lookups, savedAt, hasData,
     updateTable, upsertRecord, retireRecord, restoreRecord, bulkSetRetiring, nextPk, designateAsMaster,
-    openForm, openCritForm, openSqlPanel, openAllocForm, openCdeForm, navigate, openDdlForm,
+    openForm, openCritForm, openSqlPanel, openCdeForm, navigate, openDdlForm,
     openRetireConfirm,
     isMaster, stewardIdentity,
     canEdit: !!stewardIdentity,
-  }), [data, lookups, savedAt, hasData, updateTable, upsertRecord, retireRecord, restoreRecord, bulkSetRetiring, nextPk, designateAsMaster, openForm, openCritForm, openSqlPanel, openAllocForm, openCdeForm, navigate, openDdlForm, openRetireConfirm, isMaster, stewardIdentity]);
+  }), [data, lookups, savedAt, hasData, updateTable, upsertRecord, retireRecord, restoreRecord, bulkSetRetiring, nextPk, designateAsMaster, openForm, openCritForm, openSqlPanel, openCdeForm, navigate, openDdlForm, openRetireConfirm, isMaster, stewardIdentity]);
 
   // -- Screen renderer --------------------------------------
   const renderScreen = () => {
@@ -534,8 +519,6 @@ function App() {
             ? <DirectorateView key="directorate"/>
             : route.table === 'critical_data_element'
             ? <CriticalDataElementView key={'cde_' + (route.initialSearch || '')} initialSearch={route.initialSearch || ''}/>
-            : route.table === 'data_quality_rule_allocation'
-            ? <RuleAllocationView key="data_quality_rule_allocation"/>
             : route.table === 'source_table_ddl'
             ? <DDLLibraryView key="source_table_ddl"/>
             : route.table === 'field_profiling'
@@ -639,17 +622,6 @@ function App() {
           preDbName={cdeFormPreDb}
           onSave={handleCdeSave}
           onClose={closeCdeForm}
-          data={data}
-        />
-      )}
-
-      {/* Rule allocation form -- rendered at App level */}
-      {allocFormRecord && (
-        <RuleAllocationFormPanel
-          record={allocFormRecord}
-          isEdit={allocFormIsEdit}
-          onSave={handleAllocSave}
-          onClose={closeAllocForm}
           data={data}
         />
       )}

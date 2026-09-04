@@ -5,6 +5,24 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260904-1300 — Cleanup: retire standalone Rule Allocation screen
+
+**Date:** 2026-09-04
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Investigate both panels, trace all references, confirm dead code | 5 min | 0 min | 0 min | |
+| Remove file, state, callbacks, context, router, render block | 0 min | 0 min | 10 min | |
+| **Total** | **5 min** | **0 min** | **10 min** | |
+
+### Changes delivered
+- `legacy/130_view_rule_allocation.js`: moved from `src/` (git mv)
+- `src/240_app.js`: alloc form state + callbacks + router branch + panel render removed
+- `src/50_context.js`: `_allocSearchHint` removed
+- `APP_TREE.md`: panel catalogue and legacy section updated
+
+---
+
 ## build-20260904-1253 — Fix: rule search filter applied to inline allocation panel
 
 **Date:** 2026-09-04

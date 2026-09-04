@@ -4,6 +4,18 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260904-1300 — Cleanup: retire standalone Rule Allocation screen and dead context hooks
+
+### Removed
+- **`src/130_view_rule_allocation.js`** -- Moved to `legacy/`. Contained `RuleAllocationView` (a standalone allocation list screen) and `RuleAllocationFormPanel`. The screen had no sidebar entry and was unreachable from any navigation path; allocation is handled entirely by `CdeAllocFormPanel` in `141_view_cde_list.js`.
+- **`src/240_app.js`** -- Removed `allocFormRecord`/`allocFormIsEdit` state, `openAllocForm`, `closeAllocForm`, `handleAllocSave`, the `data_quality_rule_allocation` router branch, and the `<RuleAllocationFormPanel>` App-level render. Removed `openAllocForm` from context value and `useMemo` deps.
+- **`src/50_context.js`** -- Removed `_allocSearchHint` global (was only consumed by the now-retired `RuleAllocationView`).
+
+### Documentation
+- `APP_TREE.md` -- Panel catalogue updated: `RuleAllocationFormPanel` replaced with `CdeAllocFormPanel`; `130_view_rule_allocation.js` moved to Legacy section.
+
+---
+
 ## build-20260904-1253 — Fix: rule search filter applied to inline allocation panel on Data and Stewardship page
 
 ### Changed
