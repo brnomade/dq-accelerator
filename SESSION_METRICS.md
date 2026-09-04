@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260904-1412 — Enhancement: simplified rule search
+
+**Date:** 2026-09-04
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Design discussion, agree simplified approach | 10 min | 0 min | 0 min | |
+| Remove Filter, add count + clear button | 0 min | 0 min | 10 min | |
+| **Total** | **10 min** | **0 min** | **10 min** | |
+
+### Changes delivered
+- `src/141_view_cde_list.js`: `contextFilter` and `ruleOpts` removed; `allRules` memo replaces them; search `x` clear button added; always-visible count row added; Filter button block removed
+
+---
+
 ## build-20260904-1340 — Enhancement: unified rule filter status line with tooltip
 
 **Date:** 2026-09-04

@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260904-1412 — Enhancement: simplified rule search — remove Filter button, add count and clear
+
+### Changed
+- **`src/141_view_cde_list.js`** -- Removed the CDS context filter (`contextFilter` state, `ruleOpts` memo, Filter button). The Rule field now shows all active rules. Search input gains an always-visible `x` clear button; clicking it clears the search text and resets the rule selection to unset. A rule count sits between the search box and the dropdown at all times: shows total ("146 rules") when search is inactive, "N of 146 rules" when search is narrowing the list, and "No rules match" (italic) when the search returns nothing.
+
+---
+
 ## build-20260904-1340 — Enhancement: unified rule filter status line with Filter button tooltip
 
 ### Changed
