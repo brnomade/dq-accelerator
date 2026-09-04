@@ -5,6 +5,23 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260904-1215 — Enhancement: rule search filter in allocation panel
+
+**Date:** 2026-09-04
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Requirements Q&amp;A, design clarification, approved approach | 20 min | 0 min | 0 min | |
+| Design and plan docs (initial combobox + revised filter approach) | 0 min | 20 min | 0 min | |
+| Implementation: state, memo, search input, count hint, doc update | 0 min | 0 min | 15 min | |
+| **Total** | **20 min** | **20 min** | **15 min** | |
+
+### Changes delivered
+- `src/130_view_rule_allocation.js`: `ruleSearch` state + `ruleDisplayOpts` memo; search input above rule select; count/no-match hint; cascade resets
+- `documentation/user-guide/data-stewardship/rule-allocate.html`: step 3 updated for search input
+
+---
+
 ## build-20260903-1945 — Fix: PHF column; PHF-only failures pre-included
 
 **Date:** 2026-09-03

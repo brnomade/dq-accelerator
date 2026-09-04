@@ -2753,7 +2753,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260903-1945</div>
+              <div className="header-app-sub">build-20260904-1216</div>
             </div>
           </div>
         </div>
@@ -4862,6 +4862,7 @@ function RuleAllocationFormPanel({ record, isEdit, onSave, onClose, data }) {
   });
 
   const [contextFilter, setContextFilter] = useState(true);
+  const [ruleSearch,    setRuleSearch]    = useState('');
 
   const [values, setValues] = useState({
     [schema.pk]:               record?.[schema.pk] ?? nextPk('data_quality_rule_allocation'),
@@ -4913,6 +4914,15 @@ function RuleAllocationFormPanel({ record, isEdit, onSave, onClose, data }) {
       })
       .sort((a,b) => (a.rule_name||'').localeCompare(b.rule_name||''));
   }, [rules, filterCdsId, cdsById, contextFilter]);
+  const ruleDisplayOpts = useMemo(() => {
+    const q = ruleSearch.trim().toLowerCase();
+    if (q.length < 3) return ruleOpts;
+    return ruleOpts.filter(r =>
+      (r.rule_name || '').toLowerCase().includes(q) ||
+      (r.rule_explanation || '').toLowerCase().includes(q)
+    );
+  }, [ruleOpts, ruleSearch]);
+
   const dimOpts = useMemo(() =>
     [...dimensions].filter(d => !d.retiring_timestamp)
       .sort((a,b) => (a.dimension_name||'').localeCompare(b.dimension_name||'')), [dimensions]);
@@ -5051,7 +5061,7 @@ function RuleAllocationFormPanel({ record, isEdit, onSave, onClose, data }) {
                 <select value={filterAgencyId ?? ''} style={{ ...inputBase, cursor:'pointer', border:'1px solid var(--border)' }}
                   onChange={e => { const v = e.target.value ? parseInt(e.target.value) : null;
                     setFilterAgencyId(v); setFilterDirId(null); setFilterCdsId(null);
-                    setContextFilter(true);
+                    setContextFilter(true); setRuleSearch('');
                     set('critical_data_element_id', null); set('data_quality_rule_id', null); }}>
                   <option value="">-- select agency --</option>
                   {agencyOpts.map(a => <option key={a.executive_agency_id} value={a.executive_agency_id}>{a.agency_acronymn} - {a.agency_name}</option>)}
@@ -5059,7 +5069,7 @@ function RuleAllocationFormPanel({ record, isEdit, onSave, onClose, data }) {
                 <select value={filterDirId ?? ''} disabled={!filterAgencyId}
                   style={{ ...inputBase, cursor: filterAgencyId ? 'pointer' : 'not-allowed', opacity: filterAgencyId ? 1 : 0.5, border:'1px solid var(--border)' }}
                   onChange={e => { const v = e.target.value ? parseInt(e.target.value) : null;
-                    setFilterDirId(v); setFilterCdsId(null); setContextFilter(true);
+                    setFilterDirId(v); setFilterCdsId(null); setContextFilter(true); setRuleSearch('');
                     set('critical_data_element_id', null); set('data_quality_rule_id', null); }}>
                   <option value="">{filterAgencyId ? '-- select directorate --' : '-- select agency first --'}</option>
                   {dirOpts.map(d => <option key={d.directorate_id} value={d.directorate_id}>{d.directorate_name}</option>)}
@@ -5075,7 +5085,7 @@ function RuleAllocationFormPanel({ record, isEdit, onSave, onClose, data }) {
                   <select value={filterCdsId ?? ''} disabled={!filterDirId}
                     style={{ ...inputBase, cursor: filterDirId ? 'pointer' : 'not-allowed', opacity: filterDirId ? 1 : 0.5, border:'1px solid var(--border)' }}
                     onChange={e => { const v = e.target.value ? parseInt(e.target.value) : null;
-                      setFilterCdsId(v); setContextFilter(true);
+                      setFilterCdsId(v); setContextFilter(true); setRuleSearch('');
                       set('critical_data_element_id', null); set('data_quality_rule_id', null); }}>
                     <option value="">{filterDirId ? '-- select data set --' : '-- select directorate first --'}</option>
                     {cdsOpts.map(d => <option key={d.critical_data_set_id} value={d.critical_data_set_id}>{d.data_set_name}</option>)}
@@ -5107,11 +5117,31 @@ function RuleAllocationFormPanel({ record, isEdit, onSave, onClose, data }) {
               </div>
             ) : (
               <>
+                <div style={{ position:'relative' }}>
+                  <div style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)',
+                    color:'var(--text3)', width:14, height:14, pointerEvents:'none' }}>
+                    <Icon.Search/>
+                  </div>
+                  <input
+                    type="text"
+                    value={ruleSearch}
+                    onChange={e => setRuleSearch(e.target.value)}
+                    placeholder="Search rules..."
+                    style={{ ...inputBase, paddingLeft:32, border:'1px solid var(--border)' }}
+                  />
+                </div>
                 <select value={values.data_quality_rule_id ?? ''} style={{ ...inputBase, cursor:'pointer', ...borderFor('data_quality_rule_id') }}
                   onChange={e => set('data_quality_rule_id', e.target.value ? parseInt(e.target.value) : null)}>
                   <option value="">-- select rule --</option>
-                  {ruleOpts.map(r => <option key={r.data_quality_rule_id} value={r.data_quality_rule_id}>{r.rule_name}</option>)}
+                  {ruleDisplayOpts.map(r => <option key={r.data_quality_rule_id} value={r.data_quality_rule_id}>{r.rule_name}</option>)}
                 </select>
+                {ruleSearch.trim().length >= 3 && (
+                  ruleDisplayOpts.length === 0
+                    ? <div style={{ fontSize:11, color:'var(--text3)', marginTop:3, fontStyle:'italic' }}>No rules match search.</div>
+                    : ruleDisplayOpts.length < ruleOpts.length
+                      ? <div style={{ fontSize:11, color:'var(--text3)', marginTop:3 }}>{ruleDisplayOpts.length} of {ruleOpts.length} rules match search</div>
+                      : null
+                )}
                 {errors.data_quality_rule_id && (
                   <div style={{ fontSize:11, color:'var(--red)', marginTop:3, display:'flex', gap:4, alignItems:'center' }}>
                     <span style={{ width:12, height:12, flexShrink:0 }}><Icon.Warning/></span>

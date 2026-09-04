@@ -4,6 +4,16 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260904-1215 — Enhancement: rule search filter in allocation panel
+
+### Changed
+- **`src/130_view_rule_allocation.js`** -- Added a text search input above the Rule `<select>` in the Add Allocation panel. Typing 3 or more characters narrows the dropdown options to rules whose name or explanation contain the search text. The select itself is unchanged and can still be opened and scrolled without using the search. A count hint (e.g. "3 of 12 rules match search") appears below the select when search is active. Search clears automatically when Agency, Directorate, or Data Set selection changes.
+
+### Documentation
+- `documentation/user-guide/data-stewardship/rule-allocate.html` -- Updated step 3 to describe the search input, its 3-character threshold, the match scope (name and description), and the count hint.
+
+---
+
 ## build-20260903-1945 — Fix: PHF column separates field placeholder check; PHF-only failures pre-included
 
 ### Changed
