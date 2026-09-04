@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260904-1340 — Enhancement: unified rule filter status line with Filter button tooltip
+
+### Changed
+- **`src/141_view_cde_list.js`** -- Replaced the two separate filter messages ("N of M rules match search" and the verbose FILTER hint text) with a single status line: `[ Filter ]  N of total rules visible`. The count reflects the final visible set after both the CDS filter and text search have applied. The Filter button now carries a `title` tooltip explaining what the CDS filter includes and how to toggle it. The status line is hidden entirely when all rules are visible (no filtering active).
+
+---
+
 ## build-20260904-1300 — Cleanup: retire standalone Rule Allocation screen and dead context hooks
 
 ### Removed

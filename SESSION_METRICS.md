@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260904-1340 — Enhancement: unified rule filter status line with tooltip
+
+**Date:** 2026-09-04
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| UX review, agree single status line + tooltip approach | 5 min | 0 min | 0 min | |
+| Implement unified count, tooltip, remove old hints | 0 min | 0 min | 10 min | |
+| **Total** | **5 min** | **0 min** | **10 min** | |
+
+### Changes delivered
+- `src/141_view_cde_list.js`: two filter hint messages replaced with single unified status line; Filter button tooltip added
+
+---
+
 ## build-20260904-1300 — Cleanup: retire standalone Rule Allocation screen
 
 **Date:** 2026-09-04

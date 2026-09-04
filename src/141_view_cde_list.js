@@ -1152,13 +1152,6 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
                   <option value="">-- select rule --</option>
                   {ruleDisplayOpts.map(r => <option key={r.data_quality_rule_id} value={r.data_quality_rule_id}>{r.rule_name}</option>)}
                 </select>
-                {ruleSearch.trim().length >= 3 && (
-                  ruleDisplayOpts.length === 0
-                    ? <div style={{ fontSize:11, color:'var(--text3)', marginTop:3, fontStyle:'italic' }}>No rules match search.</div>
-                    : ruleDisplayOpts.length < ruleOpts.length
-                      ? <div style={{ fontSize:11, color:'var(--text3)', marginTop:3 }}>{ruleDisplayOpts.length} of {ruleOpts.length} rules match search</div>
-                      : null
-                )}
                 {errors.data_quality_rule_id && (
                   <div style={{ fontSize:11, color:'var(--red)', marginTop:3, display:'flex', gap:4, alignItems:'center' }}>
                     <span style={{ width:12, height:12, flexShrink:0 }}><Icon.Warning/></span>
@@ -1173,14 +1166,18 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
                 )}
                 {cds && (() => {
                   const totalActive = rules.filter(r => !r.retiring_timestamp).length;
-                  const hint = !contextFilter
-                    ? 'Showing all available rules'
-                    : ruleOpts.length < totalActive
-                      ? ('Showing ' + ruleOpts.length + ' of ' + totalActive + ' rules. Rules without prefix or prefixed with "Generic - " or "' + cds.data_set_name + ' - " listed.')
+                  const searchActive = ruleSearch.trim().length >= 3;
+                  const filterTooltip = contextFilter
+                    ? 'CDS filter ON: showing only rules with no prefix, "Generic - " prefix, or "' + cds.data_set_name + ' - " prefix. Click to show all rules.'
+                    : 'CDS filter OFF: showing all active rules. Click to filter to this data set only.';
+                  const countText = (ruleDisplayOpts.length === 0 && searchActive)
+                    ? 'No rules match search.'
+                    : ruleDisplayOpts.length < totalActive
+                      ? (ruleDisplayOpts.length + ' of ' + totalActive + ' rules visible')
                       : null;
                   return (
                     <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:4 }}>
-                      <button onClick={() => setContextFilter(v => !v)} style={{
+                      <button onClick={() => setContextFilter(v => !v)} title={filterTooltip} style={{
                         display:'flex', alignItems:'center', gap:5,
                         padding:'4px 10px', background:'var(--bg3)',
                         border: '1px solid ' + (contextFilter ? accent : 'var(--border)'),
@@ -1190,7 +1187,12 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
                       }}>
                         Filter
                       </button>
-                      {hint && <span style={{ fontSize:11, color:'var(--text3)' }}>{hint}</span>}
+                      {countText && (
+                        <span style={{ fontSize:11, color:'var(--text3)',
+                          fontStyle: ruleDisplayOpts.length === 0 ? 'italic' : 'normal' }}>
+                          {countText}
+                        </span>
+                      )}
                     </div>
                   );
                 })()}
