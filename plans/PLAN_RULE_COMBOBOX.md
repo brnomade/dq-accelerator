@@ -1,6 +1,9 @@
 # PLAN_RULE_COMBOBOX.md
 ## Searchable Rule Filter — Rule Allocation Panel
 
+> **Superseded — build-20260904-1412.**
+> The Filter button approach described here was built and then retired. See `DESIGN_RULE_COMBOBOX.md` and `KNOWN_ISSUES.md` KI-22 for the final state.
+
 Paired with: `DESIGN_RULE_COMBOBOX.md`
 
 ---

@@ -391,36 +391,23 @@ Not straightforward to fix without a multi-delta merge architecture. A partial m
 
 ## KI-22 — Add Allocation panel: rule dropdown becomes unmanageably long at scale
 
-**Status:** fixed (Option A implemented; Option B parked in backlog as KI-22-B)
-**Area:** Rule Allocation / Add Allocation panel (`130_view_rule_allocation.js`)
+**Status:** resolved (build-20260904-1412)
+**Area:** Rule Allocation / Add Allocation panel (`141_view_cde_list.js`)
 
 **Observation:**
-The rule `<select>` in `RuleAllocationFormPanel` listed every non-retired rule in the database, sorted alphabetically. As rule volumes grow (generic rules + per-CDS rules across multiple agencies), the list becomes impractically long and makes selection error-prone.
+The rule `<select>` listed every non-retired rule in the database with no way to narrow the list, making selection impractical at scale.
 
-**Root cause:**
-`ruleOpts` was computed as all non-retired rules with no context-aware filtering.
+**Resolution:**
+Replaced the plain `<select>` with a search-driven interaction in `CdeAllocFormPanel` (`141_view_cde_list.js`):
 
-### Option A — CDS-context filter (implemented)
+- A **search input** above the dropdown filters the option list by rule name or rule explanation (activates at 3+ characters).
+- An **always-visible count** between the search box and dropdown shows total rules, narrowed count, or "No rules match".
+- An **always-visible × button** on the search input clears the search text and resets the rule selection.
+- All active rules are shown; no automatic CDS-context filtering (the naming convention `CDS_NAME - Rule Name` remains visible in the list and aids manual identification).
 
-When the user selects a Data Set in the cascading CDE selector, the rule dropdown now filters to show only:
-- **Generic rules** — rules whose name has no ` - ` separator, or whose prefix does not match any known CDS name
-- **CDS-specific rules** — rules whose name follows the `CDS_NAME - Rule Name` pattern, where `CDS_NAME` matches the selected Data Set name
+**Note:** An earlier intermediate implementation used a CDS context Filter button (Option A). This was retired in the same session in favour of the simpler search-only approach above.
 
-If no CDS is selected yet, all rules are shown (unchanged behaviour).
-
-A muted hint below the dropdown shows the active filter count: "Showing X of Y rules -- generic + [CDS name] rules only".
-
-Changing the agency, directorate, or data set now also resets any previously selected rule, keeping the form consistent.
-
-**Relies on naming convention:** Rules must follow `CDS_NAME - Rule Name` for CDS-specific classification. Rules not matching this pattern are treated as generic and always shown.
-
-### Option B — Expandable tree picker (parked)
-
-A richer alternative: replace the flat `<select>` with a two-level expandable tree showing group headings (Generic, LPA, OPG Investigations, etc.) that expand to reveal individual rules. This would work regardless of CDS context and would be discoverable even from the top-level "Add record" button.
-
-**Why parked:** 3-4x the implementation effort of Option A; requires a custom interactive widget with keyboard navigation and scroll-into-view on edit pre-selection. Deferred until Option A proves insufficient at production rule volumes.
-
-**Backlog entry:** Phase 1 — Feature KI-22-B.
+**Also resolved in this session:** The standalone `RuleAllocationView` + `RuleAllocationFormPanel` in `src/130_view_rule_allocation.js` were identified as dead code (no sidebar entry, no navigation path) and moved to `legacy/`. The active allocation panel is `CdeAllocFormPanel` in `141_view_cde_list.js`, used from both Data and Stewardship and Rules Explorer.
 
 ---
 

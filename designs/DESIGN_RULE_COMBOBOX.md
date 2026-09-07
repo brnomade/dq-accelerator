@@ -1,6 +1,9 @@
 # DESIGN_RULE_COMBOBOX.md
 ## Searchable Rule Filter — Rule Allocation Panel
 
+> **Superseded — build-20260904-1412.**
+> The final implementation differs from this document. The CDS context filter (`contextFilter` / Filter button) described here was built and then retired in the same session. What shipped: a search input with a 3-character threshold, an always-visible × clear button, an always-visible rule count row, and the existing `<select>` showing all active rules with no automatic CDS filtering. See `KNOWN_ISSUES.md` KI-22 for the resolved-state description.
+
 ---
 
 ## Problem
