@@ -963,7 +963,7 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
   const cde = cdeById[record.critical_data_element_id];
   const cds = cde ? cdsById[cde.critical_data_set_id] : null;
 
-  const [contextFilter, setContextFilter] = useState(true);
+  const [ruleSearch, setRuleSearch] = useState('');
 
   const [values, setValues] = useState({
     data_quality_rule_allocation_id: record?.data_quality_rule_allocation_id ?? nextPk('data_quality_rule_allocation'),
@@ -983,24 +983,19 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
     setWarnings(prev => ({ ...prev, [field]: null }));
   };
 
-  // When contextFilter is ON: show generic rules (no prefix, or "Generic - " prefix) plus rules
-  // whose prefix exactly matches the current CDS name. Any other CDS-prefixed rule is hidden.
-  // When contextFilter is OFF: bypass filtering and show all active rules.
-  const ruleOpts = useMemo(() => {
-    const base = [...rules].filter(r => !r.retiring_timestamp);
-    const cdsName = cds?.data_set_name || '';
-    if (!cdsName || !contextFilter) return base.sort((a,b) => (a.rule_name||'').localeCompare(b.rule_name||''));
-    return base
-      .filter(r => {
-        const name = r.rule_name || '';
-        const sepIdx = name.indexOf(' - ');
-        if (sepIdx === -1) return true;                                // no prefix: generic
-        const prefix = name.slice(0, sepIdx);
-        if (prefix.toLowerCase() === 'generic') return true;          // explicit generic prefix
-        return prefix === cdsName;                                     // hide all other CDS rules
-      })
-      .sort((a,b) => (a.rule_name||'').localeCompare(b.rule_name||''));
-  }, [rules, cds, contextFilter]);
+  const allRules = useMemo(() =>
+    [...rules].filter(r => !r.retiring_timestamp)
+      .sort((a,b) => (a.rule_name||'').localeCompare(b.rule_name||'')),
+  [rules]);
+  const ruleDisplayOpts = useMemo(() => {
+    const q = ruleSearch.trim().toLowerCase();
+    if (q.length < 3) return allRules;
+    return allRules.filter(r =>
+      (r.rule_name || '').toLowerCase().includes(q) ||
+      (r.rule_explanation || '').toLowerCase().includes(q)
+    );
+  }, [allRules, ruleSearch]);
+
   const dimOpts = useMemo(() =>
     [...dimensions].filter(d => !d.retiring_timestamp)
       .sort((a,b) => (a.dimension_name||'').localeCompare(b.dimension_name||'')), [dimensions]);
@@ -1124,10 +1119,39 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
               </div>
             ) : (
               <>
+                <div style={{ position:'relative' }}>
+                  <div style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)',
+                    color:'var(--text3)', width:14, height:14, pointerEvents:'none' }}>
+                    <Icon.Search/>
+                  </div>
+                  <input
+                    type="text"
+                    value={ruleSearch}
+                    onChange={e => setRuleSearch(e.target.value)}
+                    placeholder="Search rules..."
+                    style={{ ...inputBase, paddingLeft:32, paddingRight:30, border:'1px solid var(--border)' }}
+                  />
+                  <button
+                    onClick={() => { setRuleSearch(''); set('data_quality_rule_id', null); }}
+                    title="Clear search and selection"
+                    style={{ position:'absolute', right:6, top:'50%', transform:'translateY(-50%)',
+                      background:'none', border:'none', cursor:'pointer', padding:2,
+                      color:'var(--text3)', display:'flex', alignItems:'center', lineHeight:1 }}>
+                    <div style={{ width:12, height:12 }}><Icon.X/></div>
+                  </button>
+                </div>
+                <div style={{ fontSize:11, color:'var(--text3)', margin:'4px 0',
+                  fontStyle: ruleSearch.trim().length >= 3 && ruleDisplayOpts.length === 0 ? 'italic' : 'normal' }}>
+                  {ruleSearch.trim().length >= 3
+                    ? (ruleDisplayOpts.length === 0
+                        ? 'No rules match'
+                        : ruleDisplayOpts.length + ' of ' + allRules.length + ' rules')
+                    : allRules.length + ' rules'}
+                </div>
                 <select value={values.data_quality_rule_id ?? ''} style={{ ...inputBase, cursor:'pointer', ...borderFor('data_quality_rule_id') }}
                   onChange={e => set('data_quality_rule_id', e.target.value ? parseInt(e.target.value) : null)}>
                   <option value="">-- select rule --</option>
-                  {ruleOpts.map(r => <option key={r.data_quality_rule_id} value={r.data_quality_rule_id}>{r.rule_name}</option>)}
+                  {ruleDisplayOpts.map(r => <option key={r.data_quality_rule_id} value={r.data_quality_rule_id}>{r.rule_name}</option>)}
                 </select>
                 {errors.data_quality_rule_id && (
                   <div style={{ fontSize:11, color:'var(--red)', marginTop:3, display:'flex', gap:4, alignItems:'center' }}>
@@ -1141,29 +1165,6 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
                     {warnings.data_quality_rule_id}
                   </div>
                 )}
-                {cds && (() => {
-                  const totalActive = rules.filter(r => !r.retiring_timestamp).length;
-                  const hint = !contextFilter
-                    ? 'Showing all available rules'
-                    : ruleOpts.length < totalActive
-                      ? ('Showing ' + ruleOpts.length + ' of ' + totalActive + ' rules. Rules without prefix or prefixed with "Generic - " or "' + cds.data_set_name + ' - " listed.')
-                      : null;
-                  return (
-                    <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:4 }}>
-                      <button onClick={() => setContextFilter(v => !v)} style={{
-                        display:'flex', alignItems:'center', gap:5,
-                        padding:'4px 10px', background:'var(--bg3)',
-                        border: '1px solid ' + (contextFilter ? accent : 'var(--border)'),
-                        borderRadius:12, fontSize:11, cursor:'pointer',
-                        color: contextFilter ? accent : 'var(--text3)',
-                        whiteSpace:'nowrap', flexShrink:0, transition:'all 0.15s',
-                      }}>
-                        Filter
-                      </button>
-                      {hint && <span style={{ fontSize:11, color:'var(--text3)' }}>{hint}</span>}
-                    </div>
-                  );
-                })()}
               </>
             )}
           </div>

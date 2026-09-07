@@ -4,6 +4,49 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260904-1412 — Enhancement: simplified rule search — remove Filter button, add count and clear
+
+### Changed
+- **`src/141_view_cde_list.js`** -- Removed the CDS context filter (`contextFilter` state, `ruleOpts` memo, Filter button). The Rule field now shows all active rules. Search input gains an always-visible `x` clear button; clicking it clears the search text and resets the rule selection to unset. A rule count sits between the search box and the dropdown at all times: shows total ("146 rules") when search is inactive, "N of 146 rules" when search is narrowing the list, and "No rules match" (italic) when the search returns nothing.
+
+---
+
+## build-20260904-1340 — Enhancement: unified rule filter status line with Filter button tooltip
+
+### Changed
+- **`src/141_view_cde_list.js`** -- Replaced the two separate filter messages ("N of M rules match search" and the verbose FILTER hint text) with a single status line: `[ Filter ]  N of total rules visible`. The count reflects the final visible set after both the CDS filter and text search have applied. The Filter button now carries a `title` tooltip explaining what the CDS filter includes and how to toggle it. The status line is hidden entirely when all rules are visible (no filtering active).
+
+---
+
+## build-20260904-1300 — Cleanup: retire standalone Rule Allocation screen and dead context hooks
+
+### Removed
+- **`src/130_view_rule_allocation.js`** -- Moved to `legacy/`. Contained `RuleAllocationView` (a standalone allocation list screen) and `RuleAllocationFormPanel`. The screen had no sidebar entry and was unreachable from any navigation path; allocation is handled entirely by `CdeAllocFormPanel` in `141_view_cde_list.js`.
+- **`src/240_app.js`** -- Removed `allocFormRecord`/`allocFormIsEdit` state, `openAllocForm`, `closeAllocForm`, `handleAllocSave`, the `data_quality_rule_allocation` router branch, and the `<RuleAllocationFormPanel>` App-level render. Removed `openAllocForm` from context value and `useMemo` deps.
+- **`src/50_context.js`** -- Removed `_allocSearchHint` global (was only consumed by the now-retired `RuleAllocationView`).
+
+### Documentation
+- `APP_TREE.md` -- Panel catalogue updated: `RuleAllocationFormPanel` replaced with `CdeAllocFormPanel`; `130_view_rule_allocation.js` moved to Legacy section.
+
+---
+
+## build-20260904-1253 — Fix: rule search filter applied to inline allocation panel on Data and Stewardship page
+
+### Changed
+- **`src/141_view_cde_list.js`** -- Applied the same rule search filter to the inline Add Allocation panel (the one opened from the CDE row on Data and Stewardship). This was missed in the previous build which only updated the standalone Rule Allocation view panel in `130_view_rule_allocation.js`.
+
+---
+
+## build-20260904-1215 — Enhancement: rule search filter in allocation panel
+
+### Changed
+- **`src/130_view_rule_allocation.js`** -- Added a text search input above the Rule `<select>` in the Add Allocation panel. Typing 3 or more characters narrows the dropdown options to rules whose name or explanation contain the search text. The select itself is unchanged and can still be opened and scrolled without using the search. A count hint (e.g. "3 of 12 rules match search") appears below the select when search is active. Search clears automatically when Agency, Directorate, or Data Set selection changes.
+
+### Documentation
+- `documentation/user-guide/data-stewardship/rule-allocate.html` -- Updated step 3 to describe the search input, its 3-character threshold, the match scope (name and description), and the count hint.
+
+---
+
 ## build-20260903-1945 — Fix: PHF column separates field placeholder check; PHF-only failures pre-included
 
 ### Changed

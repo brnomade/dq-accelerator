@@ -98,7 +98,7 @@ All panels render at App level (outside scroll container) to avoid `position:fix
 |---|---|---|---|
 | `CriticalDataElementFormPanel` | `140_view_cde.js` | `openCdeForm` / `cdeFormRecord` | Data and Stewardship view |
 | `CdeCriticalityFormPanel` | `120_view_cde_criticality.js` | `openCritForm` / `critFormCdeId` | Data and Stewardship view (criticality bulk edit) |
-| `RuleAllocationFormPanel` | `130_view_rule_allocation.js` | `openAllocForm` / `allocFormRecord` | Rule allocation view (also inline from CDE detail) |
+| `CdeAllocFormPanel` | `141_view_cde_list.js` | local state in `CriticalDataElementView` | Data and Stewardship (CDE row) + Rules Explorer |
 | `DDLFormPanel` | `201_ddl_form_panel.js` | `openDdlForm` / `ddlFormRecord` | Profiling view |
 
 ### Panel chrome (shared)
@@ -135,5 +135,6 @@ All panels render at App level (outside scroll container) to avoid `position:fix
 | File | Component | Status |
 |---|---|---|
 | `110_view_rules.js` | _(stub, 73 bytes)_ | Dead -- replaced by `145_view_rules.js` |
+| `legacy/130_view_rule_allocation.js` | `RuleAllocationView` + `RuleAllocationFormPanel` | Moved to legacy -- standalone allocation screen superseded by `CdeAllocFormPanel` in `141_view_cde_list.js`; router entry and context hooks removed |
 | `legacy/150_view_cds_dir.js` | `CriticalDataSetView` | Moved to legacy -- never routed; CDS actions now in `141_view_cde_list.js` |
 | `190_screen_coverage.js` | `CDECoverageScreen` | Dormant -- route exists (`coverage`) but no sidebar link |

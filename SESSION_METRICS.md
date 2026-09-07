@@ -5,6 +5,86 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260904-1412 — Enhancement: simplified rule search
+
+**Date:** 2026-09-04
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Design discussion, agree simplified approach | 10 min | 0 min | 0 min | |
+| Remove Filter, add count + clear button | 0 min | 0 min | 10 min | |
+| **Total** | **10 min** | **0 min** | **10 min** | |
+
+### Changes delivered
+- `src/141_view_cde_list.js`: `contextFilter` and `ruleOpts` removed; `allRules` memo replaces them; search `x` clear button added; always-visible count row added; Filter button block removed
+
+---
+
+## build-20260904-1340 — Enhancement: unified rule filter status line with tooltip
+
+**Date:** 2026-09-04
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| UX review, agree single status line + tooltip approach | 5 min | 0 min | 0 min | |
+| Implement unified count, tooltip, remove old hints | 0 min | 0 min | 10 min | |
+| **Total** | **5 min** | **0 min** | **10 min** | |
+
+### Changes delivered
+- `src/141_view_cde_list.js`: two filter hint messages replaced with single unified status line; Filter button tooltip added
+
+---
+
+## build-20260904-1300 — Cleanup: retire standalone Rule Allocation screen
+
+**Date:** 2026-09-04
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Investigate both panels, trace all references, confirm dead code | 5 min | 0 min | 0 min | |
+| Remove file, state, callbacks, context, router, render block | 0 min | 0 min | 10 min | |
+| **Total** | **5 min** | **0 min** | **10 min** | |
+
+### Changes delivered
+- `legacy/130_view_rule_allocation.js`: moved from `src/` (git mv)
+- `src/240_app.js`: alloc form state + callbacks + router branch + panel render removed
+- `src/50_context.js`: `_allocSearchHint` removed
+- `APP_TREE.md`: panel catalogue and legacy section updated
+
+---
+
+## build-20260904-1253 — Fix: rule search filter applied to inline allocation panel
+
+**Date:** 2026-09-04
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Identify missed component via image review | 5 min | 0 min | 0 min | |
+| Apply same changes to 141_view_cde_list.js | 0 min | 0 min | 5 min | |
+| **Total** | **5 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/141_view_cde_list.js`: `ruleSearch` state + `ruleDisplayOpts` memo; search input above rule select; count/no-match hint
+
+---
+
+## build-20260904-1215 — Enhancement: rule search filter in allocation panel
+
+**Date:** 2026-09-04
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Requirements Q&amp;A, design clarification, approved approach | 20 min | 0 min | 0 min | |
+| Design and plan docs (initial combobox + revised filter approach) | 0 min | 20 min | 0 min | |
+| Implementation: state, memo, search input, count hint, doc update | 0 min | 0 min | 15 min | |
+| **Total** | **20 min** | **20 min** | **15 min** | |
+
+### Changes delivered
+- `src/130_view_rule_allocation.js`: `ruleSearch` state + `ruleDisplayOpts` memo; search input above rule select; count/no-match hint; cascade resets
+- `documentation/user-guide/data-stewardship/rule-allocate.html`: step 3 updated for search input
+
+---
+
 ## build-20260903-1945 — Fix: PHF column; PHF-only failures pre-included
 
 **Date:** 2026-09-03
