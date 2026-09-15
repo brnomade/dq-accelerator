@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260915-1935 — Fix: delta export uses file picker
+
+**Date:** 2026-09-15
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Review existing export pages, advise approach | 5 min | 0 min | 0 min | |
+| Apply fix to handleExportDelta | 0 min | 0 min | 5 min | |
+| **Total** | **5 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/230_screen_export.js`: `handleExportDelta` made async; replaced blob URL anchor-tag with `saveWithPicker`
+
+---
+
 ## build-20260915-1910 — Enhancement: snapshot-aware rule generator prompt
 
 **Date:** 2026-09-15

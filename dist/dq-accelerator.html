@@ -2801,7 +2801,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260915-1911</div>
+              <div className="header-app-sub">build-20260915-1936</div>
             </div>
           </div>
         </div>
@@ -16952,7 +16952,7 @@ function ExportScreen() {
     } finally { setExportingMaster(false); }
   };
 
-  const handleExportDelta = () => {
+  const handleExportDelta = async () => {
     setExportingDelta(true);
     try {
       const snapshot = loadBaseSnapshot();
@@ -16972,10 +16972,8 @@ function ExportScreen() {
       const ts   = new Date().toISOString().replace(/[:\-T.Z]/g,'').slice(0,14);
       const name = `dq_delta_${stewardIdentity.name.replace(/\s+/g,'_')}_${ts}.json`;
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement('a');
-      a.href = url; a.download = name; a.click();
-      URL.revokeObjectURL(url);
+      const saved = await saveWithPicker(blob, name, 'JSON File', '.json');
+      if (!saved) return;
     } finally { setExportingDelta(false); }
   };
 
