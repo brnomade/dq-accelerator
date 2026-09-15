@@ -807,7 +807,7 @@ function CriticalDataElementView({ initialSearch }) {
 
                                                         {/* Bumper value */}
                                                         <div>
-                                                          {alloc.bumper_value !== null && alloc.bumper_value !== undefined
+                                                          {alloc.bumper_value !== null && alloc.bumper_value !== undefined && alloc.bumper_value !== 0
                                                             ? (
                                                               <span style={{
                                                                 fontSize:11, fontFamily:'var(--mono)',
@@ -970,7 +970,7 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
     critical_data_element_id:        record.critical_data_element_id,
     data_quality_rule_id:            record?.data_quality_rule_id      ?? null,
     quality_dimension_id:            record?.quality_dimension_id      ?? null,
-    bumper_value:                    record?.bumper_value               ?? null,
+    bumper_value:                    record?.bumper_value               ?? 0,
     frequency:                       record?.frequency                  ?? null,
     retiring_timestamp:              null,
   });
@@ -1038,8 +1038,7 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     const saved = { ...values };
-    if (saved.bumper_value !== null && saved.bumper_value !== '') saved.bumper_value = parseFloat(saved.bumper_value);
-    else saved.bumper_value = null;
+    saved.bumper_value = parseInt(saved.bumper_value ?? 0, 10);
     onSave(saved);
   };
 
@@ -1210,14 +1209,12 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
             <label style={{ display:'block', fontSize:11, fontWeight:600,
               color:'var(--text2)', marginBottom:4 }}>
               Bumper value
-              <span style={{ fontSize:10, color:'var(--text3)', fontWeight:400, marginLeft:6 }}>(optional)</span>
             </label>
-            <select value={values.bumper_value ?? ''}
-              onChange={e => set('bumper_value', e.target.value === '' ? null : parseInt(e.target.value, 10))}
+            <select value={values.bumper_value ?? 0}
+              onChange={e => set('bumper_value', parseInt(e.target.value, 10))}
               style={{ ...inputBase, cursor:'pointer',
                 border: errors.bumper_value ? '1px solid var(--red)' : '1px solid var(--border)' }}>
-              <option value="">-- none --</option>
-              {[1,2,3,4,5].map(n => (
+              {[0,1,2,3,4,5].map(n => (
                 <option key={n} value={n}>{n}</option>
               ))}
             </select>

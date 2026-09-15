@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260915-2016 — Fix: bumper value range extended to 0–5
+
+**Date:** 2026-09-15
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Advise on options, confirm UX choice with user | 5 min | 0 min | 0 min | |
+| Implement 5 targeted changes in 141_view_cde_list.js | 0 min | 0 min | 5 min | |
+| **Total** | **5 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/141_view_cde_list.js`: dropdown 0–5, null→0 coercion on load, always-integer save, list display 0→`--`
+
+---
+
 ## build-20260915-2004 — Refactor: deduplicate SQL engine constraint checks
 
 **Date:** 2026-09-15
