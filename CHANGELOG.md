@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260915-1948 — Fix: merge report filename matches delta pattern
+
+### Changed
+- **`src/210_screen_import.js`** -- `handleApplyMerge`: merge report filename refined to `dq_delta_<steward>_<ts>_merge_report.json`, matching the `dq_delta_` prefix of the source delta file. Reports now sort alongside their corresponding delta files in a folder view, making it easier to pair them at a glance.
+
+---
+
 ## build-20260915-1941 — Fix: merge report filename includes steward name
 
 ### Changed
