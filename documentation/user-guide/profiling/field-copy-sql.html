@@ -87,7 +87,7 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
     </div>
   </div>
 
-  <div class="note">If the field has a snapshot filter set on its CDE, the generated SQL includes a WHERE clause limiting the query to the relevant snapshot. The filter is shown in Step 1 of the profiling panel.</div>
+  <div class="note">If the field belongs to a snapshot table, Step 1 of the profiling panel shows the snapshot column name. If a CDE Snapshot filter is also set, the generated SQL includes a WHERE clause limiting the query to the relevant snapshot period. Both are shown as read-only context in Step 1.</div>
 
   <div class="related">
     <div class="rtitle">Related guides</div>

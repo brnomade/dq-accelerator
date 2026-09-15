@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260915-1901 — Enhancement: snapshot indicator in field profiling panel
+
+**Date:** 2026-09-15
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Design discussion, confirm placement and wording | 10 min | 0 min | 0 min | |
+| Implement agenda carry-through + Step 1 UI | 0 min | 0 min | 10 min | |
+| **Total** | **10 min** | **0 min** | **10 min** | |
+
+### Changes delivered
+- `src/200_screen_ddl.js`: `isSnapshotTable` + `snapshotDateField` carried into field entries via `buildProfilingAgenda`; Step 1 table-level snapshot row added; "CDE Snapshot filter:" relabel
+
+---
+
 ## build-20260915-1841 — Enhancement: snapshot metadata capture in table profiling
 
 **Date:** 2026-09-15

@@ -55,23 +55,25 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
     <li><div class="snum">4</div><div class="sbody">Click <span class="f">Profile</span>. The field profiling panel opens showing the field name and its table.</div></li>
   </ol>
 
-  <h2>Step 2 &mdash; Define the semantic type (optional)</h2>
+  <h2>Step 2 &mdash; Review context and define semantic type</h2>
   <ol class="steps">
-    <li><div class="snum">5</div><div class="sbody">The <span class="f">Physical type</span> is shown from the DDL. If the field's true data type differs (for example, a date stored as a string), select the correct type from the <span class="f">Override</span> dropdown. This changes which SQL queries are generated.<div class="sub">Leave the override blank to use the physical type as-is.</div></div></li>
+    <li><div class="snum">5</div><div class="sbody">If the table is a snapshot table, <span class="f">Step 1 - Define Semantic type</span> shows the message <span class="mono">This is a snapshot table by the column &lt;field name&gt;</span>. This is the field that identifies each snapshot period. Make sure any SQL you run in Athena is filtered on this column to target a single snapshot rather than the full history.<div class="sub">If the snapshot field shows as <span class="mono">(snapshot field not configured)</span>, return to the table profile and select the correct column in Step 2 of the Table Profiling panel.</div></div></li>
+    <li><div class="snum">6</div><div class="sbody">If a <span class="f">CDE Snapshot filter</span> is shown, this is the WHERE-clause predicate already recorded on the Critical Data Element. The generated SQL queries have this filter pre-applied.<div class="sub">If no CDE Snapshot filter is set and the field has rules, an amber warning is shown. You can still run the queries but they will scan all snapshot periods.</div></div></li>
+    <li><div class="snum">7</div><div class="sbody">The <span class="f">Physical type</span> is shown from the DDL. If the field's true data type differs (for example, a date stored as a string), select the correct type from the <span class="f">Override</span> dropdown. This changes which SQL queries are generated.<div class="sub">Leave the override blank to use the physical type as-is.</div></div></li>
   </ol>
 
   <h2>Step 3 &mdash; Run the profiling queries</h2>
   <ol class="steps">
-    <li><div class="snum">6</div><div class="sbody">For each query in <span class="f">Step 2 - Run profiling queries and paste results</span>, click <span class="f">Copy SQL</span> next to the query name.</div></li>
-    <li><div class="snum">7</div><div class="sbody">Paste the SQL into Athena and run it.</div></li>
-    <li><div class="snum">8</div><div class="sbody">Copy the results from Athena and paste them into the text area below the <span class="f">Copy SQL</span> button.</div></li>
-    <li><div class="snum">9</div><div class="sbody">Repeat for each applicable query. Queries that show <span class="mono">Not applicable for this type</span> are greyed out &mdash; skip those.<div class="sub">The six queries are: Column Profiling (required), Frequency Analysis, Pattern Analysis, Length Profile, Duplicate Analysis, Outlier Analysis.</div></div></li>
+    <li><div class="snum">8</div><div class="sbody">For each query in <span class="f">Step 2 - Run profiling queries and paste results</span>, click <span class="f">Copy SQL</span> next to the query name.</div></li>
+    <li><div class="snum">9</div><div class="sbody">Paste the SQL into Athena and run it.</div></li>
+    <li><div class="snum">10</div><div class="sbody">Copy the results from Athena and paste them into the text area below the <span class="f">Copy SQL</span> button.</div></li>
+    <li><div class="snum">11</div><div class="sbody">Repeat for each applicable query. Queries that show <span class="mono">Not applicable for this type</span> are greyed out &mdash; skip those.<div class="sub">The six queries are: Column Profiling (required), Frequency Analysis, Pattern Analysis, Length Profile, Duplicate Analysis, Outlier Analysis.</div></div></li>
   </ol>
 
   <h2>Step 4 &mdash; Add notes and save</h2>
   <ol class="steps">
-    <li><div class="snum">10</div><div class="sbody">In <span class="f">Step 3 - Notes</span>, add any relevant context: known data issues, business meaning, unusual patterns found. This is optional but useful for future reviews.</div></li>
-    <li><div class="snum">11</div><div class="sbody">Click <span class="f">Save profile</span>. The field row shows a green tick to confirm the profile has been saved.</div></li>
+    <li><div class="snum">12</div><div class="sbody">In <span class="f">Step 3 - Notes</span>, add any relevant context: known data issues, business meaning, unusual patterns found. This is optional but useful for future reviews.</div></li>
+    <li><div class="snum">13</div><div class="sbody">Click <span class="f">Save profile</span>. The field row shows a green tick to confirm the profile has been saved.</div></li>
   </ol>
 
   <div class="note">You do not need to complete all six queries before saving. Save with whatever results you have and update the profile later.</div>
