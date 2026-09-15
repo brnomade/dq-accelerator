@@ -224,6 +224,8 @@ const SCHEMA = {
       { name: 'parsed_columns',        type: 'text',     label: 'Parsed columns' },
       { name: 'parsed_at',             type: 'str',      label: 'Parsed at' },
       { name: 'parsed_by',             type: 'str',      label: 'Parsed by' },
+      { name: 'is_snapshot_table',     type: 'bool',     label: 'Snapshot table' },
+      { name: 'snapshot_date_field',   type: 'str',      label: 'Snapshot field' },
       { name: 'retiring_timestamp',    type: 'datetime', label: 'Retired' },
     ],
     label: 'Profiling',

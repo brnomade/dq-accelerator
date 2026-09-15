@@ -5,6 +5,23 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260915-1841 — Enhancement: snapshot metadata capture in table profiling
+
+**Date:** 2026-09-15
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Design discussion, UX decisions (Step 2 placement, partial save, dropdown behaviour) | 15 min | 0 min | 0 min | |
+| Write DESIGN + PLAN docs, import/export audit | 0 min | 20 min | 0 min | |
+| Implement schema + form panel changes | 0 min | 0 min | 15 min | |
+| **Total** | **15 min** | **20 min** | **15 min** | |
+
+### Changes delivered
+- `src/10_constants.js`: two new columns on `source_table_ddl` (`is_snapshot_table`, `snapshot_date_field`)
+- `src/201_ddl_form_panel.js`: Step 2 snapshot block added; step state + save wiring; Step 3 renumber
+
+---
+
 ## build-20260904-1412 — Enhancement: simplified rule search
 
 **Date:** 2026-09-04

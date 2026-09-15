@@ -4,6 +4,14 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260915-1841 — Enhancement: snapshot metadata capture in table profiling
+
+### Changed
+- **`src/10_constants.js`** -- Added `is_snapshot_table` (bool) and `snapshot_date_field` (str) columns to `source_table_ddl` schema. Both fields are picked up automatically by all import and export operations via the schema-driven pipeline.
+- **`src/201_ddl_form_panel.js`** -- Added Step 2 "Snapshot configuration" to the DDL form panel (always visible). Toggle: "This is a snapshot table". When toggled on, a snapshot field dropdown appears — disabled with placeholder message until the DDL is parsed in Step 1, then populated with parsed column names. Partial save (toggle on, field not selected) is valid. Border colour: neutral (off) / amber (on, field missing) / green (on, field selected). Renamed former Step 2 "Verify columns" to Step 3. `handleSave` now includes `is_snapshot_table` and `snapshot_date_field` in the saved record.
+
+---
+
 ## build-20260904-1412 — Enhancement: simplified rule search — remove Filter button, add count and clear
 
 ### Changed

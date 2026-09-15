@@ -68,10 +68,16 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
     <li><div class="snum">9</div><div class="sbody">Click <span class="f">Parse</span>. The application extracts the column list from the DDL.</div></li>
   </ol>
 
-  <h2>Step 4 &mdash; Verify columns and save</h2>
+  <h2>Step 4 &mdash; Configure snapshot settings</h2>
   <ol class="steps">
-    <li><div class="snum">10</div><div class="sbody">Check the column list that appears in <span class="f">Step 2 - Verify columns</span>. Columns that match CDEs are marked <span class="mono">CDE</span>. Columns already profiled are ticked.</div></li>
-    <li><div class="snum">11</div><div class="sbody">Click <span class="f">Add</span> in the panel header. The table is added to the library and its row border changes to purple.</div></li>
+    <li><div class="snum">10</div><div class="sbody">In the <span class="f">Step 2 - Snapshot configuration</span> block, tick <span class="f">This is a snapshot table</span> if records in this table are repeated across multiple extract dates rather than representing a single current state.<div class="sub">This setting is optional. You can leave it unchecked and return to update it later.</div></div></li>
+    <li><div class="snum">11</div><div class="sbody">If you ticked the snapshot flag, select the column that identifies the snapshot period from the <span class="f">Snapshot date / period field</span> dropdown. The dropdown is populated with the columns parsed in Step 1.<div class="sub">You can save without selecting a snapshot field and complete this later. The Step 2 block shows an amber border and a reminder until a field is chosen.</div></div></li>
+  </ol>
+
+  <h2>Step 5 &mdash; Verify columns and save</h2>
+  <ol class="steps">
+    <li><div class="snum">12</div><div class="sbody">Check the column list that appears in <span class="f">Step 3 - Verify columns</span>. Columns that match CDEs are marked <span class="mono">CDE</span>. Columns already profiled are ticked.</div></li>
+    <li><div class="snum">13</div><div class="sbody">Click <span class="f">Add</span> in the panel header. The table is added to the library and its row border changes to purple.</div></li>
   </ol>
 
   <div class="note">If Parse finds no columns, check that the pasted output is the full CREATE TABLE statement from Athena, not just the table name or a summary view.</div>
