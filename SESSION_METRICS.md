@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260915-2049 — Docs: snapshot filter guide minor text correction
+
+**Date:** 2026-09-15
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| User text edit, rebuild | 0 min | 0 min | 2 min | |
+| **Total** | **0 min** | **0 min** | **2 min** | |
+
+### Changes delivered
+- `documentation/user-guide/data-stewardship/cde-add.html`: step 5 sub-text simplified
+
+---
+
 ## build-20260915-2045 — Docs: snapshot filter concept guide added
 
 **Date:** 2026-09-15

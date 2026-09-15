@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260915-2049 — Docs: snapshot filter guide minor text correction
+
+### Changed
+- **`documentation/user-guide/data-stewardship/cde-add.html`** — step 5 sub-text simplified: SQL example fragment removed, link to snapshot filter guide retained.
+
+---
+
 ## build-20260915-2045 — Docs: snapshot filter concept guide added
 
 ### Added
