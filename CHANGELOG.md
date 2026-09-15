@@ -4,6 +4,14 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260915-2004 — Refactor: deduplicate SQL engine constraint checks
+
+### Changed
+- **`src/45_rule_sql_warnings.js`** -- new `computeSqlEngineFlags(sql)` helper returns `{ noLimit, hasCountOrCase }`. `computeRuleSqlWarnings` now uses it internally instead of repeating the regexes.
+- **`src/231_uploader_validation.js`** -- `computeUploaderExclusions` now calls `computeSqlEngineFlags` for both `sql_code` and `sql_code_sample` checks, removing the duplicate regex definitions. No behaviour change.
+
+---
+
 ## build-20260915-2001 — Fix: Uploader export ENG error false positive for CASE WHEN pattern
 
 ### Fixed

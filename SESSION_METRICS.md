@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260915-2004 — Refactor: deduplicate SQL engine constraint checks
+
+**Date:** 2026-09-15
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Extract shared helper and rewire both files | 2 min | 0 min | 5 min | |
+| **Total** | **2 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/45_rule_sql_warnings.js`: added `computeSqlEngineFlags(sql)` helper; `computeRuleSqlWarnings` uses it
+- `src/231_uploader_validation.js`: calls `computeSqlEngineFlags` instead of repeating regexes
+
+---
+
 ## build-20260915-2001 — Fix: Uploader export ENG error false positive for CASE WHEN pattern
 
 **Date:** 2026-09-15

@@ -1,7 +1,19 @@
 // ===============================================================================
 // RULE SQL VALIDATION -- shared utility and display component
-// Used by: RuleAllocationFormPanel (130), CdeAllocFormPanel (141), RuleFormPanel (166)
+// Used by: RuleAllocationFormPanel (130), CdeAllocFormPanel (141), RuleFormPanel (166),
+//          computeUploaderExclusions (231)
 // ===============================================================================
+
+// Returns { noLimit, hasCountOrCase } for a single SQL string.
+// Single source of truth for the two DQ-engine structural constraints.
+function computeSqlEngineFlags(sql) {
+  var s = (sql || '').trim();
+  return {
+    noLimit:        !/\bLIMIT\b/i.test(s),
+    hasCountOrCase: /\bCOUNT\s*\(/i.test(s) || /\bCASE\s+WHEN\b/i.test(s),
+  };
+}
+
 function computeRuleSqlWarnings(sql, sample) {
   const s = (sql    || '').trim();
   const p = (sample || '').trim();
@@ -14,10 +26,9 @@ function computeRuleSqlWarnings(sql, sample) {
     warns.push({ level: 'CRITICAL', msg: 'Rule SQL has no WHERE clause. The engine appends AND <snapshot_filter> to sql_code at run time, which requires a WHERE clause to be present.' });
   if (s.endsWith(';'))
     warns.push({ level: 'CRITICAL', msg: 'Rule SQL ends with a semicolon. The engine appends AND <snapshot_filter> after it, producing invalid SQL.' });
-  if (/\bLIMIT\b/i.test(s))
-    warns.push({ level: 'CRITICAL', msg: 'Rule SQL contains a LIMIT keyword. The engine does not support LIMIT in sql_code.' });
-  if (!/\bCOUNT\s*\(/i.test(s) && !/\bCASE\s+WHEN\b/i.test(s))
-    warns.push({ level: 'CRITICAL', msg: 'Rule SQL uses plain SELECT without COUNT. The engine requires SELECT COUNT(...) to return the number of failing records.' });
+  const sf = computeSqlEngineFlags(s);
+  if (!sf.noLimit)        warns.push({ level: 'CRITICAL', msg: 'Rule SQL contains a LIMIT keyword. The engine does not support LIMIT in sql_code.' });
+  if (!sf.hasCountOrCase) warns.push({ level: 'CRITICAL', msg: 'Rule SQL uses plain SELECT without COUNT. The engine requires SELECT COUNT(...) to return the number of failing records.' });
   if (/\bCAST\s*\(/i.test(s))
     warns.push({ level: 'SEVERE', msg: 'Rule SQL uses CAST(). TRY_CAST() is required to avoid runtime data conversion errors in Athena.' });
   const hasIsNull      = /\bIS\s+NULL\b/i.test(s);
@@ -36,10 +47,9 @@ function computeRuleSqlWarnings(sql, sample) {
       warns.push({ level: 'CRITICAL', msg: 'Sample SQL contains a WHERE clause. The engine appends WHERE <snapshot_filter> to sql_code_sample, which would produce a duplicate WHERE clause.' });
     if (p.endsWith(';'))
       warns.push({ level: 'CRITICAL', msg: 'Sample SQL ends with a semicolon. The engine appends WHERE <snapshot_filter> after it, producing invalid SQL.' });
-    if (/\bLIMIT\b/i.test(p))
-      warns.push({ level: 'CRITICAL', msg: 'Sample SQL contains a LIMIT keyword. The engine does not support LIMIT in sql_code_sample.' });
-    if (!/\bCOUNT\s*\(/i.test(p) && !/\bCASE\s+WHEN\b/i.test(p))
-      warns.push({ level: 'CRITICAL', msg: 'Sample SQL uses plain SELECT without COUNT. The engine requires SELECT COUNT(...) to return the number of failing records.' });
+    const pf = computeSqlEngineFlags(p);
+    if (!pf.noLimit)        warns.push({ level: 'CRITICAL', msg: 'Sample SQL contains a LIMIT keyword. The engine does not support LIMIT in sql_code_sample.' });
+    if (!pf.hasCountOrCase) warns.push({ level: 'CRITICAL', msg: 'Sample SQL uses plain SELECT without COUNT. The engine requires SELECT COUNT(...) to return the number of failing records.' });
     if (/\bCAST\s*\(/i.test(p))
       warns.push({ level: 'SEVERE', msg: 'Sample SQL uses CAST(). TRY_CAST() is required to avoid runtime data conversion errors in Athena.' });
     if (p.indexOf('{SOURCE_DATABASE_NAME}') === -1)

@@ -139,14 +139,16 @@ function computeUploaderExclusions(data, includeSoftDeleted) {
       if (parenDepth !== 0)  reasons.push('Unbalanced parentheses in sql_code');
       balancedOk = (sqCount % 2 === 0) && (dqCount % 2 === 0) && (parenDepth === 0);
 
-      noLimitSql  = !/\bLIMIT\b/i.test(rule.sql_code);
-      hasCountSql = /\bCOUNT\s*\(/i.test(rule.sql_code) || /\bCASE\s+WHEN\b/i.test(rule.sql_code);
+      var sqlFlags = computeSqlEngineFlags(rule.sql_code);
+      noLimitSql  = sqlFlags.noLimit;
+      hasCountSql = sqlFlags.hasCountOrCase;
       if (!noLimitSql)  reasons.push('sql_code contains a LIMIT keyword - not supported by the DQ engine');
       if (!hasCountSql) reasons.push('sql_code uses plain SELECT without COUNT - the DQ engine requires SELECT COUNT(...)');
 
       if (rule.sql_code_sample && rule.sql_code_sample.trim()) {
-        noLimitSample  = !/\bLIMIT\b/i.test(rule.sql_code_sample);
-        hasCountSample = /\bCOUNT\s*\(/i.test(rule.sql_code_sample) || /\bCASE\s+WHEN\b/i.test(rule.sql_code_sample);
+        var sampleFlags = computeSqlEngineFlags(rule.sql_code_sample);
+        noLimitSample  = sampleFlags.noLimit;
+        hasCountSample = sampleFlags.hasCountOrCase;
         if (!noLimitSample)  reasons.push('sql_code_sample contains a LIMIT keyword - not supported by the DQ engine');
         if (!hasCountSample) reasons.push('sql_code_sample uses plain SELECT without COUNT - the DQ engine requires SELECT COUNT(...)');
       }
