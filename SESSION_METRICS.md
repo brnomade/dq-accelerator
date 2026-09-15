@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260915-1957 — Fix: SQL validator false positive for CASE WHEN pattern
+
+**Date:** 2026-09-15
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Diagnose false positive in COUNT check | 3 min | 0 min | 0 min | |
+| Add CASE WHEN exemption to both checks | 0 min | 0 min | 3 min | |
+| **Total** | **3 min** | **0 min** | **3 min** | |
+
+### Changes delivered
+- `src/45_rule_sql_warnings.js`: COUNT check exempted when CASE WHEN is present in sql_code or sql_code_sample
+
+---
+
 ## build-20260915-1948 — Fix: merge report filename matches delta pattern
 
 **Date:** 2026-09-15

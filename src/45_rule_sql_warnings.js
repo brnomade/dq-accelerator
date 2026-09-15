@@ -16,7 +16,7 @@ function computeRuleSqlWarnings(sql, sample) {
     warns.push({ level: 'CRITICAL', msg: 'Rule SQL ends with a semicolon. The engine appends AND <snapshot_filter> after it, producing invalid SQL.' });
   if (/\bLIMIT\b/i.test(s))
     warns.push({ level: 'CRITICAL', msg: 'Rule SQL contains a LIMIT keyword. The engine does not support LIMIT in sql_code.' });
-  if (!/\bCOUNT\s*\(/i.test(s))
+  if (!/\bCOUNT\s*\(/i.test(s) && !/\bCASE\s+WHEN\b/i.test(s))
     warns.push({ level: 'CRITICAL', msg: 'Rule SQL uses plain SELECT without COUNT. The engine requires SELECT COUNT(...) to return the number of failing records.' });
   if (/\bCAST\s*\(/i.test(s))
     warns.push({ level: 'SEVERE', msg: 'Rule SQL uses CAST(). TRY_CAST() is required to avoid runtime data conversion errors in Athena.' });
@@ -38,7 +38,7 @@ function computeRuleSqlWarnings(sql, sample) {
       warns.push({ level: 'CRITICAL', msg: 'Sample SQL ends with a semicolon. The engine appends WHERE <snapshot_filter> after it, producing invalid SQL.' });
     if (/\bLIMIT\b/i.test(p))
       warns.push({ level: 'CRITICAL', msg: 'Sample SQL contains a LIMIT keyword. The engine does not support LIMIT in sql_code_sample.' });
-    if (!/\bCOUNT\s*\(/i.test(p))
+    if (!/\bCOUNT\s*\(/i.test(p) && !/\bCASE\s+WHEN\b/i.test(p))
       warns.push({ level: 'CRITICAL', msg: 'Sample SQL uses plain SELECT without COUNT. The engine requires SELECT COUNT(...) to return the number of failing records.' });
     if (/\bCAST\s*\(/i.test(p))
       warns.push({ level: 'SEVERE', msg: 'Sample SQL uses CAST(). TRY_CAST() is required to avoid runtime data conversion errors in Athena.' });

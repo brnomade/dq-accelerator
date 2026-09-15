@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260915-1957 — Fix: SQL validator false positive for CASE WHEN pattern
+
+### Fixed
+- **`src/45_rule_sql_warnings.js`** -- `computeRuleSqlWarnings`: the "plain SELECT without COUNT" CRITICAL check now exempts rules that use a `CASE WHEN` expression, which is a valid pattern for returning a 0/1 result instead of a count. Applies to both `sql_code` and `sql_code_sample` checks.
+
+---
+
 ## build-20260915-1948 — Fix: merge report filename matches delta pattern
 
 ### Changed
