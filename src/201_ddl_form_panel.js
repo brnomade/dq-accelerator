@@ -63,6 +63,9 @@ function DDLFormPanel({ record, onSave, onClose, nextPk, accent, data, stewardId
     );
   }, [data, dbName, tableName]);
 
+  const [isSnapshotTable,   setIsSnapshotTable]   = useState(record?.is_snapshot_table   || false);
+  const [snapshotDateField, setSnapshotDateField] = useState(record?.snapshot_date_field || '');
+
   const [errors,    setErrors]    = useState({});
   const [parseMsg,  setParseMsg]  = useState('');
   const [copiedCmd, setCopiedCmd] = useState(false);
@@ -122,6 +125,8 @@ function DDLFormPanel({ record, onSave, onClose, nextPk, accent, data, stewardId
       parsed_columns:       JSON.stringify(parsed),
       parsed_at:            dateStr,
       parsed_by:            stewardIdentity?.name || null,
+      is_snapshot_table:    isSnapshotTable || false,
+      snapshot_date_field:  snapshotDateField || null,
       retiring_timestamp:   null,
     });
   };
@@ -307,7 +312,66 @@ function DDLFormPanel({ record, onSave, onClose, nextPk, accent, data, stewardId
             </div>
           </div>
 
-          {/* Step 2 -- Verify columns */}
+          {/* Step 2 -- Snapshot configuration */}
+          {(() => {
+            const snapBorder = isSnapshotTable
+              ? (snapshotDateField ? 'var(--green)' : 'var(--amber)')
+              : 'var(--border)';
+            const snapAccent = snapBorder === 'var(--border)' ? accent : snapBorder;
+            return (
+              <div style={{ background:'var(--bg2)', border:'1px solid var(--border)',
+                borderLeft:`3px solid ${snapBorder}`,
+                borderRadius:'var(--radius-lg)', padding:'14px 16px',
+                display:'flex', flexDirection:'column', gap:12 }}>
+                <div style={{ fontSize:11, fontWeight:600, letterSpacing:'0.08em',
+                  textTransform:'uppercase', color:snapAccent }}>
+                  Step 2 - Snapshot configuration
+                </div>
+                <label style={{ display:'flex', alignItems:'center', gap:8,
+                  cursor:'pointer', userSelect:'none' }}>
+                  <input type="checkbox" checked={isSnapshotTable}
+                    onChange={e => {
+                      setIsSnapshotTable(e.target.checked);
+                      if (!e.target.checked) setSnapshotDateField('');
+                    }}
+                    style={{ width:14, height:14, cursor:'pointer' }}/>
+                  <span style={{ fontSize:12, color:'var(--text)', fontWeight:500 }}>
+                    This is a snapshot table
+                  </span>
+                </label>
+                {isSnapshotTable && (
+                  <div>
+                    <label style={{ display:'block', fontSize:11, fontWeight:600,
+                      color:'var(--text2)', marginBottom:4 }}>
+                      Snapshot date {'/'} period field
+                    </label>
+                    {parsed.length > 0 ? (
+                      <select value={snapshotDateField}
+                        onChange={e => setSnapshotDateField(e.target.value)}
+                        style={{ ...inputBase, ...monoInput, cursor:'pointer' }}>
+                        <option value="">{'-- select the snapshot field --'}</option>
+                        {parsed.map(c => (
+                          <option key={c.name} value={c.name}>{c.name}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <select disabled
+                        style={{ ...inputBase, ...monoInput, opacity:0.5, cursor:'not-allowed' }}>
+                        <option>{'-- Profile the table to see available fields --'}</option>
+                      </select>
+                    )}
+                    {!snapshotDateField && (
+                      <div style={{ fontSize:11, color:'var(--amber)', marginTop:4 }}>
+                        Snapshot field not yet selected {'\u2014'} return to complete.
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Step 3 -- Verify columns */}
           {(parseMsg || parsed.length > 0) && (
             <div style={{ background:'var(--bg2)', border:'1px solid var(--border)',
               borderLeft:`3px solid ${parsed.length > 0 ? 'var(--green)' : 'var(--amber)'}`,
@@ -316,7 +380,7 @@ function DDLFormPanel({ record, onSave, onClose, nextPk, accent, data, stewardId
                 textTransform:'uppercase',
                 color: parsed.length > 0 ? 'var(--green)' : 'var(--amber)',
                 marginBottom:10 }}>
-                Step 2 - Verify columns
+                Step 3 - Verify columns
               </div>
               <div style={{ fontSize:11, fontWeight:600, marginBottom:8,
                 color: parsed.length > 0 ? 'var(--green)' : 'var(--amber)' }}>
