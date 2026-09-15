@@ -4,6 +4,17 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260915-2045 — Docs: snapshot filter concept guide added
+
+### Added
+- **`documentation/user-guide/data-stewardship/snapshot-filter.html`** — new concept guide: "What is a snapshot filter?" Covers what snapshot filters solve, why they matter, how to identify the right filter, and guidance on when to escalate to data engineering. Linked from `index.html`.
+
+### Changed
+- **`documentation/user-guide/data-stewardship/cde-add.html`** — step 5 sub-text and the Snapshot Filter field table row now link to the new concept guide. Snapshot Filter link added to the related guides section.
+- **`documentation/user-guide/index.html`** — new entry added under Data and Stewardship.
+
+---
+
 ## build-20260915-2029 — Feature: RAG Simulator bumper control extended to 0–5
 
 ### Changed

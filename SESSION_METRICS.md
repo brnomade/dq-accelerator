@@ -5,6 +5,23 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260915-2045 — Docs: snapshot filter concept guide added
+
+**Date:** 2026-09-15
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Advise on inline vs separate page, confirm approach | 5 min | 0 min | 0 min | |
+| Write snapshot-filter.html and update cde-add.html + index | 0 min | 0 min | 10 min | |
+| **Total** | **5 min** | **0 min** | **10 min** | |
+
+### Changes delivered
+- `documentation/user-guide/data-stewardship/snapshot-filter.html`: new concept guide (created)
+- `documentation/user-guide/data-stewardship/cde-add.html`: step 5 and field table link to new guide
+- `documentation/user-guide/index.html`: new entry added
+
+---
+
 ## build-20260915-2029 — Feature: RAG Simulator bumper control extended to 0–5
 
 **Date:** 2026-09-15

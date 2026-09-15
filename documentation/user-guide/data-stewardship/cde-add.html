@@ -90,7 +90,7 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
     <li>
       <div class="snum">5</div>
       <div class="sbody">Enter the <span class="f">Snapshot Filter</span>. This is required and is used to construct the SQL queries run against this field.
-        <div class="sub">Use the same SQL <span class="mono">WHERE</span> clause fragment that isolates the relevant snapshot of this table, for example <span class="mono">snapshot_date = '&#123;snapshot&#125;'</span>.</div>
+        <div class="sub">Use the SQL <span class="mono">WHERE</span> clause fragment that isolates the relevant snapshot of this table, for example <span class="mono">snapshot_date = '&#123;snapshot&#125;'</span>. If you are unsure what value to use, see <a href="snapshot-filter.html" style="color:var(--blue)">What is a snapshot filter?</a></div>
       </div>
     </li>
     <li>
@@ -116,7 +116,7 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
       <tr><td>Database Name <span class="req">required</span></td><td>The source database where this field lives.</td></tr>
       <tr><td>Table Name <span class="req">required</span></td><td>The source table containing this field.</td></tr>
       <tr><td>Field Name <span class="req">required</span></td><td>The exact column name in the source table.</td></tr>
-      <tr><td>Snapshot Filter <span class="req">required</span></td><td>A SQL filter fragment used when composing data quality queries. Missing this causes a warning indicator on the CDE and prevents SQL from being generated.</td></tr>
+      <tr><td>Snapshot Filter <span class="req">required</span></td><td>A SQL <code style="font-family:var(--mono);font-size:11px">WHERE</code> clause fragment that isolates the current snapshot of the source table. Missing this causes a warning indicator on the CDE and prevents SQL from being generated. See <a href="snapshot-filter.html" style="color:var(--blue)">What is a snapshot filter?</a></td></tr>
       <tr><td>Platform <span class="opt">optional</span></td><td>Source platform name (e.g. AWS, Azure).</td></tr>
       <tr><td>System <span class="opt">optional</span></td><td>Source system name (e.g. the application that owns the data).</td></tr>
       <tr><td>Definition <span class="opt">optional</span></td><td>Business definition of the field.</td></tr>
@@ -129,6 +129,7 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
   <div class="related">
     <div class="rtitle">Related guides</div>
     <ul class="rlist">
+      <li><a href="snapshot-filter.html">What is a snapshot filter? &rsaquo;</a></li>
       <li><a href="cds-add.html">How to add a Critical Data Set &rsaquo;</a></li>
       <li><a href="cde-edit-retire.html">How to edit or retire a Critical Data Element &rsaquo;</a></li>
       <li><a href="rule-allocate.html">How to assign a rule to a CDE &rsaquo;</a></li>
