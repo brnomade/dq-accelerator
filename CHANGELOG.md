@@ -4,6 +4,15 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260915-2016 — Fix: bumper value range extended to 0–5, zero stored explicitly
+
+### Changed
+- **`src/141_view_cde_list.js`** — Edit Allocation panel: bumper value dropdown now offers 0–5 (replacing the old 1–5 + `--none--`). Value 0 means "no bumper effect" and replaces `null`/empty. Existing records with no bumper value are coerced to 0 on form open; saving always writes an integer 0–5, never `null`.
+- List view: bumper value `0` displays as `--` (no amber badge), consistent with "no bumper" semantics. Values 1–5 continue to show with the amber badge.
+- Label "(optional)" removed from the Bumper value field since all records now carry a value.
+
+---
+
 ## build-20260915-2004 — Refactor: deduplicate SQL engine constraint checks
 
 ### Changed
