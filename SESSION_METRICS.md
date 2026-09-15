@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260915-2001 — Fix: Uploader export ENG error false positive for CASE WHEN pattern
+
+**Date:** 2026-09-15
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Identify duplicate COUNT check in uploader validator | 2 min | 0 min | 0 min | |
+| Apply CASE WHEN exemption to both sql_code and sql_code_sample checks | 0 min | 0 min | 2 min | |
+| **Total** | **2 min** | **0 min** | **2 min** | |
+
+### Changes delivered
+- `src/231_uploader_validation.js`: `hasCountSql` and `hasCountSample` flags now pass when CASE WHEN is present, matching the fix in `45_rule_sql_warnings.js`
+
+---
+
 ## build-20260915-1957 — Fix: SQL validator false positive for CASE WHEN pattern
 
 **Date:** 2026-09-15

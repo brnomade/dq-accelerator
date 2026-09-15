@@ -140,13 +140,13 @@ function computeUploaderExclusions(data, includeSoftDeleted) {
       balancedOk = (sqCount % 2 === 0) && (dqCount % 2 === 0) && (parenDepth === 0);
 
       noLimitSql  = !/\bLIMIT\b/i.test(rule.sql_code);
-      hasCountSql = /\bCOUNT\s*\(/i.test(rule.sql_code);
+      hasCountSql = /\bCOUNT\s*\(/i.test(rule.sql_code) || /\bCASE\s+WHEN\b/i.test(rule.sql_code);
       if (!noLimitSql)  reasons.push('sql_code contains a LIMIT keyword - not supported by the DQ engine');
       if (!hasCountSql) reasons.push('sql_code uses plain SELECT without COUNT - the DQ engine requires SELECT COUNT(...)');
 
       if (rule.sql_code_sample && rule.sql_code_sample.trim()) {
         noLimitSample  = !/\bLIMIT\b/i.test(rule.sql_code_sample);
-        hasCountSample = /\bCOUNT\s*\(/i.test(rule.sql_code_sample);
+        hasCountSample = /\bCOUNT\s*\(/i.test(rule.sql_code_sample) || /\bCASE\s+WHEN\b/i.test(rule.sql_code_sample);
         if (!noLimitSample)  reasons.push('sql_code_sample contains a LIMIT keyword - not supported by the DQ engine');
         if (!hasCountSample) reasons.push('sql_code_sample uses plain SELECT without COUNT - the DQ engine requires SELECT COUNT(...)');
       }

@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260915-2001 — Fix: Uploader export ENG error false positive for CASE WHEN pattern
+
+### Fixed
+- **`src/231_uploader_validation.js`** -- `computeUploaderExclusions`: the `hasCountSql` and `hasCountSample` flags now also pass when the SQL contains a `CASE WHEN` expression, consistent with the fix applied to `45_rule_sql_warnings.js` in the previous build. Rules using the `SELECT CASE WHEN ... THEN 1 ELSE 0 END` pattern will no longer be excluded from the uploader export with an ENG error.
+
+---
+
 ## build-20260915-1957 — Fix: SQL validator false positive for CASE WHEN pattern
 
 ### Fixed
