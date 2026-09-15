@@ -2801,7 +2801,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260915-1936</div>
+              <div className="header-app-sub">build-20260915-1942</div>
             </div>
           </div>
         </div>
@@ -15260,9 +15260,10 @@ function ImportScreen({ onImport, onMerge }) {
     const blob = new Blob([JSON.stringify(report, null, 2)], { type:'application/json' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
-    const ts   = new Date().toISOString().replace(/[:\-T]/g,'').slice(0, 15);
+    const ts          = new Date().toISOString().replace(/[:\-T]/g,'').slice(0, 15);
+    const stewardSlug = (delta._steward_name || 'unknown').replace(/\s+/g, '_');
     a.href     = url;
-    a.download = `dq_merge_report_${ts}.json`;
+    a.download = `dq_merge_report_${stewardSlug}_${ts}.json`;
     a.click();
     URL.revokeObjectURL(url);
     onMerge(merged);
