@@ -92,25 +92,26 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
 
   <h2>Stage 4 &mdash; Bumper adjustment</h2>
 
-  <p>Each rule allocation has a bumper value from 1 to 5. The bumper raises the GREEN threshold toward 100%, allowing stricter pass-rate requirements for rules that matter more.</p>
+  <p>Each rule allocation has a bumper value from 0 to 5. The bumper raises the GREEN threshold toward 100%, allowing stricter pass-rate requirements for rules that matter more. A bumper of 0 means no adjustment is applied.</p>
 
   <div class="formula-box">
     <div class="label">Formula</div>
-    Adjusted threshold = relative score + ((bumper &minus; 1) &divide; 4) &times; (100% &minus; relative score)
+    Adjusted threshold = relative score + (bumper &divide; 5) &times; (100% &minus; relative score)
   </div>
 
   <table class="score-table" style="margin-top:16px">
     <thead><tr><th>Bumper</th><th>Effect</th></tr></thead>
     <tbody>
-      <tr><td>1</td><td style="color:var(--text2)">No adjustment. GREEN threshold = relative score.</td></tr>
-      <tr><td>2</td><td style="color:var(--text2)">Threshold raised 25% of the way from relative score to 100%.</td></tr>
-      <tr><td>3</td><td style="color:var(--text2)">Threshold raised 50% of the way from relative score to 100%.</td></tr>
-      <tr><td>4</td><td style="color:var(--text2)">Threshold raised 75% of the way from relative score to 100%.</td></tr>
+      <tr><td>0</td><td style="color:var(--text2)">No adjustment. GREEN threshold = relative score.</td></tr>
+      <tr><td>1</td><td style="color:var(--text2)">Threshold raised 20% of the way from relative score to 100%.</td></tr>
+      <tr><td>2</td><td style="color:var(--text2)">Threshold raised 40% of the way from relative score to 100%.</td></tr>
+      <tr><td>3</td><td style="color:var(--text2)">Threshold raised 60% of the way from relative score to 100%.</td></tr>
+      <tr><td>4</td><td style="color:var(--text2)">Threshold raised 80% of the way from relative score to 100%.</td></tr>
       <tr><td>5</td><td style="color:var(--text2)">Threshold = 100%. The rule must pass every record to be GREEN.</td></tr>
     </tbody>
   </table>
 
-  <p style="margin-top:12px">Using the example above (relative score 36%, bumper 3): adjusted threshold = 36% + (2 &divide; 4) &times; (100% &minus; 36%) = 36% + 32% = <strong>68%</strong>.</p>
+  <p style="margin-top:12px">Using the example above (relative score 36%, bumper 3): adjusted threshold = 36% + (3 &divide; 5) &times; (100% &minus; 36%) = 36% + 38.4% = <strong>74.4%</strong>.</p>
 
   <h2>Stage 5 &mdash; RAG determination</h2>
 
@@ -133,11 +134,11 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
     CDE criticality: OPS High (17), POL Medium (12), REP Low (6), STRAT Very Low (0)<br/>
     Overall score: (17+12+6+0) &divide; 4 = <strong>8.75</strong> &rarr; rounds to 9<br/>
     Relative score: 9 &times; 4% = <strong>36%</strong><br/>
-    Bumper on Rule A: 3 &rarr; Adjusted threshold: 36% + (2/4) &times; 64% = <strong>68%</strong><br/>
-    AMBER threshold: 68% &minus; 10% = <strong>58%</strong><br/>
+    Bumper on Rule A: 3 &rarr; Adjusted threshold: 36% + (3/5) &times; 64% = <strong>74.4%</strong><br/>
+    AMBER threshold: 74.4% &minus; 10% = <strong>64.4%</strong><br/>
     <br/>
     Measurement: 950 passing out of 1,000 &rarr; pass rate <strong>95%</strong> &rarr; <span class="rag-badge badge-g">GREEN</span><br/>
-    Measurement: 620 passing out of 1,000 &rarr; pass rate <strong>62%</strong> &rarr; <span class="rag-badge badge-a">AMBER</span><br/>
+    Measurement: 700 passing out of 1,000 &rarr; pass rate <strong>70%</strong> &rarr; <span class="rag-badge badge-a">AMBER</span><br/>
     Measurement: 400 passing out of 1,000 &rarr; pass rate <strong>40%</strong> &rarr; <span class="rag-badge badge-r">RED</span>
   </div>
 

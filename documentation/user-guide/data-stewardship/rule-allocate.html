@@ -78,7 +78,7 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
     <li>
       <div class="snum">5</div>
       <div class="sbody">Set the <span class="f">Frequency</span> and, if applicable, the <span class="f">Bumper Value</span>.
-        <div class="sub">The bumper value is the threshold used by the rule (for example, a maximum acceptable null rate). Leave it blank if no threshold applies.</div>
+        <div class="sub">The bumper value (0&ndash;5) controls how far the GREEN pass-rate threshold is raised above the baseline. Set to 0 if no adjustment is required; 5 raises the threshold to 100%. See <a href="../rag-simulator/rag-calculation.html" style="color:var(--blue)">How the RAG rating is calculated</a>.</div>
       </div>
     </li>
     <li>
@@ -135,7 +135,7 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
       <tr><td>Rule name</td><td>The name of the data quality rule.</td></tr>
       <tr><td>Dimension</td><td>The quality dimension measured by this allocation.</td></tr>
       <tr><td>Frequency</td><td>How often the check is run.</td></tr>
-      <tr><td>Bumper value</td><td>The threshold. Shown in amber if set; -- if not.</td></tr>
+      <tr><td>Bumper value</td><td>The RAG threshold adjustment (0&ndash;5). Values 1&ndash;5 shown in amber; 0 (no adjustment) shown as --.</td></tr>
       <tr><td>SQL</td><td>Buttons to open the full SQL and the sample SQL for this allocation in the SQL viewer.</td></tr>
     </tbody>
   </table>
