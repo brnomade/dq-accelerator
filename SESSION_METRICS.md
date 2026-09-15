@@ -5,6 +5,51 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260915-2004 — Refactor: deduplicate SQL engine constraint checks
+
+**Date:** 2026-09-15
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Extract shared helper and rewire both files | 2 min | 0 min | 5 min | |
+| **Total** | **2 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/45_rule_sql_warnings.js`: added `computeSqlEngineFlags(sql)` helper; `computeRuleSqlWarnings` uses it
+- `src/231_uploader_validation.js`: calls `computeSqlEngineFlags` instead of repeating regexes
+
+---
+
+## build-20260915-2001 — Fix: Uploader export ENG error false positive for CASE WHEN pattern
+
+**Date:** 2026-09-15
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Identify duplicate COUNT check in uploader validator | 2 min | 0 min | 0 min | |
+| Apply CASE WHEN exemption to both sql_code and sql_code_sample checks | 0 min | 0 min | 2 min | |
+| **Total** | **2 min** | **0 min** | **2 min** | |
+
+### Changes delivered
+- `src/231_uploader_validation.js`: `hasCountSql` and `hasCountSample` flags now pass when CASE WHEN is present, matching the fix in `45_rule_sql_warnings.js`
+
+---
+
+## build-20260915-1957 — Fix: SQL validator false positive for CASE WHEN pattern
+
+**Date:** 2026-09-15
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Diagnose false positive in COUNT check | 3 min | 0 min | 0 min | |
+| Add CASE WHEN exemption to both checks | 0 min | 0 min | 3 min | |
+| **Total** | **3 min** | **0 min** | **3 min** | |
+
+### Changes delivered
+- `src/45_rule_sql_warnings.js`: COUNT check exempted when CASE WHEN is present in sql_code or sql_code_sample
+
+---
+
 ## build-20260915-1948 — Fix: merge report filename matches delta pattern
 
 **Date:** 2026-09-15

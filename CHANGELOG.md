@@ -4,6 +4,28 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260915-2004 — Refactor: deduplicate SQL engine constraint checks
+
+### Changed
+- **`src/45_rule_sql_warnings.js`** -- new `computeSqlEngineFlags(sql)` helper returns `{ noLimit, hasCountOrCase }`. `computeRuleSqlWarnings` now uses it internally instead of repeating the regexes.
+- **`src/231_uploader_validation.js`** -- `computeUploaderExclusions` now calls `computeSqlEngineFlags` for both `sql_code` and `sql_code_sample` checks, removing the duplicate regex definitions. No behaviour change.
+
+---
+
+## build-20260915-2001 — Fix: Uploader export ENG error false positive for CASE WHEN pattern
+
+### Fixed
+- **`src/231_uploader_validation.js`** -- `computeUploaderExclusions`: the `hasCountSql` and `hasCountSample` flags now also pass when the SQL contains a `CASE WHEN` expression, consistent with the fix applied to `45_rule_sql_warnings.js` in the previous build. Rules using the `SELECT CASE WHEN ... THEN 1 ELSE 0 END` pattern will no longer be excluded from the uploader export with an ENG error.
+
+---
+
+## build-20260915-1957 — Fix: SQL validator false positive for CASE WHEN pattern
+
+### Fixed
+- **`src/45_rule_sql_warnings.js`** -- `computeRuleSqlWarnings`: the "plain SELECT without COUNT" CRITICAL check now exempts rules that use a `CASE WHEN` expression, which is a valid pattern for returning a 0/1 result instead of a count. Applies to both `sql_code` and `sql_code_sample` checks.
+
+---
+
 ## build-20260915-1948 — Fix: merge report filename matches delta pattern
 
 ### Changed
