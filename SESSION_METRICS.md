@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260915-1948 — Fix: merge report filename matches delta pattern
+
+**Date:** 2026-09-15
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| User manual tweak to filename pattern | 0 min | 0 min | 3 min | |
+| **Total** | **0 min** | **0 min** | **3 min** | |
+
+### Changes delivered
+- `src/210_screen_import.js`: merge report filename changed to `dq_delta_<steward>_<ts>_merge_report.json`
+
+---
+
 ## build-20260915-1941 — Fix: merge report filename includes steward name
 
 **Date:** 2026-09-15

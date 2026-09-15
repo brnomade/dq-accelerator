@@ -838,7 +838,7 @@ function ImportScreen({ onImport, onMerge }) {
     const ts          = new Date().toISOString().replace(/[:\-T]/g,'').slice(0, 15);
     const stewardSlug = (delta._steward_name || 'unknown').replace(/\s+/g, '_');
     a.href     = url;
-    a.download = `dq_merge_report_${stewardSlug}_${ts}.json`;
+    a.download = `dq_delta_${stewardSlug}_${ts}_merge_report.json`;
     a.click();
     URL.revokeObjectURL(url);
     onMerge(merged);
