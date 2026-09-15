@@ -5,6 +5,22 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260915-1910 — Enhancement: snapshot-aware rule generator prompt
+
+**Date:** 2026-09-15
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Root cause analysis, design discussion | 10 min | 0 min | 0 min | |
+| Implement prompt changes + call site wiring | 0 min | 0 min | 15 min | |
+| **Total** | **10 min** | **0 min** | **15 min** | |
+
+### Changes delivered
+- `src/46_prompt_helpers.js`: `buildSnapshotAwarenessPrompt` added; `buildSuggestionPrompt` accepts `snapshotCtx`; FIELD UNDER REVIEW shows snapshot table flag; subquery snapshot instruction added
+- `src/180_screen_generator.js`: `ddlRecord` memo split from `ddlCols`; `snapshotCtx` passed to prompt builder
+
+---
+
 ## build-20260915-1901 — Enhancement: snapshot indicator in field profiling panel
 
 **Date:** 2026-09-15

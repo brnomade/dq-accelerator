@@ -4,6 +4,14 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260915-1910 — Enhancement: snapshot-aware rule generator prompt
+
+### Changed
+- **`src/46_prompt_helpers.js`** -- Added `buildSnapshotAwarenessPrompt(snap, isSnapshotTable, snapshotDateField)`. When a snapshot table is identified, the prompt now declares the table as a snapshot table and names the snapshot column in the FIELD UNDER REVIEW metadata block. The engine mechanics section is followed by a dedicated SNAPSHOT AWARENESS block that (a) confirms the engine-applied filter and instructs the AI not to duplicate it in the outermost query, and (b) explicitly requires the AI to include the snapshot filter inside any subquery referencing the same table, with a concrete correct-pattern example. When no CDE snapshot filter is set but the table is flagged as a snapshot table, the block instructs the AI to scope subqueries to the latest snapshot using the snapshot field. Updated `buildSuggestionPrompt` to accept a 6th `snapshotCtx` parameter `{ isSnapshotTable, snapshotDateField }`.
+- **`src/180_screen_generator.js`** -- Split `ddlCols` memo into `ddlRecord` (full DDL record) and `ddlCols` (parsed columns). Passes `snapshotCtx` extracted from `ddlRecord` to `buildSuggestionPrompt`.
+
+---
+
 ## build-20260915-1901 — Enhancement: snapshot indicator in field profiling panel
 
 ### Changed
