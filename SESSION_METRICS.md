@@ -5,6 +5,21 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260915-1941 — Fix: merge report filename includes steward name
+
+**Date:** 2026-09-15
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Review merge report generation, advise fix | 3 min | 0 min | 0 min | |
+| Apply filename fix | 0 min | 0 min | 3 min | |
+| **Total** | **3 min** | **0 min** | **3 min** | |
+
+### Changes delivered
+- `src/210_screen_import.js`: `handleApplyMerge` merge report filename now includes steward name slug
+
+---
+
 ## build-20260915-1935 — Fix: delta export uses file picker
 
 **Date:** 2026-09-15

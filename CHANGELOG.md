@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260915-1941 — Fix: merge report filename includes steward name
+
+### Changed
+- **`src/210_screen_import.js`** -- `handleApplyMerge`: merge report filename changed from `dq_merge_report_<ts>.json` to `dq_merge_report_<steward_name>_<ts>.json`, mirroring the delta filename pattern. Steward name is taken from `delta._steward_name` (already present in the delta payload) with spaces replaced by underscores. Falls back to `unknown` if the field is absent.
+
+---
+
 ## build-20260915-1935 — Fix: delta export uses file picker
 
 ### Changed
