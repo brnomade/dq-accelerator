@@ -410,18 +410,20 @@ function buildProfilingAgenda({ cdes, rules, allocs, fieldProfiling, ddls, dimen
     }));
     const coveredCount = dimCoverage.filter(d => d.covered).length;
     tg.fields.push({
-      key:            `${entry.db || ''}|||${entry.table}|||${entry.field}`,
-      db:             entry.db,
-      table:          entry.table,
-      field:          entry.field,
-      origin:         entry.origin,
-      ruleCount:      entry.ruleCount,
-      type:           colType,
-      profiling:      profRecord || null,
+      key:              `${entry.db || ''}|||${entry.table}|||${entry.field}`,
+      db:               entry.db,
+      table:            entry.table,
+      field:            entry.field,
+      origin:           entry.origin,
+      ruleCount:        entry.ruleCount,
+      type:             colType,
+      profiling:        profRecord || null,
       dimCoverage,
       coveredCount,
-      snapshotFilter: entry.snapshotFilter || null,
-      cdsInfoList:    entry.cdsInfoList || [],
+      snapshotFilter:   entry.snapshotFilter || null,
+      cdsInfoList:      entry.cdsInfoList || [],
+      isSnapshotTable:  tg.ddl?.is_snapshot_table  || false,
+      snapshotDateField: tg.ddl?.snapshot_date_field || null,
     });
   }
 
@@ -1026,11 +1028,32 @@ function FieldProfilingPanel({ fieldEntry, initialDdl, onClose, accent }) {
                       </select>
                     </div>
                   </div>
+                  {fieldEntry?.isSnapshotTable && (
+                    <div style={{ display:'flex', alignItems:'center', gap:8,
+                      marginTop:8, flexWrap:'wrap' }}>
+                      <span style={{ fontSize:11, fontWeight:600, color:'var(--text2)',
+                        whiteSpace:'nowrap' }}>
+                        This is a snapshot table by the column
+                      </span>
+                      {fieldEntry.snapshotDateField ? (
+                        <span style={{ fontFamily:'var(--mono)', fontSize:11,
+                          color:'var(--green)', background:'rgba(34,201,142,0.08)',
+                          border:'1px solid rgba(34,201,142,0.25)',
+                          borderRadius:'var(--radius)', padding:'2px 8px' }}>
+                          {fieldEntry.snapshotDateField}
+                        </span>
+                      ) : (
+                        <span style={{ fontSize:11, color:'var(--amber)', fontStyle:'italic' }}>
+                          (snapshot field not configured)
+                        </span>
+                      )}
+                    </div>
+                  )}
                   {fieldEntry?.snapshotFilter ? (
                     <div style={{ display:'flex', alignItems:'center', gap:8,
                       marginTop:8, flexWrap:'wrap' }}>
                       <span style={{ fontSize:11, fontWeight:600, color:'var(--text2)',
-                        whiteSpace:'nowrap' }}>Snapshot filter:</span>
+                        whiteSpace:'nowrap' }}>CDE Snapshot filter:</span>
                       <span style={{ fontFamily:'var(--mono)', fontSize:11,
                         color:'var(--amber)', background:'rgba(245,166,35,0.08)',
                         border:'1px solid rgba(245,166,35,0.25)',

@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260915-1901 — Enhancement: snapshot indicator in field profiling panel
+
+### Changed
+- **`src/200_screen_ddl.js`** -- `buildProfilingAgenda`: carries `isSnapshotTable` and `snapshotDateField` from the matching `source_table_ddl` DDL record into each field entry. `FieldProfilingPanel` Step 1: new read-only row "This is a snapshot table by the column `<field>`" (green badge) appears when `isSnapshotTable` is true; if the snapshot field has not yet been configured the badge is replaced with an amber italic note. Existing "Snapshot filter:" label relabelled to "CDE Snapshot filter:". Both rows are informational only.
+
+---
+
 ## build-20260915-1841 — Enhancement: snapshot metadata capture in table profiling
 
 ### Changed
