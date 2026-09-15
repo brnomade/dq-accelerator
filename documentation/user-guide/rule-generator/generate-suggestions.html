@@ -97,7 +97,8 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
   </ol>
 
   <div class="note">
-    <strong>What goes into the prompt:</strong> The prompt includes the field name, database, table, physical data type, semantic type (if profiled), snapshot filter, all profiling measurements (summary statistics, type patterns, top values, length distribution, notes), and a catalogue of existing rules. The existing rules section instructs the AI not to create duplicates and to suggest reusing an existing rule where one already fits.<br/><br/>
+    <strong>What goes into the prompt:</strong> The prompt includes the field name, database, table, physical data type, semantic type (if profiled), snapshot table flag and snapshot field name (from the table profile), CDE snapshot filter, all profiling measurements (summary statistics, type patterns, top values, length distribution, notes), and a catalogue of existing rules. The existing rules section instructs the AI not to create duplicates and to suggest reusing an existing rule where one already fits.<br/><br/>
+    <strong>Snapshot tables:</strong> If the source table is flagged as a snapshot table in the Table Library, the AI is explicitly instructed to include the snapshot filter inside any subquery that references the same table. The engine only applies the snapshot filter to the outermost query automatically &mdash; subqueries are the AI's responsibility and the prompt now enforces this.<br/><br/>
     <strong>Changing the CDE:</strong> Selecting a different field at any point resets Steps 2 and 3. Use the <strong>Start over</strong> button in the page header to also clear the field selection and start fresh.
   </div>
 

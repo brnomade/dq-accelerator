@@ -417,11 +417,54 @@ function buildGeneratorWorkedExamplePrompt() {
   ].join('\n');
 }
 
-function buildSuggestionPrompt(cde, ddlCols, profRecord, cdsName, existingRulesCtx) {
+function buildSnapshotAwarenessPrompt(snap, isSnapshotTable, snapshotDateField) {
+  if (!snap && !isSnapshotTable) return '';
+  var lines = ['SNAPSHOT AWARENESS:'];
+  if (isSnapshotTable) {
+    if (snapshotDateField) {
+      lines.push('This is a snapshot table. Each logical row is repeated once per extraction period.');
+      lines.push('The column that identifies the snapshot period is: "' + snapshotDateField + '".');
+    } else {
+      lines.push('This is a snapshot table (snapshot field not yet configured on the table profile).');
+    }
+    lines.push('');
+  }
+  if (snap) {
+    lines.push('The engine automatically appends this snapshot filter to the outermost query at run time:');
+    lines.push('  "' + snap + '"');
+    lines.push('DO NOT include it in the top-level WHERE clause of sql_code.');
+    lines.push('DO NOT include any WHERE clause in sql_code_sample -- the engine adds it.');
+    lines.push('');
+    lines.push('CRITICAL -- SUBQUERIES: The engine only filters the outermost query. If sql_code');
+    lines.push('contains any subquery that references {SOURCE_DATABASE_NAME}.{SOURCE_TABLE_NAME},');
+    lines.push('you MUST include the snapshot filter inside that subquery\'s own WHERE clause.');
+    lines.push('Failing to do so will cause the subquery to scan all snapshot periods and return');
+    lines.push('incorrect results.');
+    lines.push('');
+    lines.push('Correct subquery pattern:');
+    lines.push('  WHERE {SOURCE_FIELD_NAME} NOT IN (');
+    lines.push('    SELECT ref_col FROM {SOURCE_DATABASE_NAME}.{SOURCE_TABLE_NAME}');
+    lines.push('    WHERE ' + snap);
+    lines.push('  )');
+    lines.push('');
+    lines.push('The same rule applies to any scalar subquery, EXISTS clause, or correlated subquery');
+    lines.push('referencing this table.');
+  } else if (isSnapshotTable && snapshotDateField) {
+    lines.push('No CDE snapshot filter is configured yet, so the engine does not auto-filter');
+    lines.push('the outermost query. If sql_code contains a subquery referencing');
+    lines.push('{SOURCE_DATABASE_NAME}.{SOURCE_TABLE_NAME}, scope it to the latest snapshot:');
+    lines.push('  WHERE ' + snapshotDateField + ' = (SELECT MAX(' + snapshotDateField + ') FROM {SOURCE_DATABASE_NAME}.{SOURCE_TABLE_NAME})');
+  }
+  return lines.join('\n');
+}
+
+function buildSuggestionPrompt(cde, ddlCols, profRecord, cdsName, existingRulesCtx, snapshotCtx) {
   var db    = cde.source_database_name || '';
   var tbl   = cde.source_table_name    || '';
   var field = cde.source_field_name    || '';
   var snap  = cde.source_snapshot_filter || '';
+  var isSnapshotTable   = (snapshotCtx && snapshotCtx.isSnapshotTable)   || false;
+  var snapshotDateField = (snapshotCtx && snapshotCtx.snapshotDateField) || null;
   var ddlMatch = (ddlCols || []).find(function(c) { return c.name === field; }) || '';
   var phys  = (ddlMatch && ddlMatch.type) || profRecord.physical_data_type || 'UNKNOWN';
   var sem   = profRecord.semantic_type || '';
@@ -439,6 +482,9 @@ function buildSuggestionPrompt(cde, ddlCols, profRecord, cdsName, existingRulesC
   if (sem) {
     lines.push('  Semantic type:   ' + sem);
   }
+  if (isSnapshotTable) {
+    lines.push('  Snapshot table:  YES -- snapshot field: ' + (snapshotDateField || 'not configured'));
+  }
   lines.push('  Snapshot filter: ' + (snap || 'none'));
 
   lines.push('');
@@ -446,10 +492,11 @@ function buildSuggestionPrompt(cde, ddlCols, profRecord, cdsName, existingRulesC
 
   lines.push('');
   lines.push(buildEngineMechanicsPrompt());
-  if (snap) {
+
+  var snapBlock = buildSnapshotAwarenessPrompt(snap, isSnapshotTable, snapshotDateField);
+  if (snapBlock) {
     lines.push('');
-    lines.push('This field\'s snapshot filter is: "' + snap + '". Be aware of it when reasoning about');
-    lines.push('the WHERE clause logic above, but do NOT include it in either query yourself.');
+    lines.push(snapBlock);
   }
 
   lines.push('');

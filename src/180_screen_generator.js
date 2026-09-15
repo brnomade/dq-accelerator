@@ -216,15 +216,18 @@ function DataRuleGeneratorScreen() {
     ) || null;
   }, [profiling, cde]);
 
-  const ddlCols = useMemo(() => {
-    if (!cde) return [];
-    const ddl = ddls.find(d =>
+  const ddlRecord = useMemo(() => {
+    if (!cde) return null;
+    return ddls.find(d =>
       d.source_database_name === cde.source_database_name &&
       d.source_table_name    === cde.source_table_name    &&
       !d.retiring_timestamp
-    );
-    return ddl?.parsed_columns ? JSON.parse(ddl.parsed_columns) : [];
+    ) || null;
   }, [ddls, cde]);
+
+  const ddlCols = useMemo(() =>
+    ddlRecord?.parsed_columns ? JSON.parse(ddlRecord.parsed_columns) : [],
+  [ddlRecord]);
 
   const resetAll = () => {
     setPromptBuilt(false); setPromptText(''); setResponseText('');
@@ -247,6 +250,9 @@ function DataRuleGeneratorScreen() {
       genericRules: genericRulesCtx,
       cdsRules:     cdsRulesCtx,
       cdeRules:     cdeRulesCtx,
+    }, {
+      isSnapshotTable:   ddlRecord?.is_snapshot_table   || false,
+      snapshotDateField: ddlRecord?.snapshot_date_field || null,
     });
     setPromptText(p);
     setPromptBuilt(true);
