@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260915-1935 — Fix: delta export uses file picker
+
+### Changed
+- **`src/230_screen_export.js`** -- `handleExportDelta` converted to async; replaced direct anchor-tag download with `saveWithPicker`, matching the behaviour of Master, Backup and Uploader exports. The OS file explorer now opens so the user can choose the save location. Cancelling the picker is handled cleanly (no spurious state update).
+
+---
+
 ## build-20260915-1910 — Enhancement: snapshot-aware rule generator prompt
 
 ### Changed

@@ -39,7 +39,7 @@ function ExportScreen() {
     } finally { setExportingMaster(false); }
   };
 
-  const handleExportDelta = () => {
+  const handleExportDelta = async () => {
     setExportingDelta(true);
     try {
       const snapshot = loadBaseSnapshot();
@@ -59,10 +59,8 @@ function ExportScreen() {
       const ts   = new Date().toISOString().replace(/[:\-T.Z]/g,'').slice(0,14);
       const name = `dq_delta_${stewardIdentity.name.replace(/\s+/g,'_')}_${ts}.json`;
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement('a');
-      a.href = url; a.download = name; a.click();
-      URL.revokeObjectURL(url);
+      const saved = await saveWithPicker(blob, name, 'JSON File', '.json');
+      if (!saved) return;
     } finally { setExportingDelta(false); }
   };
 
