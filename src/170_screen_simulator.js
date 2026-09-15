@@ -29,12 +29,12 @@ function getRelativeScore(overallScore) {
   return RELATIVE_SCORE_TABLE[idx];
 }
 
-// Bumper adjustment: bumper 1 = no change, bumper 5 = green at 1.00
-// adjusted = original + (bumper-1)/4 * (1.00 - original)
+// Bumper adjustment: bumper 0 = no change, bumper 5 = green at 1.00
+// adjusted = original + (bumper/5) * (1.00 - original)
 function applyBumper(relScore, bumper) {
-  if (!bumper || bumper <= 1) return relScore;
-  const b = Math.min(Math.max(bumper, 1), 5);
-  return relScore + ((b - 1) / 4) * (1.00 - relScore);
+  if (!bumper) return relScore;
+  const b = Math.min(Math.max(bumper, 0), 5);
+  return relScore + (b / 5) * (1.00 - relScore);
 }
 
 function getRagLabel(passRate, greenThresh) {
@@ -202,7 +202,7 @@ function DQSimulatorScreen() {
       const inp       = inputs[allocId] || {};
       const sample    = parseInt(inp.sampleSize   ?? 1000, 10) || 0;
       const failing   = parseInt(inp.failingCount ?? 1,    10) || 0;
-      const bumperVal = inp.bumper !== undefined ? inp.bumper : (alloc.bumper_value ?? 1);
+      const bumperVal = inp.bumper !== undefined ? inp.bumper : (alloc.bumper_value ?? 0);
       if (sample === 0) return { alloc, passRate: null, rag: '-', greenThresh: null, amberThresh: null };
       const passRate   = Math.max(0, (sample - failing) / sample);
       const adjusted   = applyBumper(relativeScore, bumperVal);
@@ -528,7 +528,7 @@ function DQSimulatorScreen() {
                 const dim     = dimById[alloc.quality_dimension_id];
                 const allocId = alloc.data_quality_rule_allocation_id;
                 const inp     = inputs[allocId] || {};
-                const bumperVal = inp.bumper !== undefined ? inp.bumper : (alloc.bumper_value ?? 1);
+                const bumperVal = inp.bumper !== undefined ? inp.bumper : (alloc.bumper_value ?? 0);
                 const hasMeasurement = passRate !== null;
                 return (
                   <div key={allocId} style={{
@@ -563,7 +563,7 @@ function DQSimulatorScreen() {
                     </span>
                     {/* Bumper -- editable with arrows */}
                     <div style={{ display:'flex', alignItems:'center', gap:3 }}>
-                      <button onClick={() => setInput(allocId, 'bumper', Math.max(1, bumperVal - 1))}
+                      <button onClick={() => setInput(allocId, 'bumper', Math.max(0, bumperVal - 1))}
                         style={{ background:'var(--bg)', border:'1px solid var(--border)',
                           borderRadius:3, width:18, height:22, cursor:'pointer',
                           color:'var(--text2)', fontSize:10, lineHeight:1,
@@ -617,7 +617,7 @@ function DQSimulatorScreen() {
                     </div>
                     {/* Apply / Reset bumper */}
                     <div style={{ display:'flex', flexDirection:'column', gap:3, alignItems:'center' }}>
-                      {bumperVal !== (alloc.bumper_value ?? 1) ? (
+                      {bumperVal !== (alloc.bumper_value ?? 0) ? (
                         <>
                           <button
                             title="Apply this bumper value back to the rule allocation"
@@ -638,7 +638,7 @@ function DQSimulatorScreen() {
                           </button>
                           <button
                             title="Reset bumper to stored value"
-                            onClick={() => setInput(allocId, 'bumper', alloc.bumper_value ?? 1)}
+                            onClick={() => setInput(allocId, 'bumper', alloc.bumper_value ?? 0)}
                             style={{ fontSize:10, padding:'3px 7px', cursor:'pointer',
                               background:'transparent',
                               border:'1px solid var(--border)',

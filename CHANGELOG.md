@@ -4,6 +4,16 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260915-2029 — Feature: RAG Simulator bumper control extended to 0–5
+
+### Changed
+- **`src/170_screen_simulator.js`** — Step 2 bumper +/- control now allows values 0–5 (was 1–5). The `-` button no longer stops at 1.
+- Default bumper in the simulator is now `0` (was `1`) when a rule allocation has no stored bumper value, consistent with the 0–5 framework range.
+- `applyBumper` formula updated: bumper `0` = no change, bumper `5` = green at 1.00. New formula: `adjusted = original + (bumper/5) * (1.00 - original)` (was `(bumper-1)/4`).
+- Reset button restores to stored `bumper_value` defaulting to `0`.
+
+---
+
 ## build-20260915-2016 — Fix: bumper value range extended to 0–5, zero stored explicitly
 
 ### Changed

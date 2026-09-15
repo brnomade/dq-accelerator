@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260915-2029 — Feature: RAG Simulator bumper control extended to 0–5
+
+**Date:** 2026-09-15
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Locate all bumper references in simulator, update range and formula | 3 min | 0 min | 5 min | |
+| **Total** | **3 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `src/170_screen_simulator.js`: bumper control min changed to 0; `applyBumper` formula updated for 0–5 range; defaults updated to 0
+
+---
+
 ## build-20260915-2016 — Fix: bumper value range extended to 0–5
 
 **Date:** 2026-09-15
