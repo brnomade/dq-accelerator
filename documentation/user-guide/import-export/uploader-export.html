@@ -135,10 +135,10 @@ footer{border-top:1px solid var(--border);padding:18px 40px;font-size:11px;color
           <tr><td>DB</td><td>Source database name is present, not a placeholder, and contains no spaces</td></tr>
           <tr><td>Table</td><td>Source table name is present, not a placeholder, and contains no spaces</td></tr>
           <tr><td>Field</td><td>Source field name is present, not a placeholder, and contains no spaces</td></tr>
-          <tr><td>SQL</td><td>Rule SQL code is present and non-empty</td></tr>
+          <tr><td>SQL</td><td>Rule Failures Counter is present and non-empty</td></tr>
           <tr><td>PH</td><td>{SOURCE_DATABASE_NAME} and {SOURCE_TABLE_NAME} appear in the SQL template</td></tr>
           <tr><td>PHF</td><td>{SOURCE_FIELD_NAME} appears in the SQL template. Table-level rules that do not reference a specific field may legitimately omit this placeholder. If PHF is the only failure for an allocation, the Include? checkbox is pre-ticked automatically.</td></tr>
-          <tr><td>Eng</td><td>SQL engine checks: quotes and parentheses are balanced, no LIMIT keyword is present, and SELECT COUNT(...) appears in both sql_code and sql_code_sample (when defined)</td></tr>
+          <tr><td>Eng</td><td>SQL engine checks: quotes and parentheses are balanced, no LIMIT keyword is present, and SELECT COUNT(...) appears in both Failures Counter and Denominator Counter (when defined)</td></tr>
         </table>
         <div class="sub" style="margin-top:6px">
           Hover over a column header for a full description.

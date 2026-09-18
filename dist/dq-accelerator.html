@@ -2811,7 +2811,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260918-1918</div>
+              <div className="header-app-sub">build-20260918-1949</div>
             </div>
           </div>
         </div>
@@ -3232,7 +3232,7 @@ function SqlPanel({ panel, onClose }) {
               textTransform:'uppercase', color: panel.mode === 'sample'
                 ? 'var(--text2)' : 'var(--accent)',
               marginBottom:4 }}>
-              {panel.mode === 'sample' ? 'Sample SQL' : 'Rule SQL'}
+              {panel.mode === 'sample' ? 'Denominator Counter' : 'Failures Counter'}
             </div>
             <div style={{ fontSize:13, fontWeight:500, color:'var(--text)',
               whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
@@ -3266,6 +3266,10 @@ function SqlPanel({ panel, onClose }) {
 
         {/* SQL body */}
         <div style={{ flex:1, overflow:'auto', padding:'16px 18px' }}>
+          <div style={{ fontSize:10, fontWeight:600, letterSpacing:'0.08em',
+            textTransform:'uppercase', color:'var(--text3)', marginBottom:6 }}>
+            Composed SQL Code
+          </div>
           <pre style={{
             fontFamily:'var(--mono)', fontSize:12, lineHeight:1.7,
             color:'var(--text)', background:'var(--bg)',
@@ -3281,7 +3285,7 @@ function SqlPanel({ panel, onClose }) {
             <div style={{ marginTop:14 }}>
               <div style={{ fontSize:10, fontWeight:600, letterSpacing:'0.08em',
                 textTransform:'uppercase', color:'var(--text3)', marginBottom:6 }}>
-                Snapshot filter appended
+                CDE Snapshot filter appended
               </div>
               <pre style={{
                 fontFamily:'var(--mono)', fontSize:11, lineHeight:1.6,
@@ -6593,7 +6597,7 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
               <div style={{ marginBottom:10 }}>
                 <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:4 }}>
                   <span style={{ fontSize:11, fontWeight:600, color:'var(--accent)',
-                    letterSpacing:'0.06em', textTransform:'uppercase' }}>Rule SQL</span>
+                    letterSpacing:'0.06em', textTransform:'uppercase' }}>Failures Counter</span>
                   <button className="btn btn-ghost" style={{ fontSize:11, padding:'2px 8px' }}
                     onClick={() => copyToClipboard(inlineSql.rule, setCopiedRule)}>
                     {copiedRule ? <><Icon.Check/> Copied</> : <><Icon.Copy/> Copy</>}
@@ -6611,7 +6615,7 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
                 <div>
                   <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:4 }}>
                     <span style={{ fontSize:11, fontWeight:600, color:'var(--text2)',
-                      letterSpacing:'0.06em', textTransform:'uppercase' }}>Sample SQL</span>
+                      letterSpacing:'0.06em', textTransform:'uppercase' }}>Denominator Counter</span>
                     <button className="btn btn-ghost" style={{ fontSize:11, padding:'2px 8px' }}
                       onClick={() => copyToClipboard(inlineSql.sample, setCopiedSample)}>
                       {copiedSample ? <><Icon.Check/> Copied</> : <><Icon.Copy/> Copy</>}
@@ -6627,7 +6631,7 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
                 </div>
               ) : (
                 <div style={{ fontSize:11, color:'var(--text3)', fontStyle:'italic' }}>
-                  No sample SQL defined for this rule - engine uses default approach.
+                  No Denominator Counter defined for this rule - engine will apply the default approach.
                 </div>
               )}
             </div>
@@ -6809,24 +6813,24 @@ function RulesCdeRow({ cdeEntry, rule, critGroupsSorted, critLevelsById, dimensi
             <button className="btn btn-ghost"
               style={{ padding:'2px 5px', color: missingFlt ? 'var(--red)' : 'var(--accent)' }}
               disabled={missingFlt}
-              title={missingFlt ? 'Missing snapshot filter' : 'View composed rule SQL'}
+              title={missingFlt ? 'Missing CDE snapshot filter' : 'View composed Failures Counter'}
               onClick={e => { e.stopPropagation(); onOpenSql('rule', rule, allocation, cde); }}>
               <div style={{ width:13, height:13 }}><Icon.Code/></div>
             </button>
             {hasSample
               ? <button className="btn btn-ghost" style={{ padding:'2px 5px', color:'var(--text2)' }}
                   disabled={missingFlt}
-                  title={missingFlt ? 'Missing snapshot filter' : 'View composed sample SQL'}
+                  title={missingFlt ? 'Missing CDE snapshot filter' : 'View composed Denominator Counter'}
                   onClick={e => { e.stopPropagation(); onOpenSql('sample', rule, allocation, cde); }}>
                   <div style={{ width:13, height:13 }}><Icon.Sample/></div>
                 </button>
               : <span style={{ fontSize:8, fontFamily:'var(--mono)', fontWeight:600, letterSpacing:'0.04em',
                   color:'var(--text3)', background:'var(--bg)', border:'1px solid var(--border)',
                   borderRadius:3, padding:'1px 4px', whiteSpace:'nowrap' }}
-                  title="No sample code -- engine uses default approach">DEF</span>
+                  title="No Denominator Counter -- default engine approach will be applied">DEF</span>
             }
             {missingFlt && (
-              <span title="Missing snapshot filter -- SQL cannot be composed"
+              <span title="Missing CDE snapshot filter -- SQL cannot be composed"
                 style={{ color:'var(--amber)', width:13, height:13, flexShrink:0, display:'inline-flex' }}>
                 <Icon.Warning/>
               </span>
@@ -12328,7 +12332,7 @@ function TableGroupRow({ tableGroup, dimensions, onProfile, onEditDDL, onRetireD
               <span style={{ flexShrink:0 }}>{'\u24d8'}</span>
               <span>
                 {fields.filter(f => f.origin === 'SQL' || f.origin === 'CDE+SQL').length} field(s)
-                were extracted from rule SQL - verify they are relevant before profiling.
+                were extracted from Failures Counters - verify they are relevant before profiling.
               </span>
               <button onClick={() => onDismiss(tableKey)}
                 style={{ marginLeft:'auto', fontSize:10, padding:'1px 8px',

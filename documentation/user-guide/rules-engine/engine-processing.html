@@ -96,7 +96,7 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
   <h2>The denominator (sample count)</h2>
   <p>The denominator counts the total records in scope. The engine determines it one of two ways:</p>
   <ul>
-    <li>If the rule has a <span class="mono">sql_code_sample</span> value set, that SQL is processed through the same pipeline (steps 1, 3, 4, 5) and executed as the denominator.</li>
+    <li>If the rule has a <span class="mono">Denominator Counter</span> value set, that SQL is processed through the same pipeline (steps 1, 3, 4, 5) and executed as the denominator.</li>
     <li>Otherwise, the engine automatically generates <span class="mono">SELECT COUNT(*) FROM "database"."table"</span>, applying the snapshot filter as a <span class="mono">WHERE</span> clause if one is defined.</li>
   </ul>
   <p>The engine-generated denominator is not passed through the safety validator because it is authored by the engine itself.</p>
