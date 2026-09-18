@@ -516,8 +516,8 @@ const SCHEMA = {
       { name: 'data_quality_rule_id', type: 'int',      label: 'ID' },
       { name: 'rule_name',            type: 'str',      label: 'Name' },
       { name: 'rule_explanation',     type: 'text',     label: 'Explanation',  optional: true },
-      { name: 'sql_code',             type: 'text',     label: 'SQL code',     required: true, tall: true },
-      { name: 'sql_code_sample',      type: 'text',     label: 'SQL sample',   optional: true },
+      { name: 'sql_code',             type: 'text',     label: 'Failures Counter',     required: true, tall: true },
+      { name: 'sql_code_sample',      type: 'text',     label: 'Denominator Counter',   optional: true },
       { name: 'source_code_link',     type: 'str',      label: 'Source link',  optional: true },
       { name: 'automated',            type: 'bool',     label: 'Automated' },
       { name: 'retiring_timestamp',   type: 'datetime', label: 'Retired' },
@@ -2811,7 +2811,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260918-1836</div>
+              <div className="header-app-sub">build-20260918-1918</div>
             </div>
           </div>
         </div>
@@ -9054,7 +9054,7 @@ function WeightFormPanel({ tableName, record, onSave, onClose, data }) {
 
 // ===============================================================================
 // RULE FORM PANEL -- Add / Edit Data Quality Rule
-// SQL validation: sql_code must contain a SELECT statement.
+// SQL validation: sql_code (Failures Counter) is optional; if provided, must contain a SELECT statement.
 // AI prompt: see 46_prompt_helpers.js > buildRuleAssistantPrompt
 // ===============================================================================
 
@@ -9076,9 +9076,7 @@ function RuleFormPanel({ record, onSave, onClose, data }) {
     if (!values.rule_name?.trim()) {
       errs.rule_name = 'Required';
     }
-    if (!values.sql_code?.trim()) {
-      errs.sql_code = 'Required';
-    } else if (!values.sql_code.toUpperCase().includes('SELECT')) {
+    if (values.sql_code?.trim() && !values.sql_code.toUpperCase().includes('SELECT')) {
       errs.sql_code = 'SQL must contain a SELECT statement';
     }
     return errs;
@@ -9145,7 +9143,7 @@ function RuleFormPanel({ record, onSave, onClose, data }) {
       </div>
 
       <div style={{ marginBottom: 12 }}>
-        <Lbl text="SQL code" required={true} err={!!errors.sql_code}/>
+        <Lbl text="Failures Counter " required={false} err={false}/>
         <textarea value={values.sql_code ?? ''} rows={8}
           onChange={e => set('sql_code', e.target.value || null)}
           style={{ ...ibs(!!errors.sql_code), resize: 'vertical', lineHeight: 1.5,
@@ -9154,7 +9152,7 @@ function RuleFormPanel({ record, onSave, onClose, data }) {
       </div>
 
       <div style={{ marginBottom: 12 }}>
-        <Lbl text="SQL sample" required={false} err={false}/>
+        <Lbl text="Denominator Counter" required={false} err={false}/>
         <textarea value={values.sql_code_sample ?? ''} rows={4}
           onChange={e => set('sql_code_sample', e.target.value || null)}
           style={{ ...ibs(false), resize: 'vertical', lineHeight: 1.5,
@@ -9169,7 +9167,7 @@ function RuleFormPanel({ record, onSave, onClose, data }) {
             {ruleSqlWarnings.length > 0
               ? 'Correct the issues above with help from the AI Assistant.'
               : values.sql_code
-                ? 'Try optimising the SQL code and SQL sample with help from the AI Assistant.'
+                ? 'Try optimising the Failures Counter and Denominator Counter code with help from the AI Assistant.'
                 : ''}
           </span>
           <button
@@ -17465,7 +17463,7 @@ function computeUploaderExclusions(data, includeSoftDeleted) {
     if (!rule) {
       reasons.push('Linked rule record not found (ID: ' + alloc.data_quality_rule_id + ')');
     } else if (!(rule.sql_code || '').trim()) {
-      reasons.push('Rule has no SQL code');
+      reasons.push('Rule has no Failures Counter code');
     } else {
       sqlOk = true;
     }
@@ -17952,7 +17950,7 @@ function UploaderReviewView(props) {
     { key:'dbOk',          label:'DB',    tip:'Source database name - must be a valid SQL identifier (no spaces, no placeholder values)' },
     { key:'tableOk',       label:'Table', tip:'Source table name - must be a valid SQL identifier (no spaces, no placeholder values)' },
     { key:'fieldOk',       label:'Field', tip:'Source field name - must be a valid SQL identifier (no spaces, no placeholder values)' },
-    { key:'sqlOk',         label:'SQL',   tip:'Rule SQL code - must be present and non-empty' },
+    { key:'sqlOk',         label:'SQL',   tip:'Rule Failures Counter code - must be present and non-empty' },
     { key:'placeholdersOk',label:'PH',    tip:'Source placeholders - {SOURCE_DATABASE_NAME} and {SOURCE_TABLE_NAME} must appear in the SQL template' },
     { key:'phFieldOk',     label:'PHF',   tip:'Field placeholder - {SOURCE_FIELD_NAME} should appear in the SQL template. Table-level rules that do not reference a specific field may legitimately omit it. If this is the only failure, the allocation is pre-included automatically.' },
     { key:'engOk',         label:'Eng',   tip:'SQL engine checks - quotes and parentheses must be balanced, no LIMIT keyword, and SELECT COUNT(...) must be present in sql_code and sql_code_sample (when defined)' },
@@ -18228,9 +18226,9 @@ const TASK_LIST_COLS = [
   { key: 'rule_name',           label: 'Rule Name'           },
   { key: 'rule_explanation',    label: 'Rule Explanation'    },
   { key: 'steward_name',        label: 'Steward Name'        },
-  { key: 'sql_code',            label: 'SQL Code'            },
-  { key: 'sql_sample',          label: 'SQL Sample'          },
-  { key: 'sql_snapshot_filter', label: 'SQL Snapshot Filter' },
+  { key: 'sql_code',            label: 'Failures Counter    '},
+  { key: 'sql_sample',          label: 'Denominator Counter '},
+  { key: 'sql_snapshot_filter', label: 'CDE Snapshot Filter '},
 ];
 
 // Grid columns -- Agency and CDS are group headers, not grid columns.
@@ -18574,6 +18572,14 @@ function TaskListExportTab() {
     });
   };
 
+  const handleCollapseAll = () => {
+    setCollapsedAgencies(new Set(grouped.map(g => g.agency)));
+  };
+
+  const handleExpandAll = () => {
+    setCollapsedAgencies(new Set());
+  };
+
   const handleExport = async () => {
     setExporting(true);
     try {
@@ -18633,9 +18639,6 @@ function TaskListExportTab() {
       {/* Summary + export button */}
       <div className="card" style={{ marginBottom: 16 }}>
         <div className="card-title"><span className="dot"/>Task List</div>
-        <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 10 }}>
-          {rows.length + ' allocation' + (rows.length === 1 ? '' : 's') + ' in scope. Select rows to include in the export.'}
-        </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button className="btn btn-primary" onClick={handleExport}
             disabled={exporting || selCount === 0}>
@@ -18643,19 +18646,31 @@ function TaskListExportTab() {
             {exporting ? 'Preparing...' : 'Export ' + selCount + ' selected row' + (selCount === 1 ? '' : 's')}
           </button>
           <span style={{ fontSize: 11, color: 'var(--text2)' }}>
-            {selCount + ' / ' + rows.length + ' selected'}
+            {selCount + ' of ' + rows.length + ' allocation' + (rows.length === 1 ? '' : 's') + ' selected'}
           </span>
         </div>
+      </div>
+
+      {/* Group controls */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6, marginBottom: 6 }}>
+        <button className="btn btn-ghost" onClick={handleExpandAll}
+          style={{ fontSize: 11, padding: '3px 10px' }}>
+          Expand All
+        </button>
+        <button className="btn btn-ghost" onClick={handleCollapseAll}
+          style={{ fontSize: 11, padding: '3px 10px' }}>
+          Collapse All
+        </button>
       </div>
 
       {/* Preview table */}
       <div style={{
         overflowX: 'auto', overflowY: 'auto',
-        maxHeight: 'calc(100vh - 340px)',
+        maxHeight: 'calc(100vh - 450px)',
         border: '1px solid var(--border)',
         borderRadius: 'var(--radius)',
       }}>
-        <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontSize: 12 }}>
+        <table style={{ width: 'max-content', minWidth: '100%', borderCollapse: 'separate', borderSpacing: 0, fontSize: 12 }}>
           <thead>
             <tr>
               <th style={{

@@ -16,9 +16,9 @@ const TASK_LIST_COLS = [
   { key: 'rule_name',           label: 'Rule Name'           },
   { key: 'rule_explanation',    label: 'Rule Explanation'    },
   { key: 'steward_name',        label: 'Steward Name'        },
-  { key: 'sql_code',            label: 'SQL Code'            },
-  { key: 'sql_sample',          label: 'SQL Sample'          },
-  { key: 'sql_snapshot_filter', label: 'SQL Snapshot Filter' },
+  { key: 'sql_code',            label: 'Failures Counter    '},
+  { key: 'sql_sample',          label: 'Denominator Counter '},
+  { key: 'sql_snapshot_filter', label: 'CDE Snapshot Filter '},
 ];
 
 // Grid columns -- Agency and CDS are group headers, not grid columns.
@@ -362,6 +362,14 @@ function TaskListExportTab() {
     });
   };
 
+  const handleCollapseAll = () => {
+    setCollapsedAgencies(new Set(grouped.map(g => g.agency)));
+  };
+
+  const handleExpandAll = () => {
+    setCollapsedAgencies(new Set());
+  };
+
   const handleExport = async () => {
     setExporting(true);
     try {
@@ -421,9 +429,6 @@ function TaskListExportTab() {
       {/* Summary + export button */}
       <div className="card" style={{ marginBottom: 16 }}>
         <div className="card-title"><span className="dot"/>Task List</div>
-        <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 10 }}>
-          {rows.length + ' allocation' + (rows.length === 1 ? '' : 's') + ' in scope. Select rows to include in the export.'}
-        </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button className="btn btn-primary" onClick={handleExport}
             disabled={exporting || selCount === 0}>
@@ -431,19 +436,31 @@ function TaskListExportTab() {
             {exporting ? 'Preparing...' : 'Export ' + selCount + ' selected row' + (selCount === 1 ? '' : 's')}
           </button>
           <span style={{ fontSize: 11, color: 'var(--text2)' }}>
-            {selCount + ' / ' + rows.length + ' selected'}
+            {selCount + ' of ' + rows.length + ' allocation' + (rows.length === 1 ? '' : 's') + ' selected'}
           </span>
         </div>
+      </div>
+
+      {/* Group controls */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6, marginBottom: 6 }}>
+        <button className="btn btn-ghost" onClick={handleExpandAll}
+          style={{ fontSize: 11, padding: '3px 10px' }}>
+          Expand All
+        </button>
+        <button className="btn btn-ghost" onClick={handleCollapseAll}
+          style={{ fontSize: 11, padding: '3px 10px' }}>
+          Collapse All
+        </button>
       </div>
 
       {/* Preview table */}
       <div style={{
         overflowX: 'auto', overflowY: 'auto',
-        maxHeight: 'calc(100vh - 340px)',
+        maxHeight: 'calc(100vh - 450px)',
         border: '1px solid var(--border)',
         borderRadius: 'var(--radius)',
       }}>
-        <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontSize: 12 }}>
+        <table style={{ width: 'max-content', minWidth: '100%', borderCollapse: 'separate', borderSpacing: 0, fontSize: 12 }}>
           <thead>
             <tr>
               <th style={{

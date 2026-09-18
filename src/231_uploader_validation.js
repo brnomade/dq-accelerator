@@ -78,7 +78,7 @@ function computeUploaderExclusions(data, includeSoftDeleted) {
     if (!rule) {
       reasons.push('Linked rule record not found (ID: ' + alloc.data_quality_rule_id + ')');
     } else if (!(rule.sql_code || '').trim()) {
-      reasons.push('Rule has no SQL code');
+      reasons.push('Rule has no Failures Counter code');
     } else {
       sqlOk = true;
     }

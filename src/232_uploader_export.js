@@ -331,7 +331,7 @@ function UploaderReviewView(props) {
     { key:'dbOk',          label:'DB',    tip:'Source database name - must be a valid SQL identifier (no spaces, no placeholder values)' },
     { key:'tableOk',       label:'Table', tip:'Source table name - must be a valid SQL identifier (no spaces, no placeholder values)' },
     { key:'fieldOk',       label:'Field', tip:'Source field name - must be a valid SQL identifier (no spaces, no placeholder values)' },
-    { key:'sqlOk',         label:'SQL',   tip:'Rule SQL code - must be present and non-empty' },
+    { key:'sqlOk',         label:'SQL',   tip:'Rule Failures Counter code - must be present and non-empty' },
     { key:'placeholdersOk',label:'PH',    tip:'Source placeholders - {SOURCE_DATABASE_NAME} and {SOURCE_TABLE_NAME} must appear in the SQL template' },
     { key:'phFieldOk',     label:'PHF',   tip:'Field placeholder - {SOURCE_FIELD_NAME} should appear in the SQL template. Table-level rules that do not reference a specific field may legitimately omit it. If this is the only failure, the allocation is pre-included automatically.' },
     { key:'engOk',         label:'Eng',   tip:'SQL engine checks - quotes and parentheses must be balanced, no LIMIT keyword, and SELECT COUNT(...) must be present in sql_code and sql_code_sample (when defined)' },
