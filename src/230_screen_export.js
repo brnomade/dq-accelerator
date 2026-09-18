@@ -12,14 +12,16 @@ function ExportScreen() {
 
   const tabs = isMaster
     ? [
-        { id: 'master',   label: 'Master'   },
-        { id: 'uploader', label: 'Uploader' },
-        { id: 'backup',   label: 'Backup'   },
-        { id: 'tables',   label: 'Tables'   },
+        { id: 'master',   label: 'Master'    },
+        { id: 'uploader', label: 'Uploader'  },
+        { id: 'backup',   label: 'Backup'    },
+        { id: 'tables',   label: 'Tables'    },
+        { id: 'tasklist', label: 'Task List' },
       ]
     : [
-        { id: 'delta',  label: 'Delta'  },
-        { id: 'backup', label: 'Backup' },
+        { id: 'delta',    label: 'Delta'     },
+        { id: 'backup',   label: 'Backup'    },
+        { id: 'tasklist', label: 'Task List' },
       ];
 
   const handleExportMaster = async () => {
@@ -101,7 +103,7 @@ function ExportScreen() {
   return (
     <div className="fade-in">
       <div className="page-title">Export</div>
-      <div className="page-sub">Download individual CSVs or the full dataset as a zip for AWS import.</div>
+      <div className="page-sub">Download individual CSVs or full datasets.</div>
 
       {/* Tab bar */}
       <div style={{ display:'flex', gap:0, marginBottom:20, borderBottom:'1px solid var(--border)' }}>
@@ -291,6 +293,9 @@ function ExportScreen() {
           )}
         </div>
       )}
+
+      {/* Tab: Task List */}
+      {tab === 'tasklist' && <TaskListExportTab />}
     </div>
   );
 }

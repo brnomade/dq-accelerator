@@ -5,6 +5,54 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260918-1836 — Docs: Task List export user guide updated; design and plan docs finalised
+
+**Date:** 2026-09-18
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| User guide rewrite + design/plan finalisation | 2 min | 5 min | 8 min | |
+| **Total** | **2 min** | **5 min** | **8 min** | |
+
+### Changes delivered
+- `documentation/user-guide/import-export/export-task-list.html`: rewritten for grouped table UI
+- `designs/DESIGN_task_list_export.md`: section 5 updated, status set to Delivered
+- `plans/PLAN_task_list_export.md`: status set to Delivered
+
+---
+
+## build-20260918-1828 — Feature: Task List table — grouped rows, sortable headers, group checkboxes
+
+**Date:** 2026-09-18
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Grouped table with sort + group checkboxes | 5 min | 0 min | 15 min | |
+| **Total** | **5 min** | **0 min** | **15 min** | |
+
+### Changes delivered
+- `src/235_export_tasklist.js`: groupRows helper, GroupCheckbox component, TaskListExportTab rewritten with Agency/CDS grouping, collapsible rows, sortable headers
+
+---
+
+## build-20260918-1814 — Feature: Task List export tab
+
+**Date:** 2026-09-18
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Requirements clarification and design | 25 min | 20 min | 0 min | |
+| Implementation (235_export_tasklist.js, 230_screen_export.js, docs) | 0 min | 0 min | 35 min | |
+| **Total** | **25 min** | **20 min** | **35 min** | |
+
+### Changes delivered
+- `src/235_export_tasklist.js`: new file — `buildTaskListRows`, `buildTaskListCSV`, `TaskListRowPanel`, `TaskListExportTab`
+- `src/230_screen_export.js`: Task List tab added to master and non-master tab lists
+- `documentation/user-guide/import-export/export-task-list.html`: new guide page
+- `documentation/user-guide/index.html`: Import & Export count updated, hero count updated
+
+---
+
 ## build-20260918-1445 — Docs: User guide index shortcut pill contrast and scrollbar sizing improved
 
 **Date:** 2026-09-18

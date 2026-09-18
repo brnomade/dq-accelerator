@@ -49,7 +49,7 @@ Items appear in this order. Route format is `{ screen, table }`.
 
 | Sidebar label | Route | View component | Source file |
 |---|---|---|---|
-| Export | `screen:export` | `ExportScreen` | `230_screen_export.js` |
+| Export (tabs: Master, Uploader, Backup, Tables, **Task List** / Delta, Backup, **Task List**) | `screen:export` | `ExportScreen` | `230_screen_export.js` |
 | Import | `screen:import` | `ImportScreen` | `210_screen_import.js` |
 | Data Browser _(master only)_ | `screen:databrowser` | `DataBrowserScreen` | `215_screen_databrowser.js` |
 | Profiling | `screen:table / source_table_ddl` | `DDLLibraryView` | `200_screen_ddl.js` |
@@ -122,6 +122,7 @@ All panels render at App level (outside scroll container) to avoid `position:fix
 | `46_prompt_helpers.js` | All AI prompt construction: shared building blocks (`buildSqlStandardsPrompt`, `buildNamingConventionsPrompt`) plus full prompt builders (`buildRuleAssistantPrompt` for Rule Form Panel, `buildSuggestionPrompt` for Rule Generator). Edit this file to tune any AI prompt. |
 | `231_uploader_validation.js` | `computeUploaderExclusions(data, includeSoftDeleted)`, `buildUploaderReceipt(excluded, totalEvaluated)` -- allocation validity filter and receipt builder; pure logic, no UI |
 | `232_uploader_export.js` | `UploaderExportTab` -- uploader export tab component (settings + review views); calls into `231_uploader_validation.js` |
+| `235_export_tasklist.js` | `buildTaskListRows`, `buildTaskListCSV`, `TaskListRowPanel`, `TaskListExportTab` -- Task List export tab; scoped CSV of rule allocations for Trello card creation; TEST vs IMPLEMENT row classification; Data Browser-style preview table with row detail panel |
 | `50_context.js` | `AppContext` definition + `useApp()` hook |
 | `60_icons.js` | `Icon.*` SVG components |
 | `70_header_footer.js` | `AppHeader`, `AppFooter`, settings panel |
