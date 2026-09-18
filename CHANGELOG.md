@@ -4,6 +4,32 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260918-0954 — Docs: Data Browser user guide added
+
+### Added
+- **`documentation/user-guide/master-tools/data-browser.html`** — new master steward guide: "How to inspect raw table data". Covers opening the Data Browser, reading the grid (PK/FK badges, sorting, filtering, retired rows, hover tooltips on cells), viewing the full record detail panel (click row, panel anatomy, close behaviour), and the Undo action on retired rows.
+- **`documentation/user-guide/index.html`** — new "Master Steward Tools" section added, containing the Data Browser guide link.
+
+---
+
+## build-20260918-0951 — Fix: Data Browser table name tooltip
+
+### Changed
+- **`src/215_screen_databrowser.js`** — table name `<span>` in the left panel now carries `title={t}` so hovering over a truncated name shows the full table name.
+
+---
+
+## build-20260918-0946 — Feature: Data Browser row detail panel
+
+### Added
+- **`src/215_screen_databrowser.js`** — new `DataBrowserRowPanel` component: clicking any data row slides in a read-only panel from the right showing all field values in full (no truncation). Fields are listed in schema order with PK first; PK/FK badge labels match the grid; multi-line text values wrap naturally (`pre-wrap`). Panel rendered via `ReactDOM.createPortal` to avoid overflow/transform ancestor clipping. Backdrop click or the X button closes it; switching tables or filtering the row out of view closes it automatically.
+- **Hover tooltip on grid cells** — all data cells now carry a native `title` attribute showing the full value for a quick single-field peek without opening the panel.
+
+### Changed
+- **Data grid rows** — rows are now clickable (pointer cursor, accent left-border highlight on selection). The existing checkbox and Undo button both use `stopPropagation` so they do not accidentally trigger the row-click handler.
+
+---
+
 ## build-20260915-2049 — Docs: snapshot filter guide minor text correction
 
 ### Changed
