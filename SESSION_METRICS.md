@@ -5,6 +5,51 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260918-0954 — Docs: Data Browser user guide added
+
+**Date:** 2026-09-18
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Write data-browser.html + update index | 0 min | 0 min | 10 min | |
+| **Total** | **0 min** | **0 min** | **10 min** | |
+
+### Changes delivered
+- `documentation/user-guide/master-tools/data-browser.html`: new guide page
+- `documentation/user-guide/index.html`: Master Steward Tools section added
+
+---
+
+## build-20260918-0951 — Fix: Data Browser table name tooltip
+
+**Date:** 2026-09-18
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| One-line fix | 0 min | 0 min | 1 min | |
+| **Total** | **0 min** | **0 min** | **1 min** | |
+
+### Changes delivered
+- `src/215_screen_databrowser.js`: `title={t}` added to table name span in left panel
+
+---
+
+## build-20260918-0946 — Feature: Data Browser row detail panel
+
+**Date:** 2026-09-18
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Design discussion, options analysis | 10 min | 0 min | 0 min | |
+| Design doc + plan doc | 0 min | 15 min | 0 min | |
+| Implementation | 0 min | 0 min | 20 min | |
+| **Total** | **10 min** | **15 min** | **20 min** | |
+
+### Changes delivered
+- `src/215_screen_databrowser.js`: `DataBrowserRowPanel` component + portal render + row click handler + hover tooltips + checkbox/Undo propagation guards
+
+---
+
 ## build-20260915-2049 — Docs: snapshot filter guide minor text correction
 
 **Date:** 2026-09-15

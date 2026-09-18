@@ -1,6 +1,138 @@
 // ===============================================================================
 // DATA BROWSER SCREEN -- master-steward raw table inspector
 // ===============================================================================
+
+// ---------------------------------------------------------------------------
+// DataBrowserRowPanel -- read-only slide-in panel showing all fields of a row
+// ---------------------------------------------------------------------------
+function DataBrowserRowPanel({ table, row, onClose }) {
+  const schema  = SCHEMA[table];
+  const pkField = schema ? schema.pk : null;
+  const isRetired = !!row.retiring_timestamp;
+
+  const displayCols = useMemo(() => {
+    if (!schema) return [];
+    const cols = schema.cols || [];
+    if (!pkField) return cols.map(c => ({ ...c, isPk: false }));
+    const pkColDef   = cols.find(c => c.name === pkField);
+    const restColDef = cols.filter(c => c.name !== pkField);
+    if (!pkColDef) return cols.map(c => ({ ...c, isPk: false }));
+    return [{ ...pkColDef, isPk: true }, ...restColDef.map(c => ({ ...c, isPk: false }))];
+  }, [schema, pkField]);
+
+  return (
+    <>
+      <style>{`@keyframes slideInRight{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}`}</style>
+      {/* Backdrop */}
+      <div onClick={onClose} style={{
+        position: 'fixed', inset: 0, zIndex: 300,
+        background: 'var(--overlay-sm)',
+      }}/>
+      {/* Panel */}
+      <div style={{
+        position: 'fixed', top: 0, right: 0, bottom: 0,
+        width: 'min(440px, 45vw)',
+        background: 'var(--bg2)',
+        borderLeft: '1px solid var(--border2)',
+        zIndex: 400,
+        display: 'flex', flexDirection: 'column',
+        boxShadow: '-4px 0 24px var(--overlay-md)',
+        animation: 'slideInRight 0.18s ease',
+      }}>
+        {/* Header */}
+        <div style={{
+          padding: '14px 18px', borderBottom: '1px solid var(--border)',
+          display: 'flex', alignItems: 'flex-start', gap: 12, flexShrink: 0,
+        }}>
+          <div style={{ flex: 1 }}>
+            <div style={{
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
+              textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 3,
+            }}>
+              {'DATA BROWSER'}
+            </div>
+            <div style={{
+              fontSize: 12, fontFamily: 'var(--mono)', color: 'var(--text)',
+              display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
+            }}>
+              {table}
+              {isRetired && (
+                <span style={{
+                  fontSize: 10, fontWeight: 700, fontFamily: 'var(--sans)',
+                  padding: '1px 6px', borderRadius: 3,
+                  background: 'var(--amber-bg)', color: 'var(--amber)',
+                  border: '1px solid var(--amber)',
+                }}>{'RETIRED'}</span>
+              )}
+            </div>
+          </div>
+          <button className="btn btn-ghost" onClick={onClose} style={{ flexShrink: 0 }}>
+            <Icon.X/>
+          </button>
+        </div>
+        {/* Scrollable body */}
+        <div style={{ flex: 1, overflow: 'auto', padding: '14px 18px' }}>
+          {displayCols.map(col => {
+            const val    = row[col.name];
+            const isNull = val === null || val === undefined;
+            const isFk   = !col.isPk && !!col.fk;
+            return (
+              <div key={col.name} style={{ marginBottom: 14 }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4,
+                }}>
+                  <span style={{
+                    fontSize: 11, fontFamily: 'var(--mono)', fontWeight: 600,
+                    color: 'var(--text2)',
+                  }}>
+                    {col.name}
+                  </span>
+                  {col.isPk && (
+                    <span style={{
+                      fontSize: 9, fontWeight: 700, fontFamily: 'var(--sans)',
+                      padding: '1px 4px', borderRadius: 3,
+                      background: 'var(--amber-bg)', color: 'var(--amber)',
+                      border: '1px solid var(--amber)',
+                    }}>{'PK'}</span>
+                  )}
+                  {isFk && (
+                    <span style={{
+                      fontSize: 9, fontWeight: 700, fontFamily: 'var(--sans)',
+                      padding: '1px 4px', borderRadius: 3,
+                      background: 'rgba(24,180,212,0.12)', color: '#18b4d4',
+                      border: '1px solid rgba(24,180,212,0.35)',
+                    }}>{'FK'}</span>
+                  )}
+                </div>
+                <div style={{
+                  background: 'var(--bg3)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  padding: '7px 10px',
+                  fontSize: 12,
+                  fontFamily: (col.isPk || col.fk) ? 'var(--mono)' : 'inherit',
+                  color: isNull ? 'var(--text2)' : 'var(--text)',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  minHeight: 32,
+                }}>
+                  {isNull
+                    ? <span style={{ fontStyle: 'italic', fontSize: 11 }}>{'null'}</span>
+                    : String(val)
+                  }
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// DataBrowserScreen
+// ---------------------------------------------------------------------------
 function DataBrowserScreen() {
   const { data, isMaster, restoreRecord, bulkSetRetiring } = useApp();
   const [selectedTable, setSelectedTable] = useState(null);
@@ -9,6 +141,7 @@ function DataBrowserScreen() {
   const [sortCol,       setSortCol]       = useState(null);
   const [sortDir,       setSortDir]       = useState('asc');
   const [selectedKeys,  setSelectedKeys]  = useState(new Set());
+  const [selectedRow,   setSelectedRow]   = useState(null);
 
   const headerCheckRef = useRef(null);
 
@@ -117,6 +250,13 @@ function DataBrowserScreen() {
   // Clear selection when table changes or allRows changes (after bulk action)
   useEffect(() => { setSelectedKeys(new Set()); }, [selectedTable, allRows]);
 
+  // Close detail panel if the selected row is no longer in the filtered/visible set
+  useEffect(() => {
+    if (!selectedRow) return;
+    const still = displayRows.some(item => item.row === selectedRow);
+    if (!still) setSelectedRow(null);
+  }, [displayRows]);
+
   // Selection derived state
   const selLiveCount    = displayRows.filter(item => selectedKeys.has(item.origIdx) && !item.row.retiring_timestamp).length;
   const selRetiredCount = displayRows.filter(item => selectedKeys.has(item.origIdx) && !!item.row.retiring_timestamp).length;
@@ -145,6 +285,11 @@ function DataBrowserScreen() {
     setFilterText('');
     setSortCol(null);
     setSortDir('asc');
+    setSelectedRow(null);
+  };
+
+  const handleRowClick = (row) => {
+    setSelectedRow(prev => (prev === row ? null : row));
   };
 
   const handleHeaderCheck = () => {
@@ -280,7 +425,7 @@ function DataBrowserScreen() {
                 title={tooltip || undefined}>
                 {hasIssue && <Icon.Warning/>}
               </span>
-              <span style={{
+              <span title={t} style={{
                 flex: 1, fontSize: 11, fontFamily: 'var(--mono)',
                 color: isSelected ? 'var(--text)' : 'var(--text2)',
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -450,20 +595,28 @@ function DataBrowserScreen() {
                         return v !== null && v !== undefined && badVals.has(v);
                       })
                     : false;
-                  const isChecked  = selectedKeys.has(origIdx);
+                  const isChecked   = selectedKeys.has(origIdx);
+                  const isRowSelected = selectedRow === row;
                   let rowBg = 'transparent';
                   if (isDupePk || isFkBad) rowBg = 'var(--red-bg)';
                   else if (isRetired)      rowBg = 'rgba(255,176,32,0.05)';
                   return (
                     <tr key={origIdx}
-                      style={{ opacity: isRetired ? 0.6 : 1, background: rowBg }}>
+                      onClick={() => handleRowClick(row)}
+                      style={{
+                        opacity: isRetired ? 0.6 : 1,
+                        background: rowBg,
+                        cursor: 'pointer',
+                      }}>
                       <td style={{
-                        padding: '5px 0 5px 10px', textAlign: 'center',
+                        padding: '5px 0 5px 7px', textAlign: 'center',
                         borderBottom: '1px solid var(--border)', width: 36,
+                        borderLeft: isRowSelected ? '3px solid var(--accent)' : '3px solid transparent',
                       }}>
                         <input
                           type="checkbox"
                           checked={isChecked}
+                          onClick={e => e.stopPropagation()}
                           onChange={() => handleRowCheck(origIdx)}
                         />
                       </td>
@@ -472,6 +625,7 @@ function DataBrowserScreen() {
                         const isNull = val === null || val === undefined;
                         return (
                           <td key={col.name}
+                            title={!isNull ? String(val) : ''}
                             style={{
                               padding: '5px 10px',
                               borderBottom: '1px solid var(--border)',
@@ -493,7 +647,7 @@ function DataBrowserScreen() {
                       }}>
                         {isRetired && pkField && (
                           <button
-                            onClick={() => restoreRecord(selectedTable, row[pkField])}
+                            onClick={(e) => { e.stopPropagation(); restoreRecord(selectedTable, row[pkField]); }}
                             style={{
                               fontSize: 10, padding: '2px 7px', cursor: 'pointer',
                               fontWeight: 600, borderRadius: 4,
@@ -512,6 +666,16 @@ function DataBrowserScreen() {
           </div>
         )}
       </div>
+
+      {/* Row detail panel -- rendered via portal to escape overflow ancestors */}
+      {selectedRow && ReactDOM.createPortal(
+        <DataBrowserRowPanel
+          table={selectedTable}
+          row={selectedRow}
+          onClose={() => setSelectedRow(null)}
+        />,
+        document.body
+      )}
     </div>
   );
 }
