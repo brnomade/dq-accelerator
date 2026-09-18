@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260918-1828 — Feature: Task List table — grouped rows, sortable headers, group checkboxes
+
+**Date:** 2026-09-18
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Grouped table with sort + group checkboxes | 5 min | 0 min | 15 min | |
+| **Total** | **5 min** | **0 min** | **15 min** | |
+
+### Changes delivered
+- `src/235_export_tasklist.js`: groupRows helper, GroupCheckbox component, TaskListExportTab rewritten with Agency/CDS grouping, collapsible rows, sortable headers
+
+---
+
 ## build-20260918-1814 — Feature: Task List export tab
 
 **Date:** 2026-09-18

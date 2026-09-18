@@ -2811,7 +2811,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260918-1814</div>
+              <div className="header-app-sub">build-20260918-1828</div>
             </div>
           </div>
         </div>
@@ -17188,7 +17188,7 @@ function ExportScreen() {
   return (
     <div className="fade-in">
       <div className="page-title">Export</div>
-      <div className="page-sub">Download individual CSVs or the full dataset as a zip for AWS import.</div>
+      <div className="page-sub">Download individual CSVs or full datasets.</div>
 
       {/* Tab bar */}
       <div style={{ display:'flex', gap:0, marginBottom:20, borderBottom:'1px solid var(--border)' }}>
@@ -18216,6 +18216,7 @@ function UploaderReviewView(props) {
 // Each row = one active allocation. Task Type: TEST (sql_code present) or IMPLEMENT.
 // ===============================================================================
 
+// All 13 columns -- used for CSV export and the row detail panel.
 const TASK_LIST_COLS = [
   { key: 'task_type',           label: 'Task Type'           },
   { key: 'agency_acronym',      label: 'Agency Acronym'      },
@@ -18231,6 +18232,11 @@ const TASK_LIST_COLS = [
   { key: 'sql_sample',          label: 'SQL Sample'          },
   { key: 'sql_snapshot_filter', label: 'SQL Snapshot Filter' },
 ];
+
+// Grid columns -- Agency and CDS are group headers, not grid columns.
+const GRID_COLS = TASK_LIST_COLS.filter(
+  c => c.key !== 'agency_acronym' && c.key !== 'cds_name'
+);
 
 const TASK_LIST_SQL_KEYS = new Set(['sql_code', 'sql_sample', 'sql_snapshot_filter']);
 
@@ -18328,6 +18334,56 @@ function buildTaskListCSV(rows) {
   const header   = TASK_LIST_COLS.map(c => c.label).join(',');
   const dataRows = rows.map(row => TASK_LIST_COLS.map(c => escape(row[c.key])).join(','));
   return [header, ...dataRows].join('\n');
+}
+
+// ---------------------------------------------------------------------------
+// groupRows -- groups flat row array by agency then CDS, sorts within groups
+// ---------------------------------------------------------------------------
+function groupRows(rows, sortCol, sortDir) {
+  const agencyMap = new Map();
+  rows.forEach((r, i) => {
+    const ag = r.agency_acronym || '(no agency)';
+    const cd = r.cds_name       || '(no CDS)';
+    if (!agencyMap.has(ag)) agencyMap.set(ag, new Map());
+    const cdsMap = agencyMap.get(ag);
+    if (!cdsMap.has(cd)) cdsMap.set(cd, []);
+    cdsMap.get(cd).push({ r, i });
+  });
+
+  return [...agencyMap.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([agency, cdsMap]) => {
+      const cdsList = [...cdsMap.entries()]
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([cds, items]) => {
+          const sorted = sortCol
+            ? [...items].sort((a, b) => {
+                const av = a.r[sortCol] ?? '';
+                const bv = b.r[sortCol] ?? '';
+                const cmp = String(av).localeCompare(String(bv), undefined, { numeric: true });
+                return sortDir === 'asc' ? cmp : -cmp;
+              })
+            : items;
+          return { cds, items: sorted };
+        });
+      return { agency, cdsList };
+    });
+}
+
+// ---------------------------------------------------------------------------
+// GroupCheckbox -- checkbox with self-managed indeterminate state
+// ---------------------------------------------------------------------------
+function GroupCheckbox({ indices, selectedKeys, onToggle }) {
+  const ref  = useRef(null);
+  const all  = indices.length > 0 && indices.every(i => selectedKeys.has(i));
+  const some = indices.some(i => selectedKeys.has(i));
+  useEffect(() => {
+    if (ref.current) ref.current.indeterminate = some && !all;
+  }, [some, all]);
+  return (
+    <input type="checkbox" ref={ref} checked={all}
+      onChange={() => onToggle(indices, !all)}/>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -18435,9 +18491,13 @@ function TaskListExportTab() {
     [data, isMaster, stewardIdentity]
   );
 
-  const [selectedKeys, setSelectedKeys] = useState(() => new Set());
-  const [selectedRow,  setSelectedRow]  = useState(null);
-  const [exporting,    setExporting]    = useState(false);
+  const [sortCol,           setSortCol]           = useState(null);
+  const [sortDir,           setSortDir]           = useState('asc');
+  const [collapsedAgencies, setCollapsedAgencies] = useState(() => new Set());
+  const [collapsedCds,      setCollapsedCds]      = useState(() => new Set());
+  const [selectedKeys,      setSelectedKeys]      = useState(() => new Set());
+  const [selectedRow,       setSelectedRow]       = useState(null);
+  const [exporting,         setExporting]         = useState(false);
 
   const headerCheckRef = useRef(null);
 
@@ -18458,6 +18518,16 @@ function TaskListExportTab() {
     }
   }, [someSel, allSel]);
 
+  const grouped = useMemo(
+    () => groupRows(rows, sortCol, sortDir),
+    [rows, sortCol, sortDir]
+  );
+
+  const handleSort = key => {
+    if (sortCol === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortCol(key); setSortDir('asc'); }
+  };
+
   const handleHeaderCheck = () => {
     if (allSel) {
       setSelectedKeys(new Set());
@@ -18476,8 +18546,32 @@ function TaskListExportTab() {
     });
   };
 
+  const handleGroupToggle = (indices, value) => {
+    setSelectedKeys(prev => {
+      const next = new Set(prev);
+      indices.forEach(i => value ? next.add(i) : next.delete(i));
+      return next;
+    });
+  };
+
   const handleRowClick = row => {
     setSelectedRow(prev => prev === row ? null : row);
+  };
+
+  const toggleAgency = agency => {
+    setCollapsedAgencies(prev => {
+      const next = new Set(prev);
+      if (next.has(agency)) next.delete(agency); else next.add(agency);
+      return next;
+    });
+  };
+
+  const toggleCds = key => {
+    setCollapsedCds(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
   };
 
   const handleExport = async () => {
@@ -18528,7 +18622,11 @@ function TaskListExportTab() {
     );
   }
 
-  const selCount = selectedKeys.size;
+  const selCount  = selectedKeys.size;
+  const upArrow   = String.fromCharCode(8593);
+  const downArrow = String.fromCharCode(8595);
+  const rightTri  = String.fromCharCode(9654);
+  const downTri   = String.fromCharCode(9660);
 
   return (
     <div>
@@ -18568,63 +18666,171 @@ function TaskListExportTab() {
                 <input type="checkbox" ref={headerCheckRef}
                   checked={allSel} onChange={handleHeaderCheck}/>
               </th>
-              {TASK_LIST_COLS.map(col => (
-                <th key={col.key} style={{
-                  padding: '7px 10px', textAlign: 'left',
-                  fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 600,
-                  whiteSpace: 'nowrap', color: 'var(--text)',
-                  position: 'sticky', top: 0, zIndex: 2,
-                  background: 'var(--bg2)', boxShadow: '0 1px 0 var(--border)',
-                }}>
-                  {col.label}
-                </th>
-              ))}
+              {GRID_COLS.map(col => {
+                const isSorted = sortCol === col.key;
+                return (
+                  <th key={col.key}
+                    onClick={() => handleSort(col.key)}
+                    style={{
+                      padding: '7px 10px', textAlign: 'left',
+                      fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 600,
+                      whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none',
+                      color: isSorted ? 'var(--accent)' : 'var(--text)',
+                      position: 'sticky', top: 0, zIndex: 2,
+                      background: 'var(--bg2)', boxShadow: '0 1px 0 var(--border)',
+                    }}>
+                    {col.label}
+                    {isSorted && (
+                      <span style={{ marginLeft: 4, fontSize: 11 }}>
+                        {sortDir === 'asc' ? upArrow : downArrow}
+                      </span>
+                    )}
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, i) => {
-              const isChecked = selectedKeys.has(i);
-              const isRowSel  = selectedRow === row;
-              const isTest    = row.task_type === 'TEST';
+            {grouped.map(({ agency, cdsList }) => {
+              const agencyCollapsed = collapsedAgencies.has(agency);
+              const agencyIndices   = cdsList.flatMap(({ items }) => items.map(({ i }) => i));
+              const cdsKey = cds => agency + '|' + cds;
+
               return (
-                <tr key={i} onClick={() => handleRowClick(row)}
-                  style={{ cursor: 'pointer' }}>
-                  <td style={{
-                    padding: '5px 0 5px 7px', textAlign: 'center',
-                    borderBottom: '1px solid var(--border)', width: 36,
-                    borderLeft: isRowSel ? '3px solid var(--accent)' : '3px solid transparent',
-                  }}>
-                    <input type="checkbox" checked={isChecked}
-                      onClick={e => e.stopPropagation()}
-                      onChange={() => handleRowCheck(i)}/>
-                  </td>
-                  {TASK_LIST_COLS.map(col => {
-                    const val     = row[col.key];
-                    const isEmpty = val === null || val === undefined || val === '';
-                    const isTypeCol = col.key === 'task_type';
-                    return (
-                      <td key={col.key}
-                        title={isEmpty ? '' : String(val)}
-                        style={{
-                          padding: '5px 10px',
-                          borderBottom: '1px solid var(--border)',
-                          maxWidth: 200, overflow: 'hidden',
-                          textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                          fontWeight:  isTypeCol ? 700        : undefined,
-                          fontFamily:  isTypeCol ? 'var(--mono)' : undefined,
-                          fontSize:    isTypeCol ? 10         : undefined,
-                          color: isTypeCol
-                            ? (isTest ? 'var(--accent)' : 'var(--amber)')
-                            : (isEmpty ? 'var(--text2)' : 'var(--text)'),
+                <React.Fragment key={agency}>
+                  {/* Agency header row */}
+                  <tr style={{ background: 'var(--bg3)' }}>
+                    <td style={{
+                      padding: '6px 0 6px 7px', textAlign: 'center',
+                      borderBottom: '1px solid var(--border)',
+                    }}>
+                      <GroupCheckbox
+                        indices={agencyIndices}
+                        selectedKeys={selectedKeys}
+                        onToggle={handleGroupToggle}
+                      />
+                    </td>
+                    <td colSpan={GRID_COLS.length} style={{
+                      padding: '6px 10px',
+                      borderBottom: '1px solid var(--border)',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <button
+                          onClick={() => toggleAgency(agency)}
+                          style={{
+                            background: 'none', border: 'none', cursor: 'pointer',
+                            color: 'var(--text3)', fontSize: 10, padding: '0 2px',
+                            fontFamily: 'var(--mono)', lineHeight: 1,
+                          }}>
+                          {agencyCollapsed ? rightTri : downTri}
+                        </button>
+                        <span style={{
+                          fontWeight: 700, fontSize: 12,
+                          color: 'var(--accent)', fontFamily: 'var(--mono)',
                         }}>
-                        {isEmpty
-                          ? <span style={{ fontStyle: 'italic', fontSize: 11 }}>{'null'}</span>
-                          : String(val)
-                        }
-                      </td>
+                          {agency}
+                        </span>
+                        <span style={{ fontSize: 11, color: 'var(--text3)' }}>
+                          {agencyIndices.length + ' row' + (agencyIndices.length === 1 ? '' : 's')}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+
+                  {!agencyCollapsed && cdsList.map(({ cds, items }) => {
+                    const ck         = cdsKey(cds);
+                    const cdsCollapsed = collapsedCds.has(ck);
+                    const cdsIndices  = items.map(({ i }) => i);
+
+                    return (
+                      <React.Fragment key={ck}>
+                        {/* CDS header row */}
+                        <tr style={{ background: 'rgba(255,255,255,0.02)' }}>
+                          <td style={{
+                            padding: '5px 0 5px 7px', textAlign: 'center',
+                            borderBottom: '1px solid var(--border)',
+                          }}>
+                            <GroupCheckbox
+                              indices={cdsIndices}
+                              selectedKeys={selectedKeys}
+                              onToggle={handleGroupToggle}
+                            />
+                          </td>
+                          <td colSpan={GRID_COLS.length} style={{
+                            padding: '5px 10px 5px 28px',
+                            borderBottom: '1px solid var(--border)',
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <button
+                                onClick={() => toggleCds(ck)}
+                                style={{
+                                  background: 'none', border: 'none', cursor: 'pointer',
+                                  color: 'var(--text3)', fontSize: 10, padding: '0 2px',
+                                  fontFamily: 'var(--mono)', lineHeight: 1,
+                                }}>
+                                {cdsCollapsed ? rightTri : downTri}
+                              </button>
+                              <span style={{ fontSize: 12, color: 'var(--text2)', fontWeight: 600 }}>
+                                {cds}
+                              </span>
+                              <span style={{ fontSize: 11, color: 'var(--text3)' }}>
+                                {cdsIndices.length + ' row' + (cdsIndices.length === 1 ? '' : 's')}
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+
+                        {/* Data rows */}
+                        {!cdsCollapsed && items.map(({ r, i }) => {
+                          const isChecked = selectedKeys.has(i);
+                          const isRowSel  = selectedRow === r;
+                          const isTest    = r.task_type === 'TEST';
+                          return (
+                            <tr key={i} onClick={() => handleRowClick(r)}
+                              style={{ cursor: 'pointer' }}>
+                              <td style={{
+                                padding: '5px 0 5px 7px', textAlign: 'center',
+                                borderBottom: '1px solid var(--border)', width: 36,
+                                borderLeft: isRowSel
+                                  ? '3px solid var(--accent)' : '3px solid transparent',
+                              }}>
+                                <input type="checkbox" checked={isChecked}
+                                  onClick={e => e.stopPropagation()}
+                                  onChange={() => handleRowCheck(i)}/>
+                              </td>
+                              {GRID_COLS.map(col => {
+                                const val     = r[col.key];
+                                const isEmpty = val === null || val === undefined || val === '';
+                                const isTypeCol = col.key === 'task_type';
+                                return (
+                                  <td key={col.key}
+                                    title={isEmpty ? '' : String(val)}
+                                    style={{
+                                      padding: '5px 10px',
+                                      borderBottom: '1px solid var(--border)',
+                                      maxWidth: 200, overflow: 'hidden',
+                                      textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                      fontWeight:  isTypeCol ? 700           : undefined,
+                                      fontFamily:  isTypeCol ? 'var(--mono)' : undefined,
+                                      fontSize:    isTypeCol ? 10            : undefined,
+                                      color: isTypeCol
+                                        ? (isTest ? 'var(--accent)' : 'var(--amber)')
+                                        : (isEmpty ? 'var(--text2)' : 'var(--text)'),
+                                    }}>
+                                    {isEmpty
+                                      ? <span style={{ fontStyle: 'italic', fontSize: 11 }}>{'null'}</span>
+                                      : String(val)
+                                    }
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          );
+                        })}
+                      </React.Fragment>
                     );
                   })}
-                </tr>
+                </React.Fragment>
               );
             })}
           </tbody>

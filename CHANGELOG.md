@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260918-1828 — Feature: Task List table — grouped rows, sortable headers, group checkboxes
+
+### Changed
+- **`src/235_export_tasklist.js`** — preview table redesigned: rows now grouped by Agency then CDS Name (both shown as collapsible group headers, removed from grid columns); column headers are clickable to sort ascending/descending within each group; per-agency and per-CDS checkboxes with indeterminate state drive bulk select/deselect for each group.
+
+---
+
 ## build-20260918-1814 — Feature: Task List export tab
 
 ### Added
