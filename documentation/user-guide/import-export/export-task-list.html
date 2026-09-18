@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How to export a Task List &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+.steps{list-style:none;padding:0;display:flex;flex-direction:column}
+.steps li{display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
+.steps li:last-child{border-bottom:none}
+.snum{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:var(--mono);font-weight:600;color:var(--text2)}
+.sbody{flex:1;font-size:14px;color:var(--text);line-height:1.6;padding-top:2px}
+.sbody .sub{font-size:12px;color:var(--text3);margin-top:3px}
+.f{font-weight:600;color:var(--blue)}
+.mono{font-family:var(--mono);font-size:12px;color:var(--text2)}
+.prereq{padding:12px 16px;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.3);border-radius:var(--radius);font-size:13px;color:var(--amber);margin-bottom:28px;line-height:1.6}
+.note{margin-top:16px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; Import &amp; Export</div>
+  <h1>How to export a Task List</h1>
+  <p class="lead">The Task List export generates a CSV file of data quality rule allocations scoped to your data. Each row represents one allocation and contains all the information needed to create a Trello implementation card. Rows are labelled either IMPLEMENT (no SQL written yet) or TEST (SQL exists and is ready to verify).</p>
+
+  <div class="prereq">Your steward identity must be set before exporting. The export is automatically scoped to the CDEs in your assigned Critical Data Sets. Go to Settings (top-right cog icon) and select your name under Steward Identity.<br/><br/>Master stewards see all allocations across the organisation.</div>
+
+  <ol class="steps">
+    <li><div class="snum">1</div><div class="sbody">Click <span class="f">Export</span> in the left sidebar, under Database Actions.</div></li>
+    <li><div class="snum">2</div><div class="sbody">Click the <span class="f">Task List</span> tab at the top of the Export page. The tab is available to all recognised users.</div></li>
+    <li><div class="snum">3</div><div class="sbody">Review the preview table. Each row shows one rule allocation with its agency, CDS, CDE details, rule name, quality dimension, and assigned stewards. Rows labelled <span class="mono">IMPLEMENT</span> have no SQL defined yet. Rows labelled <span class="mono">TEST</span> include the fully substituted SQL code ready to verify against the target CDE.</div></li>
+    <li><div class="snum">4</div><div class="sbody">To inspect the full content of a row, including the complete SQL code, click anywhere on the row. A panel slides in from the right showing all fields. Click the backdrop or the X button to close it.</div></li>
+    <li><div class="snum">5</div><div class="sbody">To view the full value of any truncated cell without opening the panel, hover the mouse over the cell. A tooltip shows the complete text.</div></li>
+    <li><div class="snum">6</div><div class="sbody">All rows are pre-selected by default. To exclude a row from the export, uncheck its checkbox. To deselect all rows at once, uncheck the header checkbox. To reselect all, check it again.</div></li>
+    <li><div class="snum">7</div><div class="sbody">Click <span class="f">Export N selected rows</span>. A file save dialog opens. Choose where to save the file. The filename follows the pattern <span class="mono">dq_task_list_[name]_[timestamp].csv</span>.</div></li>
+  </ol>
+
+  <div class="note">The exported CSV contains 13 columns: Task Type, Agency Acronym, CDS Name, CDE Table, CDE Database, CDE Field, Quality Dimension, Rule Name, Rule Explanation, Steward Name, SQL Code, SQL Sample, and SQL Snapshot Filter. SQL columns are populated only for TEST rows. When multiple stewards are assigned to a CDS, their names appear in the Steward Name column separated by a hyphen.</div>
+
+  <div class="related">
+    <div class="rtitle">Related guides</div>
+    <ul class="rlist">
+      <li><a href="../rules-explorer/rule-add-edit.html">How to add or edit a rule &rsaquo;</a></li>
+      <li><a href="../data-stewardship/rule-allocate.html">How to assign a rule to a CDE &rsaquo;</a></li>
+      <li><a href="export-delta.html">How to export your delta &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>

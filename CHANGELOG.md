@@ -4,6 +4,18 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260918-1814 — Feature: Task List export tab
+
+### Added
+- **`src/235_export_tasklist.js`** — new Task List export tab component. Generates a scoped CSV of active data quality rule allocations for Trello card creation. Each row is one allocation; stewards see only their CDS allocations, master sees all. Rows are labelled IMPLEMENT (no SQL defined) or TEST (SQL present and fully substituted with CDE field values). Includes a Data Browser-style preview table with per-row checkboxes, tooltip on hover, and a slide-in row detail panel showing all fields including complete SQL.
+- **`documentation/user-guide/import-export/export-task-list.html`** — new user guide page covering the Task List export workflow.
+
+### Changed
+- **`src/230_screen_export.js`** — added Task List tab to both master and non-master tab lists; renders `TaskListExportTab`.
+- **`documentation/user-guide/index.html`** — Import and Export section updated to include the new Task List guide (count: 6 to 7); hero guide count updated to 64.
+
+---
+
 ## build-20260918-1445 — Docs: User guide index shortcut pill contrast and scrollbar sizing improved
 
 ### Changed

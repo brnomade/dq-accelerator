@@ -5,6 +5,24 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260918-1814 — Feature: Task List export tab
+
+**Date:** 2026-09-18
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Requirements clarification and design | 25 min | 20 min | 0 min | |
+| Implementation (235_export_tasklist.js, 230_screen_export.js, docs) | 0 min | 0 min | 35 min | |
+| **Total** | **25 min** | **20 min** | **35 min** | |
+
+### Changes delivered
+- `src/235_export_tasklist.js`: new file — `buildTaskListRows`, `buildTaskListCSV`, `TaskListRowPanel`, `TaskListExportTab`
+- `src/230_screen_export.js`: Task List tab added to master and non-master tab lists
+- `documentation/user-guide/import-export/export-task-list.html`: new guide page
+- `documentation/user-guide/index.html`: Import & Export count updated, hero count updated
+
+---
+
 ## build-20260918-1445 — Docs: User guide index shortcut pill contrast and scrollbar sizing improved
 
 **Date:** 2026-09-18

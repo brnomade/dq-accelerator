@@ -12,14 +12,16 @@ function ExportScreen() {
 
   const tabs = isMaster
     ? [
-        { id: 'master',   label: 'Master'   },
-        { id: 'uploader', label: 'Uploader' },
-        { id: 'backup',   label: 'Backup'   },
-        { id: 'tables',   label: 'Tables'   },
+        { id: 'master',   label: 'Master'    },
+        { id: 'uploader', label: 'Uploader'  },
+        { id: 'backup',   label: 'Backup'    },
+        { id: 'tables',   label: 'Tables'    },
+        { id: 'tasklist', label: 'Task List' },
       ]
     : [
-        { id: 'delta',  label: 'Delta'  },
-        { id: 'backup', label: 'Backup' },
+        { id: 'delta',    label: 'Delta'     },
+        { id: 'backup',   label: 'Backup'    },
+        { id: 'tasklist', label: 'Task List' },
       ];
 
   const handleExportMaster = async () => {
@@ -291,6 +293,9 @@ function ExportScreen() {
           )}
         </div>
       )}
+
+      {/* Tab: Task List */}
+      {tab === 'tasklist' && <TaskListExportTab />}
     </div>
   );
 }
