@@ -1,6 +1,6 @@
 // ===============================================================================
 // RULE FORM PANEL -- Add / Edit Data Quality Rule
-// SQL validation: sql_code must contain a SELECT statement.
+// SQL validation: sql_code (Failures Counter) is optional; if provided, must contain a SELECT statement.
 // AI prompt: see 46_prompt_helpers.js > buildRuleAssistantPrompt
 // ===============================================================================
 
@@ -22,9 +22,7 @@ function RuleFormPanel({ record, onSave, onClose, data }) {
     if (!values.rule_name?.trim()) {
       errs.rule_name = 'Required';
     }
-    if (!values.sql_code?.trim()) {
-      errs.sql_code = 'Required';
-    } else if (!values.sql_code.toUpperCase().includes('SELECT')) {
+    if (values.sql_code?.trim() && !values.sql_code.toUpperCase().includes('SELECT')) {
       errs.sql_code = 'SQL must contain a SELECT statement';
     }
     return errs;
@@ -91,7 +89,7 @@ function RuleFormPanel({ record, onSave, onClose, data }) {
       </div>
 
       <div style={{ marginBottom: 12 }}>
-        <Lbl text="SQL code" required={true} err={!!errors.sql_code}/>
+        <Lbl text="Failures Counter " required={false} err={false}/>
         <textarea value={values.sql_code ?? ''} rows={8}
           onChange={e => set('sql_code', e.target.value || null)}
           style={{ ...ibs(!!errors.sql_code), resize: 'vertical', lineHeight: 1.5,
@@ -100,7 +98,7 @@ function RuleFormPanel({ record, onSave, onClose, data }) {
       </div>
 
       <div style={{ marginBottom: 12 }}>
-        <Lbl text="SQL sample" required={false} err={false}/>
+        <Lbl text="Denominator Counter" required={false} err={false}/>
         <textarea value={values.sql_code_sample ?? ''} rows={4}
           onChange={e => set('sql_code_sample', e.target.value || null)}
           style={{ ...ibs(false), resize: 'vertical', lineHeight: 1.5,
@@ -115,7 +113,7 @@ function RuleFormPanel({ record, onSave, onClose, data }) {
             {ruleSqlWarnings.length > 0
               ? 'Correct the issues above with help from the AI Assistant.'
               : values.sql_code
-                ? 'Try optimising the SQL code and SQL sample with help from the AI Assistant.'
+                ? 'Try optimising the Failures Counter and Denominator Counter code with help from the AI Assistant.'
                 : ''}
           </span>
           <button
