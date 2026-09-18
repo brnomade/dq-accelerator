@@ -4,6 +4,15 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260918-1836 — Docs: Task List export user guide updated; design and plan docs finalised
+
+### Changed
+- **`documentation/user-guide/import-export/export-task-list.html`** — user guide rewritten to cover the grouped table UI: Agency/CDS group headers, collapse/expand, per-group checkboxes, sortable column headers, and the clarification that collapsing a group does not affect what is exported.
+- **`designs/DESIGN_task_list_export.md`** — section 5 updated to reflect the delivered grouped table design; status set to Delivered.
+- **`plans/PLAN_task_list_export.md`** — status set to Delivered.
+
+---
+
 ## build-20260918-1828 — Feature: Task List table — grouped rows, sortable headers, group checkboxes
 
 ### Changed

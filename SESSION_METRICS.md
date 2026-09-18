@@ -5,6 +5,22 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260918-1836 — Docs: Task List export user guide updated; design and plan docs finalised
+
+**Date:** 2026-09-18
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| User guide rewrite + design/plan finalisation | 2 min | 5 min | 8 min | |
+| **Total** | **2 min** | **5 min** | **8 min** | |
+
+### Changes delivered
+- `documentation/user-guide/import-export/export-task-list.html`: rewritten for grouped table UI
+- `designs/DESIGN_task_list_export.md`: section 5 updated, status set to Delivered
+- `plans/PLAN_task_list_export.md`: status set to Delivered
+
+---
+
 ## build-20260918-1828 — Feature: Task List table — grouped rows, sortable headers, group checkboxes
 
 **Date:** 2026-09-18

@@ -2,7 +2,7 @@
 
 **Feature:** Task List CSV export for Trello card creation  
 **Branch:** feature/task-list-export  
-**Status:** Awaiting plan approval
+**Status:** Delivered — build-20260918-1828
 
 ---
 
@@ -74,16 +74,33 @@ The tab renders a single-pane layout (no left panel, unlike Data Browser):
 
 ### 5.2 Preview table
 
-Behaviour mirrors the Data Browser grid exactly:
+Grid columns: 11 (all `TASK_LIST_COLS` except `agency_acronym` and `cds_name`, which become group headers).
 
-- **Sticky header** with column labels
-- **Checkbox column** (header = select/deselect all; per-row = include/exclude from export)
-- **All rows pre-selected on mount** and whenever the row set changes
+**Grouping:**
+- Rows grouped by Agency (alphabetical) → CDS (alphabetical within agency)
+- Agency and CDS rows rendered as header rows inside `<tbody>` spanning all grid columns
+- Each group header shows: collapse triangle button + name + row count
+- Collapsing hides data rows; does not affect selection or export
+
+**Sorting:**
+- All column headers are clickable; click cycles asc → desc → asc
+- Sort applies within each CDS group independently
+- Active sort column highlighted with colour and up/down arrow indicator
+- `sortCol` / `sortDir` state; `groupRows()` pure function applies sort per group
+
+**Selection:**
+- Header checkbox (top-left): select/deselect all rows; indeterminate via `useRef`
+- Agency-level checkbox: select/deselect all rows in that agency
+- CDS-level checkbox: select/deselect all rows in that CDS
+- Per-row checkbox: toggle individual row
+- All checkboxes use indeterminate state when partially selected; implemented via `GroupCheckbox` component (self-contained `useRef` + `useEffect`)
+- All rows pre-selected on mount and whenever the row set changes
+
+**Cell behaviour:**
 - **Cell truncation**: `maxWidth: 200px`, `overflow: hidden`, `text-overflow: ellipsis`, `white-space: nowrap`
 - **Tooltip**: native `title={cellValue}` on each `<td>` — shows full value on hover
 - **Row click**: opens `TaskListRowPanel` slide-in detail panel
-- **Row highlight**: `borderLeft: '3px solid var(--accent)'` on the selected row (same as Data Browser)
-- Header indeterminate checkbox state driven via `useRef` (same as Data Browser)
+- **Row highlight**: `borderLeft: '3px solid var(--accent)'` on the selected row
 
 ### 5.3 Row detail panel (`TaskListRowPanel`)
 

@@ -2,7 +2,7 @@
 
 **Design ref:** DESIGN_task_list_export.md  
 **Branch:** feature/task-list-export  
-**Status:** Awaiting user approval
+**Status:** Delivered — build-20260918-1828
 
 ---
 
