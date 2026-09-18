@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How to write SQL for manual rules &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+p{font-size:14px;color:var(--text2);margin-bottom:14px;line-height:1.6}
+ul{font-size:14px;color:var(--text2);line-height:1.7;margin:0 0 16px 24px}
+li{margin-bottom:4px}
+.f{font-weight:600;color:var(--blue)}
+.mono{font-family:var(--mono);font-size:12px;color:var(--text2);background:var(--bg3);padding:1px 5px;border-radius:3px}
+.code-block{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;font-family:var(--mono);font-size:12px;color:var(--text2);margin:12px 0;overflow-x:auto;white-space:pre;line-height:1.7}
+.field-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.field-table th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)}
+.field-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top;line-height:1.55}
+.field-table tr:last-child td{border-bottom:none}
+.field-table td:first-child{font-family:var(--mono);font-size:12px;color:var(--text);white-space:nowrap;padding-right:16px}
+.req{font-size:10px;color:var(--amber);font-family:var(--mono);margin-left:4px}
+.note{margin-top:20px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.warn-box{margin:20px 0;padding:14px 18px;background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.3);border-radius:var(--radius);font-size:13px;color:var(--amber);line-height:1.6}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px;margin:0;padding:0}
+.rlist li{margin:0}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; DQ Engine Reference</div>
+  <h1>How to write SQL for manual rules</h1>
+  <p class="lead">Manual rules read pre-computed metrics from an upload table rather than executing a check directly against source data. Use this pattern when the DQ logic is too complex for a single SQL count, or when measurements originate from an external system.</p>
+
+  <h2>When to use a manual rule</h2>
+  <p>Use a manual rule when:</p>
+  <ul>
+    <li>The DQ check requires complex logic that cannot be expressed as a single <span class="mono">SELECT COUNT(*)</span>.</li>
+    <li>Measurements are produced by a process outside Athena and uploaded separately.</li>
+    <li>The metric is calculated by the data engineering team or an external tool and the results are loaded into an upload table via the MoJ Data Uploader.</li>
+  </ul>
+  <p>For straightforward column-level or table-level checks that can be expressed as a count, use an automated rule instead.</p>
+
+  <h2>Required output columns</h2>
+  <p>A manual rule's SQL must return exactly these four columns. The engine reads them directly and does not generate any additional counts.</p>
+
+  <table class="field-table">
+    <thead><tr><th>Column</th><th>Type</th><th>Format</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>failures_count <span class="req">required</span></td>
+        <td>Numeric</td>
+        <td>Integer or decimal. The count of records that failed the check.</td>
+      </tr>
+      <tr>
+        <td>total_sample_count <span class="req">required</span></td>
+        <td>Numeric</td>
+        <td>Integer or decimal. The total records in scope (denominator).</td>
+      </tr>
+      <tr>
+        <td>measurement_timestamp <span class="req">required</span></td>
+        <td>String</td>
+        <td><span class="mono">DD/MM/YYYY</span> &mdash; the date the metric was measured.</td>
+      </tr>
+      <tr>
+        <td>extraction_timestamp <span class="req">required</span></td>
+        <td>String</td>
+        <td><span class="mono">YYYYMMDDHHmmssZ</span> &mdash; for example, <span class="mono">20251201143000Z</span>. Used by the engine to filter for rows uploaded since the last successful run.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>SQL format</h2>
+  <p>The rule SQL points at the upload table that contains the pre-computed metrics for this rule. Use the same <span class="mono">&#123;SOURCE_DATABASE_NAME&#125;</span> and <span class="mono">&#123;SOURCE_TABLE_NAME&#125;</span> placeholders as automated rules &mdash; these are substituted from the linked CDE.</p>
+  <div class="code-block">SELECT
+  failures_count,
+  total_sample_count,
+  measurement_timestamp,
+  extraction_timestamp
+FROM &#123;source_database_name&#125;.&#123;source_table_name&#125;</div>
+  <p>Each manual rule has its own dedicated upload table &mdash; there is no shared global feed. The CDE for a manual rule should point at the upload table specific to that rule.</p>
+
+  <h2>The extraction_timestamp column</h2>
+  <p>The engine uses <span class="mono">extraction_timestamp</span> to deduplicate on each run: it only ingests rows with an <span class="mono">extraction_timestamp</span> newer than the last successful run for that allocation. This means:</p>
+  <ul>
+    <li>Old rows remain in the upload table safely &mdash; they will not be re-ingested.</li>
+    <li>On the first run for an allocation (no prior successful run), all rows are ingested once.</li>
+    <li>If a run fails partway through, the next run re-ingests from the same timestamp boundary, not from a later one.</li>
+  </ul>
+
+  <div class="note">The <span class="mono">extraction_timestamp</span> column is added automatically by the MoJ Data Uploader when metrics are uploaded. You do not need to include it in the upload file itself &mdash; but your rule SQL must select it by name as shown above.</div>
+
+  <h2>Schedule requirement</h2>
+  <p>Manual rules must have their allocation <span class="mono">frequency</span> set to <span class="mono">ad-hoc</span>. They are triggered in a separate run from automated rules.</p>
+
+  <div class="warn-box"><strong>ad-hoc cannot be combined with other schedule values.</strong> A run that includes ad-hoc alongside hourly, daily, or weekly will be rejected by the engine before any rules are processed.</div>
+
+  <div class="related">
+    <div class="rtitle">Related guides</div>
+    <ul class="rlist">
+      <li><a href="rule-allocation.html">How to allocate a rule to a CDE &rsaquo;</a></li>
+      <li><a href="automated-rule-sql.html">How to write SQL for automated rules &rsaquo;</a></li>
+      <li><a href="sql-safety-rules.html">SQL safety rules &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>

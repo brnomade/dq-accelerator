@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Rule authoring checklist &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+p{font-size:14px;color:var(--text2);margin-bottom:14px;line-height:1.6}
+.f{font-weight:600;color:var(--blue)}
+.mono{font-family:var(--mono);font-size:12px;color:var(--text2);background:var(--bg3);padding:1px 5px;border-radius:3px}
+.checklist{list-style:none;padding:0;margin:0 0 24px;display:flex;flex-direction:column;gap:6px}
+.checklist li{display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--text2);line-height:1.6;padding:11px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius)}
+.checklist li .box{flex-shrink:0;width:16px;height:16px;border:1px solid var(--border);border-radius:3px;background:var(--bg3);margin-top:3px}
+.checklist li strong{color:var(--text)}
+.field-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.field-table th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)}
+.field-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top;line-height:1.55;font-family:var(--mono);font-size:11px}
+.field-table tr:last-child td{border-bottom:none}
+.field-table td:first-child{color:var(--text3);white-space:nowrap;padding-right:16px}
+.note{margin-top:20px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px;margin:0;padding:0}
+.rlist li{margin:0}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; DQ Engine Reference</div>
+  <h1>Rule authoring checklist</h1>
+  <p class="lead">Run through this checklist before saving a rule in the DQ Accelerator. Each item maps to a requirement that the engine will enforce at run time.</p>
+
+  <h2>Before saving a rule</h2>
+
+  <ul class="checklist">
+    <li>
+      <div class="box"></div>
+      <div><strong>SQL starts with SELECT</strong> &mdash; no leading comments, no CTE (<span class="mono">WITH &hellip; AS</span>). The very first characters must be <span class="mono">SELECT</span>.</div>
+    </li>
+    <li>
+      <div class="box"></div>
+      <div><strong>Returns the correct output shape</strong> &mdash; automated rules must return a single numeric count. Manual rules must return exactly four columns: <span class="mono">failures_count</span>, <span class="mono">total_sample_count</span>, <span class="mono">measurement_timestamp</span>, <span class="mono">extraction_timestamp</span>.</div>
+    </li>
+    <li>
+      <div class="box"></div>
+      <div><strong>Uses placeholders for the CDE's source identifiers</strong> &mdash; do not hardcode database or table names. Use <span class="mono">&#123;SOURCE_DATABASE_NAME&#125;</span>, <span class="mono">&#123;SOURCE_TABLE_NAME&#125;</span>, and <span class="mono">&#123;SOURCE_FIELD_NAME&#125;</span> where appropriate.</div>
+    </li>
+    <li>
+      <div class="box"></div>
+      <div><strong>Contains no semicolons</strong> &mdash; not at the end of the statement, and not inside string literals (e.g. avoid <span class="mono">'call at 3;30pm'</span>).</div>
+    </li>
+    <li>
+      <div class="box"></div>
+      <div><strong>Contains no DML or DDL keywords</strong> &mdash; <span class="mono">INSERT</span>, <span class="mono">UPDATE</span>, <span class="mono">DELETE</span>, <span class="mono">MERGE</span>, <span class="mono">DROP</span>, <span class="mono">TRUNCATE</span>, <span class="mono">ALTER</span>, and <span class="mono">CREATE</span> are all blocked as standalone tokens.</div>
+    </li>
+    <li>
+      <div class="box"></div>
+      <div><strong>Has an outer WHERE clause if a snapshot filter is set on the CDE</strong> &mdash; the engine appends the filter as <span class="mono">AND {filter}</span>. Use <span class="mono">WHERE 1=1</span> if no natural condition exists at the outer level.</div>
+    </li>
+    <li>
+      <div class="box"></div>
+      <div><strong>$partitions references use the pre-quoted form</strong> &mdash; write <span class="mono">"&#123;SOURCE_TABLE_NAME&#125;$partitions"</span> (with quotes around the placeholder), not a bare <span class="mono">&#123;SOURCE_TABLE_NAME&#125;$partitions</span>.</div>
+    </li>
+    <li>
+      <div class="box"></div>
+      <div><strong>Other table references use literal names</strong> &mdash; only the CDE's own source database and table should use placeholders. Reference tables, lookup tables, and any other joined tables should use their full literal names.</div>
+    </li>
+    <li>
+      <div class="box"></div>
+      <div><strong>SQL has been tested in Athena</strong> &mdash; run the SQL (with placeholder values substituted manually) in the Athena console to confirm it executes and returns the expected count before saving.</div>
+    </li>
+  </ul>
+
+  <h2>Quick reference &mdash; example rows</h2>
+  <p>The three tables below show the minimum content needed for a working automated rule and a working manual rule.</p>
+
+  <p style="font-size:12px;font-family:var(--mono);color:var(--text3);margin-bottom:6px;margin-top:20px">critical_data_element</p>
+  <table class="field-table">
+    <thead><tr><th>critical_data_element_id</th><th>source_database_name</th><th>source_table_name</th><th>source_field_name</th><th>source_snapshot_filter</th></tr></thead>
+    <tbody>
+      <tr><td>cde_001</td><td>my_database</td><td>contacts</td><td>date_of_birth</td><td>glueexporteddate = (SELECT MAX(glueexporteddate) FROM &#123;source_database_name&#125;.&#123;source_table_name&#125;)</td></tr>
+      <tr><td>cde_002</td><td>my_database</td><td>manual_dq_uploads</td><td>(null)</td><td>(null)</td></tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:12px;font-family:var(--mono);color:var(--text3);margin-bottom:6px;margin-top:24px">data_quality_rule</p>
+  <table class="field-table">
+    <thead><tr><th>data_quality_rule_id</th><th>automated</th><th>sql_code</th></tr></thead>
+    <tbody>
+      <tr><td>rule_001</td><td>true</td><td>SELECT COUNT(*) FROM &#123;source_database_name&#125;.&#123;source_table_name&#125; WHERE &#123;source_field_name&#125; IS NULL</td></tr>
+      <tr><td>rule_002</td><td>false</td><td>SELECT failures_count, total_sample_count, measurement_timestamp, extraction_timestamp FROM &#123;source_database_name&#125;.&#123;source_table_name&#125;</td></tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:12px;font-family:var(--mono);color:var(--text3);margin-bottom:6px;margin-top:24px">data_quality_rule_allocation</p>
+  <table class="field-table">
+    <thead><tr><th>allocation_id</th><th>critical_data_element_id</th><th>data_quality_rule_id</th><th>frequency</th></tr></thead>
+    <tbody>
+      <tr><td>alloc_001</td><td>cde_001</td><td>rule_001</td><td>daily</td></tr>
+      <tr><td>alloc_002</td><td>cde_002</td><td>rule_002</td><td>ad-hoc</td></tr>
+    </tbody>
+  </table>
+
+  <div class="related">
+    <div class="rtitle">Related guides</div>
+    <ul class="rlist">
+      <li><a href="automated-rule-sql.html">How to write SQL for automated rules &rsaquo;</a></li>
+      <li><a href="manual-rule-sql.html">How to write SQL for manual rules &rsaquo;</a></li>
+      <li><a href="sql-safety-rules.html">SQL safety rules &rsaquo;</a></li>
+      <li><a href="rule-allocation.html">How to allocate a rule to a CDE &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>

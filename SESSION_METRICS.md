@@ -5,6 +5,86 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260918-1445 — Docs: User guide index shortcut pill contrast and scrollbar sizing improved
+
+**Date:** 2026-09-18
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Pill contrast + scrollbar sizing | 2 min | 0 min | 3 min | |
+| **Total** | **2 min** | **0 min** | **3 min** | |
+
+### Changes delivered
+- `documentation/user-guide/index.html`: pill styling and scrollbar width/height aligned
+
+---
+
+## build-20260918-1433 — Docs: User guide index section shortcuts added
+
+**Date:** 2026-09-18
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Add section shortcut pills + card id anchors | 2 min | 0 min | 5 min | |
+| **Total** | **2 min** | **0 min** | **5 min** | |
+
+### Changes delivered
+- `documentation/user-guide/index.html`: section shortcut pill bar + card id anchors
+
+---
+
+## build-20260918-1423 — Docs: User guide index redesigned to single-column card layout
+
+**Date:** 2026-09-18
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Index redesign (single-column, 3-col link grid, scroll) | 5 min | 0 min | 10 min | |
+| **Total** | **5 min** | **0 min** | **10 min** | |
+
+### Changes delivered
+- `documentation/user-guide/index.html`: single-column card layout with 3-column link grid per card
+
+---
+
+## build-20260918-1406 — Docs: User guide index revamped to two-column card grid
+
+**Date:** 2026-09-18
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Visual revamp of index.html (card grid layout) | 5 min | 0 min | 15 min | |
+| **Total** | **5 min** | **0 min** | **15 min** | |
+
+### Changes delivered
+- `documentation/user-guide/index.html`: full 2-column card grid revamp
+
+---
+
+## build-20260918-1055 — Docs: DQ Engine Reference guide section added
+
+**Date:** 2026-09-18
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Source doc review (3 MD files + 2 validator docs) | 25 min | 0 min | 0 min | |
+| Page structure design and Q&A with user | 20 min | 10 min | 0 min | |
+| Write 8 HTML guide pages + index update | 0 min | 0 min | 45 min | |
+| **Total** | **45 min** | **10 min** | **45 min** | |
+
+### Changes delivered
+- `documentation/user-guide/rules-engine/engine-overview.html`: new page
+- `documentation/user-guide/rules-engine/engine-processing.html`: new page
+- `documentation/user-guide/rules-engine/cde-engine-reference.html`: new page
+- `documentation/user-guide/rules-engine/automated-rule-sql.html`: new page
+- `documentation/user-guide/rules-engine/manual-rule-sql.html`: new page
+- `documentation/user-guide/rules-engine/rule-allocation.html`: new page
+- `documentation/user-guide/rules-engine/sql-safety-rules.html`: new page
+- `documentation/user-guide/rules-engine/authoring-checklist.html`: new page
+- `documentation/user-guide/index.html`: DQ Engine Reference section added
+
+---
+
 ## build-20260918-0954 — Docs: Data Browser user guide added
 
 **Date:** 2026-09-18

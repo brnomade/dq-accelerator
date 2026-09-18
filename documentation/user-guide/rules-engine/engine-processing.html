@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How the engine processes a rule &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--red:#e05252;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+p{font-size:14px;color:var(--text2);margin-bottom:14px;line-height:1.6}
+ul,ol{font-size:14px;color:var(--text2);line-height:1.7;margin:0 0 16px 24px}
+li{margin-bottom:4px}
+.f{font-weight:600;color:var(--blue)}
+.mono{font-family:var(--mono);font-size:12px;color:var(--text2);background:var(--bg3);padding:1px 5px;border-radius:3px}
+.steps{list-style:none;padding:0;margin:0;display:flex;flex-direction:column}
+.steps li{display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
+.steps li:last-child{border-bottom:none}
+.snum{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:var(--mono);font-weight:600;color:var(--text2)}
+.sbody{flex:1;font-size:14px;color:var(--text);line-height:1.6;padding-top:2px}
+.sbody .sub{font-size:12px;color:var(--text3);margin-top:3px}
+.field-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.field-table th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)}
+.field-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top;line-height:1.55}
+.field-table tr:last-child td{border-bottom:none}
+.field-table td:first-child{font-weight:600;color:var(--text);white-space:nowrap;padding-right:16px}
+.code-block{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;font-family:var(--mono);font-size:12px;color:var(--text2);margin:12px 0;overflow-x:auto;white-space:pre;line-height:1.7}
+.note{margin-top:20px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.callout{margin:20px 0;padding:16px 18px;background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:var(--radius);font-size:14px;color:var(--text2);line-height:1.65}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px;margin:0;padding:0}
+.rlist li{margin:0}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; DQ Engine Reference</div>
+  <h1>How the engine processes a rule</h1>
+  <p class="lead">What happens between the moment the engine picks up a rule from the metadata tables and the moment a measurement row is written.</p>
+
+  <h2>Processing pipeline &mdash; automated rules</h2>
+  <p>Each automated rule's SQL passes through the following steps in sequence. A failure at any step skips that rule; the remaining rules continue.</p>
+
+  <ol class="steps">
+    <li>
+      <div class="snum">1</div>
+      <div class="sbody"><strong>Unicode cleaning</strong> &mdash; invisible characters, control codes, and non-standard spaces are stripped from the rule SQL before any other processing begins.
+        <div class="sub">This handles common artefacts from copy-pasting SQL out of spreadsheet tools.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">2</div>
+      <div class="sbody"><strong>Snapshot filter injection</strong> &mdash; if the rule's CDE has a <span class="mono">source_snapshot_filter</span> defined, it is appended to the SQL as <span class="mono">AND {filter}</span>. This happens before normalisation and placeholder substitution.
+        <div class="sub">This is why your SQL must have an outer <span class="mono">WHERE</span> clause when a snapshot filter is set &mdash; the engine has no <span class="mono">WHERE</span> keyword to attach <span class="mono">AND</span> to otherwise.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">3</div>
+      <div class="sbody"><strong>Normalisation</strong> &mdash; leading and trailing whitespace is trimmed, trailing semicolons are stripped, and newlines are flattened to single spaces.</div>
+    </li>
+    <li>
+      <div class="snum">4</div>
+      <div class="sbody"><strong>Placeholder substitution</strong> &mdash; <span class="mono">&#123;SOURCE_DATABASE_NAME&#125;</span>, <span class="mono">&#123;SOURCE_TABLE_NAME&#125;</span>, and <span class="mono">&#123;SOURCE_FIELD_NAME&#125;</span> are replaced with the actual values from the CDE row, wrapped in double-quotes.
+        <div class="sub">For example, <span class="mono">&#123;SOURCE_TABLE_NAME&#125;</span> becomes <span class="mono">"contacts"</span>. Both uppercase and lowercase placeholder forms are handled.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">5</div>
+      <div class="sbody"><strong>Safety check</strong> &mdash; the resulting SQL is validated against the engine's safety rules. If rejected, a blocked audit row is written and the rule is skipped. The run continues with the next rule.
+        <div class="sub">See <a href="sql-safety-rules.html" style="color:var(--blue)">SQL safety rules</a> for the full list of what is and is not permitted.</div>
+      </div>
+    </li>
+    <li>
+      <div class="snum">6</div>
+      <div class="sbody"><strong>Execution</strong> &mdash; the failures SQL and the denominator SQL are each executed as a single scalar count against Athena. The results are combined and written as one measurement row.</div>
+    </li>
+  </ol>
+
+  <h2>The denominator (sample count)</h2>
+  <p>The denominator counts the total records in scope. The engine determines it one of two ways:</p>
+  <ul>
+    <li>If the rule has a <span class="mono">sql_code_sample</span> value set, that SQL is processed through the same pipeline (steps 1, 3, 4, 5) and executed as the denominator.</li>
+    <li>Otherwise, the engine automatically generates <span class="mono">SELECT COUNT(*) FROM "database"."table"</span>, applying the snapshot filter as a <span class="mono">WHERE</span> clause if one is defined.</li>
+  </ul>
+  <p>The engine-generated denominator is not passed through the safety validator because it is authored by the engine itself.</p>
+
+  <h2>Processing pipeline &mdash; manual rules</h2>
+  <p>Manual rules follow a shorter path. The engine applies the same clean, normalise, substitute, and safety-check steps (steps 1, 3, 4, 5 above), then:</p>
+  <ul>
+    <li>Appends a <strong>freshness filter</strong> based on the last successful run for that allocation. Only rows with an <span class="mono">extraction_timestamp</span> newer than the last successful run are retrieved. On the first run for an allocation, all rows are ingested.</li>
+    <li>Returns one measurement row per qualifying uploaded row &mdash; not a single aggregate.</li>
+  </ul>
+
+  <h2>What the audit table records</h2>
+  <p>Every rule &mdash; whether it ran successfully or was blocked &mdash; produces an audit row. The audit row contains the compiled SQL (post-substitution), whether the rule was blocked, and the reason if it was. You can use the audit table to inspect exactly what SQL the engine tried to run and why a rule was skipped.</p>
+  <table class="field-table">
+    <thead><tr><th>Field</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>compiled_sql</td><td>The SQL after all substitutions &mdash; this is what the engine actually submitted or attempted to submit.</td></tr>
+      <tr><td>is_blocked</td><td><span class="mono">true</span> if the rule did not execute; <span class="mono">false</span> if it ran.</td></tr>
+      <tr><td>blocked_reason</td><td>The validation message or runtime error for blocked rules; null for rules that ran successfully.</td></tr>
+      <tr><td>rule_type</td><td><span class="mono">automated</span> or <span class="mono">manual</span>.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>When a rule is blocked</h2>
+  <p>A rule can be blocked at step 5 (safety validation fails) or at step 6 (a runtime error occurs in Athena, such as a table not found or a permission denied). In both cases:</p>
+  <ul>
+    <li>An audit row is written with <span class="mono">is_blocked = true</span> and the reason recorded in <span class="mono">blocked_reason</span>.</li>
+    <li>No measurement row is written for that rule.</li>
+    <li>The engine moves on to the next rule &mdash; the rest of the run is not affected.</li>
+  </ul>
+
+  <div class="callout">If you notice a rule is not producing measurements, check the audit table for its most recent row. The <span class="mono">blocked_reason</span> field will tell you exactly what the engine rejected and why.</div>
+
+  <h2>Rule filtering</h2>
+  <p>Before processing begins, the engine filters out rules that do not qualify for the current run:</p>
+  <ul>
+    <li>Rules, allocations, or CDEs with a <span class="mono">retiring_timestamp</span> in the past are excluded.</li>
+    <li>Allocations whose <span class="mono">frequency</span> does not match the requested schedule are excluded.</li>
+    <li>If the run is scoped to a specific agency, only rules belonging to that agency are included.</li>
+  </ul>
+
+  <div class="related">
+    <div class="rtitle">Related guides</div>
+    <ul class="rlist">
+      <li><a href="engine-overview.html">How the DQ engine works &rsaquo;</a></li>
+      <li><a href="sql-safety-rules.html">SQL safety rules &rsaquo;</a></li>
+      <li><a href="cde-engine-reference.html">How to define a CDE for the engine &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>

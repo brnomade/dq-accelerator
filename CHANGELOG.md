@@ -4,6 +4,49 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260918-1445 — Docs: User guide index shortcut pill contrast and scrollbar sizing improved
+
+### Changed
+- **`documentation/user-guide/index.html`** — shortcut pills now use a blue-tinted background, blue-tinted border, and brighter text so they read as interactive elements at a glance. Scrollbars unified to 7 px on both axes (up from 4 px vertical, down from browser-default horizontal), with a visible track and hover state.
+
+---
+
+## build-20260918-1433 — Docs: User guide index section shortcuts added
+
+### Changed
+- **`documentation/user-guide/index.html`** — added a row of section shortcut pills between the hero and the card list. Each pill is an anchor link that jumps directly to the corresponding section card. Pill labels match section headings; each card has a matching `id` attribute.
+
+---
+
+## build-20260918-1423 — Docs: User guide index redesigned to single-column card layout
+
+### Changed
+- **`documentation/user-guide/index.html`** — index redesigned: replaced the 2-column card grid with a single-column stack of uniform cards (one per section). Each card displays its guide links in a 3-column grid. Cards have a fixed height (5 link rows); sections with more links show a slim vertical scrollbar. All accent colours removed — a single blue left border is used consistently across every card.
+
+---
+
+## build-20260918-1406 — Docs: User guide index revamped to two-column card grid
+
+### Changed
+- **`documentation/user-guide/index.html`** — full visual revamp: replaced single-column section list with a 2-column CSS card grid. Features a hero bar with guide/section count pills, a full-width "Getting Started" featured strip, and 10 section cards arranged in 5 rows. Each card has a colour-coded left border (green, blue, or amber), matching label colour, and a guide count badge. Three previously-empty sections removed (Data Quality Elements, Weights & Thresholds, Tools & Advanced Features). All guide links are always visible — no collapsible approach. `max-width` widened from 860 px to 960 px.
+
+---
+
+## build-20260918-1055 — Docs: DQ Engine Reference guide section added
+
+### Added
+- **`documentation/user-guide/rules-engine/engine-overview.html`** — "How the DQ engine works": what the engine does, the three metadata tables, two rule types (automated vs manual), what gets measured, schedule values, and retiring records.
+- **`documentation/user-guide/rules-engine/engine-processing.html`** — "How the engine processes a rule": the 6-step automated rule pipeline, denominator logic, manual rule path, audit table fields, and what blocked output looks like.
+- **`documentation/user-guide/rules-engine/cde-engine-reference.html`** — "How to define a CDE for the engine": full CDE field reference from the engine's perspective, snapshot filter explained, when source_field_name is required.
+- **`documentation/user-guide/rules-engine/automated-rule-sql.html`** — "How to write SQL for automated rules": required structure, four worked examples, placeholder table, $partitions handling, referencing other tables, snapshot filter WHERE requirement.
+- **`documentation/user-guide/rules-engine/manual-rule-sql.html`** — "How to write SQL for manual rules": when to use, four required output columns, SQL format, extraction_timestamp deduplication, ad-hoc schedule requirement.
+- **`documentation/user-guide/rules-engine/rule-allocation.html`** — "How to allocate a rule to a CDE": allocation field reference, schedule values, ad-hoc isolation rule, reuse across multiple CDEs, retiring allocations.
+- **`documentation/user-guide/rules-engine/sql-safety-rules.html`** — "SQL safety rules": what gets blocked (DML/DDL, semicolons, CTEs), additional shape/safety validation rules, CTE-to-subquery migration examples, UNION ALL in derived tables, what happens when a rule is blocked.
+- **`documentation/user-guide/rules-engine/authoring-checklist.html`** — "Rule authoring checklist": nine pre-save checklist items plus quick reference example rows for all three metadata tables.
+- **`documentation/user-guide/index.html`** — new "DQ Engine Reference" section added with links to all eight new guide pages.
+
+---
+
 ## build-20260918-0954 — Docs: Data Browser user guide added
 
 ### Added

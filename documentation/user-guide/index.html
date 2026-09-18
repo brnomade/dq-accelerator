@@ -7,164 +7,57 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;
+  --text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;
+  --blue:#18b4d4;
+  --sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px
+}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
 
-  :root {
-    --bg:      #0d1117;
-    --bg2:     #18212e;
-    --bg3:     #1e2d40;
-    --border:  #2d4060;
-    --text:    #edf0fa;
-    --text2:   #9aaecc;
-    --text3:   #5f7294;
-    --green:   #22c98e;
-    --amber:   #f5a623;
-    --blue:    #18b4d4;
-    --sans:    'IBM Plex Sans', sans-serif;
-    --mono:    'IBM Plex Mono', monospace;
-    --radius:  6px;
-  }
+/* ── Header ── */
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:18px 40px;display:flex;align-items:center;gap:16px}
+.header-title{font-size:15px;font-weight:600}
+.header-sub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.header-badge{font-size:10px;font-family:var(--mono);font-weight:600;color:var(--blue);background:rgba(24,180,212,0.1);border:1px solid rgba(24,180,212,0.3);border-radius:var(--radius);padding:2px 8px}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 15px;
-    line-height: 1.65;
-    min-height: 100vh;
-  }
+/* ── Layout ── */
+main{max-width:960px;margin:0 auto;padding:44px 40px 80px}
 
-  header {
-    background: var(--bg2);
-    border-bottom: 1px solid var(--border);
-    padding: 18px 40px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
+/* ── Hero ── */
+.hero{display:flex;align-items:baseline;gap:20px;margin-bottom:32px;flex-wrap:wrap}
+.hero h1{font-size:26px;font-weight:600}
+.hero-stats{display:flex;gap:8px}
+.stat{font-size:11px;font-family:var(--mono);color:var(--text3);background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:3px 11px}
+.stat strong{color:var(--text2);font-weight:500}
 
-  .header-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-  }
+/* ── Section cards ── */
+.cards{display:flex;flex-direction:column;gap:12px}
 
-  .header-sub {
-    font-size: 11px;
-    color: var(--text3);
-    font-family: var(--mono);
-    margin-top: 2px;
-  }
+.card{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:var(--radius);padding:16px 20px 14px}
 
-  .header-badge {
-    font-size: 10px;
-    font-family: var(--mono);
-    font-weight: 600;
-    color: var(--green);
-    background: rgba(34,201,142,0.1);
-    border: 1px solid rgba(34,201,142,0.3);
-    border-radius: var(--radius);
-    padding: 2px 8px;
-  }
+.card-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.card-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--blue);flex:1}
+.count{font-size:10px;font-family:var(--mono);color:var(--text3);background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:1px 6px}
 
-  main {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 48px 40px 80px;
-  }
+/* 3-column link grid, fixed height, scrollable */
+.links{list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:2px;max-height:165px;overflow-y:auto;padding-right:2px}
+.links::-webkit-scrollbar{width:7px;height:7px}
+.links::-webkit-scrollbar-track{background:var(--bg3);border-radius:4px}
+.links::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.links::-webkit-scrollbar-thumb:hover{background:#3d5680}
+.links li a{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:4px;color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent;transition:background .12s,color .12s,border-color .12s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.links li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+.links li a span{flex-shrink:0;margin-left:6px;color:var(--text3)}
 
-  h1 {
-    font-size: 26px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 10px;
-  }
+/* ── Section shortcuts ── */
+.shortcuts{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:28px}
+.shortcuts a{font-size:11px;font-family:var(--mono);font-weight:500;color:rgba(24,180,212,0.85);background:rgba(24,180,212,0.08);border:1px solid rgba(24,180,212,0.35);border-radius:3px;padding:4px 12px;text-decoration:none;transition:color .12s,border-color .12s,background .12s}
+.shortcuts a:hover{color:#fff;border-color:var(--blue);background:rgba(24,180,212,0.2)}
 
-  .intro {
-    font-size: 14px;
-    color: var(--text2);
-    max-width: 600px;
-    margin-bottom: 48px;
-    line-height: 1.7;
-  }
-
-  .section-group {
-    margin-bottom: 40px;
-  }
-
-  .section-label {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text3);
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .guide-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .guide-list li a {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    border-radius: var(--radius);
-    color: var(--text2);
-    text-decoration: none;
-    font-size: 14px;
-    border: 1px solid transparent;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
-  }
-
-  .guide-list li a:hover {
-    background: var(--bg3);
-    color: var(--text);
-    border-color: var(--border);
-  }
-
-  .guide-list li a .arrow {
-    margin-left: auto;
-    color: var(--text3);
-    font-size: 16px;
-    line-height: 1;
-  }
-
-  .empty-section {
-    padding: 20px 16px;
-    background: var(--bg2);
-    border: 1px dashed var(--border);
-    border-radius: var(--radius);
-    font-size: 13px;
-    color: var(--text3);
-    font-family: var(--mono);
-  }
-
-  .note {
-    margin-top: 56px;
-    padding: 14px 18px;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    font-size: 12px;
-    color: var(--text3);
-    line-height: 1.6;
-  }
-
-  footer {
-    border-top: 1px solid var(--border);
-    padding: 18px 40px;
-    font-size: 11px;
-    color: var(--text3);
-    font-family: var(--mono);
-    text-align: center;
-  }
+/* ── Footer ── */
+footer{border-top:1px solid var(--border);padding:18px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
 </style>
 </head>
 <body>
@@ -178,215 +71,206 @@
 </header>
 
 <main>
-  <h1>User Guide</h1>
-  <p class="intro">
-    Step-by-step guides for working with the DQ Accelerator. Each guide covers a single task
-    and is written to be followed directly in the application.
-    Guides are added and updated alongside the features they describe.
-  </p>
 
-  <!-- ═══════════════════════════════════════════════════════════
-       SECTION: Dashboard
-  ═══════════════════════════════════════════════════════════ -->
-  <div class="section-group">
-    <div class="section-label">Dashboard</div>
-    <ul class="guide-list">
-      <li><a href="dashboard/understand-dashboard.html">How to use the steward dashboard <span class="arrow">&rsaquo;</span></a></li>
-    </ul>
+  <div class="hero">
+    <h1>User Guide</h1>
+    <div class="hero-stats">
+      <span class="stat"><strong>63</strong> guides</span>
+      <span class="stat"><strong>11</strong> sections</span>
+    </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════════
-       SECTION: Getting Started
-  ═══════════════════════════════════════════════════════════ -->
-  <div class="section-group">
-    <div class="section-label">Getting Started</div>
-    <ul class="guide-list">
-      <li><a href="getting-started/install-the-application.html">How to install the application <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="getting-started/open-the-application.html">How to open the application <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="getting-started/set-steward-identity.html">How to set your steward identity <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="getting-started/load-master-data.html">How to load the master data <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="getting-started/export-and-reset.html">How to export your changes and reset <span class="arrow">&rsaquo;</span></a></li>
-    </ul>
+  <div class="shortcuts">
+    <a href="#s-getting-started">Getting Started</a>
+    <a href="#s-dashboard">Dashboard</a>
+    <a href="#s-ownership">Ownership Hierarchy</a>
+    <a href="#s-data-stewardship">Data and Stewardship</a>
+    <a href="#s-rules-explorer">Rules Explorer</a>
+    <a href="#s-import-export">Import &amp; Export</a>
+    <a href="#s-profiling">Table &amp; Field Profiling</a>
+    <a href="#s-rag">RAG Simulator</a>
+    <a href="#s-rule-generator">Rule Generator</a>
+    <a href="#s-dq-engine">DQ Engine Reference</a>
+    <a href="#s-master-tools">Master Steward Tools</a>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════════
-       SECTION: Ownership Hierarchy
-       Covers: Executive Agency, Directorate, Data Patron,
-               Data Owner, Data Steward
-  ═══════════════════════════════════════════════════════════ -->
-  <div class="section-group">
-    <div class="section-label">Ownership Hierarchy</div>
-    <ul class="guide-list">
+  <div class="cards">
 
-      <li><a href="ownership-hierarchy/read-organisation-page.html">How to read the Organisation page <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="ownership-hierarchy/executive-agency-add.html">How to add an Executive Agency <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="ownership-hierarchy/executive-agency-modify.html">How to modify an Executive Agency <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="ownership-hierarchy/executive-agency-remove.html">How to remove an Executive Agency <span class="arrow">&rsaquo;</span></a></li>
+    <!-- Getting Started -->
+    <div class="card" id="s-getting-started">
+      <div class="card-head">
+        <span class="card-label">Getting Started</span>
+        <span class="count">5 guides</span>
+      </div>
+      <ul class="links">
+        <li><a href="getting-started/install-the-application.html">How to install the application <span>&rsaquo;</span></a></li>
+        <li><a href="getting-started/open-the-application.html">How to open the application <span>&rsaquo;</span></a></li>
+        <li><a href="getting-started/set-steward-identity.html">How to set your steward identity <span>&rsaquo;</span></a></li>
+        <li><a href="getting-started/load-master-data.html">How to load the master data <span>&rsaquo;</span></a></li>
+        <li><a href="getting-started/export-and-reset.html">How to export your changes and reset <span>&rsaquo;</span></a></li>
+      </ul>
+    </div>
 
-      <li><a href="ownership-hierarchy/directorate-add.html">How to add a Directorate <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="ownership-hierarchy/directorate-modify.html">How to modify a Directorate <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="ownership-hierarchy/directorate-remove.html">How to remove a Directorate <span class="arrow">&rsaquo;</span></a></li>
+    <!-- Dashboard -->
+    <div class="card" id="s-dashboard">
+      <div class="card-head">
+        <span class="card-label">Dashboard</span>
+        <span class="count">1 guide</span>
+      </div>
+      <ul class="links">
+        <li><a href="dashboard/understand-dashboard.html">How to use the steward dashboard <span>&rsaquo;</span></a></li>
+      </ul>
+    </div>
 
-      <li><a href="ownership-hierarchy/data-patron-add.html">How to add a Data Patron <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="ownership-hierarchy/data-patron-modify.html">How to modify a Data Patron <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="ownership-hierarchy/data-patron-remove.html">How to remove a Data Patron <span class="arrow">&rsaquo;</span></a></li>
+    <!-- Ownership Hierarchy -->
+    <div class="card" id="s-ownership">
+      <div class="card-head">
+        <span class="card-label">Ownership Hierarchy</span>
+        <span class="count">16 guides</span>
+      </div>
+      <ul class="links">
+        <li><a href="ownership-hierarchy/read-organisation-page.html">How to read the Organisation page <span>&rsaquo;</span></a></li>
+        <li><a href="ownership-hierarchy/executive-agency-add.html">How to add an Executive Agency <span>&rsaquo;</span></a></li>
+        <li><a href="ownership-hierarchy/executive-agency-modify.html">How to modify an Executive Agency <span>&rsaquo;</span></a></li>
+        <li><a href="ownership-hierarchy/executive-agency-remove.html">How to remove an Executive Agency <span>&rsaquo;</span></a></li>
+        <li><a href="ownership-hierarchy/directorate-add.html">How to add a Directorate <span>&rsaquo;</span></a></li>
+        <li><a href="ownership-hierarchy/directorate-modify.html">How to modify a Directorate <span>&rsaquo;</span></a></li>
+        <li><a href="ownership-hierarchy/directorate-remove.html">How to remove a Directorate <span>&rsaquo;</span></a></li>
+        <li><a href="ownership-hierarchy/data-patron-add.html">How to add a Data Patron <span>&rsaquo;</span></a></li>
+        <li><a href="ownership-hierarchy/data-patron-modify.html">How to modify a Data Patron <span>&rsaquo;</span></a></li>
+        <li><a href="ownership-hierarchy/data-patron-remove.html">How to remove a Data Patron <span>&rsaquo;</span></a></li>
+        <li><a href="ownership-hierarchy/data-owner-add.html">How to add a Data Owner <span>&rsaquo;</span></a></li>
+        <li><a href="ownership-hierarchy/data-owner-modify.html">How to modify a Data Owner <span>&rsaquo;</span></a></li>
+        <li><a href="ownership-hierarchy/data-owner-remove.html">How to remove a Data Owner <span>&rsaquo;</span></a></li>
+        <li><a href="ownership-hierarchy/data-steward-add.html">How to add a Data Steward <span>&rsaquo;</span></a></li>
+        <li><a href="ownership-hierarchy/data-steward-modify.html">How to modify a Data Steward <span>&rsaquo;</span></a></li>
+        <li><a href="ownership-hierarchy/data-steward-remove.html">How to remove a Data Steward <span>&rsaquo;</span></a></li>
+      </ul>
+    </div>
 
-      <li><a href="ownership-hierarchy/data-owner-add.html">How to add a Data Owner <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="ownership-hierarchy/data-owner-modify.html">How to modify a Data Owner <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="ownership-hierarchy/data-owner-remove.html">How to remove a Data Owner <span class="arrow">&rsaquo;</span></a></li>
+    <!-- Data and Stewardship -->
+    <div class="card" id="s-data-stewardship">
+      <div class="card-head">
+        <span class="card-label">Data and Stewardship</span>
+        <span class="count">8 guides</span>
+      </div>
+      <ul class="links">
+        <li><a href="data-stewardship/navigate-hierarchy.html">How to navigate the Data and Stewardship page <span>&rsaquo;</span></a></li>
+        <li><a href="data-stewardship/cds-add.html">How to add a Critical Data Set <span>&rsaquo;</span></a></li>
+        <li><a href="data-stewardship/cds-retire.html">How to retire a Critical Data Set <span>&rsaquo;</span></a></li>
+        <li><a href="data-stewardship/cde-add.html">How to add a Critical Data Element <span>&rsaquo;</span></a></li>
+        <li><a href="data-stewardship/snapshot-filter.html">What is a snapshot filter? <span>&rsaquo;</span></a></li>
+        <li><a href="data-stewardship/cde-edit-retire.html">How to edit or retire a Critical Data Element <span>&rsaquo;</span></a></li>
+        <li><a href="data-stewardship/rule-allocate.html">How to assign a rule to a CDE <span>&rsaquo;</span></a></li>
+        <li><a href="data-stewardship/my-data.html">How to scope the view to your data sets <span>&rsaquo;</span></a></li>
+      </ul>
+    </div>
 
-      <li><a href="ownership-hierarchy/data-steward-add.html">How to add a Data Steward <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="ownership-hierarchy/data-steward-modify.html">How to modify a Data Steward <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="ownership-hierarchy/data-steward-remove.html">How to remove a Data Steward <span class="arrow">&rsaquo;</span></a></li>
-    </ul>
-  </div>
+    <!-- Rules Explorer -->
+    <div class="card" id="s-rules-explorer">
+      <div class="card-head">
+        <span class="card-label">Rules Explorer</span>
+        <span class="count">5 guides</span>
+      </div>
+      <ul class="links">
+        <li><a href="rules-explorer/navigate-rules-explorer.html">How to navigate the Rules Explorer <span>&rsaquo;</span></a></li>
+        <li><a href="rules-explorer/rule-add-edit.html">How to add or edit a rule <span>&rsaquo;</span></a></li>
+        <li><a href="rules-explorer/allocation-manage.html">How to manage allocations from the Rules Explorer <span>&rsaquo;</span></a></li>
+        <li><a href="rules-explorer/view-sql.html">How to view rule SQL <span>&rsaquo;</span></a></li>
+        <li><a href="rules-explorer/sql-sample-explained.html">When to use the SQL sample field <span>&rsaquo;</span></a></li>
+      </ul>
+    </div>
 
-  <!-- ═══════════════════════════════════════════════════════════
-       SECTION: Data and Stewardship
-       Covers: Navigating the hierarchy, CDS, CDE, Allocations,
-               My data filter
-  ═══════════════════════════════════════════════════════════ -->
-  <div class="section-group">
-    <div class="section-label">Data and Stewardship</div>
-    <ul class="guide-list">
+    <!-- Import & Export -->
+    <div class="card" id="s-import-export">
+      <div class="card-head">
+        <span class="card-label">Import &amp; Export</span>
+        <span class="count">6 guides</span>
+      </div>
+      <ul class="links">
+        <li><a href="import-export/import-master.html">How to import the master data file <span>&rsaquo;</span></a></li>
+        <li><a href="import-export/export-delta.html">How to export your delta <span>&rsaquo;</span></a></li>
+        <li><a href="import-export/merge-steward-delta.html">How to merge a steward delta <span>&rsaquo;</span></a></li>
+        <li><a href="import-export/export-csv-zip.html">How to export a full backup <span>&rsaquo;</span></a></li>
+        <li><a href="import-export/fix-table-data-csv.html">How to fix table data using CSV import <span>&rsaquo;</span></a></li>
+        <li><a href="import-export/uploader-export.html">How to produce a DQ engine uploader export <span>&rsaquo;</span></a></li>
+      </ul>
+    </div>
 
-      <li><a href="data-stewardship/navigate-hierarchy.html">How to navigate the Data and Stewardship page <span class="arrow">&rsaquo;</span></a></li>
+    <!-- Table & Field Profiling -->
+    <div class="card" id="s-profiling">
+      <div class="card-head">
+        <span class="card-label">Table &amp; Field Profiling</span>
+        <span class="count">9 guides</span>
+      </div>
+      <ul class="links">
+        <li><a href="profiling/table-add.html">How to add a table to the Table Library <span>&rsaquo;</span></a></li>
+        <li><a href="profiling/table-edit.html">How to edit a table profile <span>&rsaquo;</span></a></li>
+        <li><a href="profiling/table-remove.html">How to remove a table from the Table Library <span>&rsaquo;</span></a></li>
+        <li><a href="profiling/field-profile.html">How to profile a field <span>&rsaquo;</span></a></li>
+        <li><a href="profiling/field-update.html">How to update an existing field profile <span>&rsaquo;</span></a></li>
+        <li><a href="profiling/field-filter.html">How to filter fields by profiling status <span>&rsaquo;</span></a></li>
+        <li><a href="profiling/field-my-data.html">How to scope the view to your own data <span>&rsaquo;</span></a></li>
+        <li><a href="profiling/field-copy-sql.html">How to copy the generated SQL for a field <span>&rsaquo;</span></a></li>
+        <li><a href="profiling/field-cds-context.html">How to identify which CDS a field belongs to <span>&rsaquo;</span></a></li>
+      </ul>
+    </div>
 
-      <li><a href="data-stewardship/cds-add.html">How to add a Critical Data Set <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="data-stewardship/cds-retire.html">How to retire a Critical Data Set <span class="arrow">&rsaquo;</span></a></li>
+    <!-- RAG Simulator -->
+    <div class="card" id="s-rag">
+      <div class="card-head">
+        <span class="card-label">RAG Simulator</span>
+        <span class="count">2 guides</span>
+      </div>
+      <ul class="links">
+        <li><a href="rag-simulator/run-simulation.html">How to run a RAG simulation <span>&rsaquo;</span></a></li>
+        <li><a href="rag-simulator/rag-calculation.html">How the RAG rating is calculated <span>&rsaquo;</span></a></li>
+      </ul>
+    </div>
 
-      <li><a href="data-stewardship/cde-add.html">How to add a Critical Data Element <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="data-stewardship/snapshot-filter.html">What is a snapshot filter? <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="data-stewardship/cde-edit-retire.html">How to edit or retire a Critical Data Element <span class="arrow">&rsaquo;</span></a></li>
+    <!-- Rule Generator -->
+    <div class="card" id="s-rule-generator">
+      <div class="card-head">
+        <span class="card-label">Rule Generator</span>
+        <span class="count">2 guides</span>
+      </div>
+      <ul class="links">
+        <li><a href="rule-generator/generate-suggestions.html">How to generate rule suggestions for a field <span>&rsaquo;</span></a></li>
+        <li><a href="rule-generator/review-add-rules.html">How to review and add AI-suggested rules <span>&rsaquo;</span></a></li>
+      </ul>
+    </div>
 
-      <li><a href="data-stewardship/rule-allocate.html">How to assign a rule to a CDE <span class="arrow">&rsaquo;</span></a></li>
+    <!-- DQ Engine Reference -->
+    <div class="card" id="s-dq-engine">
+      <div class="card-head">
+        <span class="card-label">DQ Engine Reference</span>
+        <span class="count">8 guides</span>
+      </div>
+      <ul class="links">
+        <li><a href="rules-engine/engine-overview.html">How the DQ engine works <span>&rsaquo;</span></a></li>
+        <li><a href="rules-engine/engine-processing.html">How the engine processes a rule <span>&rsaquo;</span></a></li>
+        <li><a href="rules-engine/cde-engine-reference.html">How to define a CDE for the engine <span>&rsaquo;</span></a></li>
+        <li><a href="rules-engine/automated-rule-sql.html">How to write SQL for automated rules <span>&rsaquo;</span></a></li>
+        <li><a href="rules-engine/manual-rule-sql.html">How to write SQL for manual rules <span>&rsaquo;</span></a></li>
+        <li><a href="rules-engine/rule-allocation.html">How to allocate a rule to a CDE <span>&rsaquo;</span></a></li>
+        <li><a href="rules-engine/sql-safety-rules.html">SQL safety rules <span>&rsaquo;</span></a></li>
+        <li><a href="rules-engine/authoring-checklist.html">Rule authoring checklist <span>&rsaquo;</span></a></li>
+      </ul>
+    </div>
 
-      <li><a href="data-stewardship/my-data.html">How to scope the view to your data sets <span class="arrow">&rsaquo;</span></a></li>
+    <!-- Master Steward Tools -->
+    <div class="card" id="s-master-tools">
+      <div class="card-head">
+        <span class="card-label">Master Steward Tools</span>
+        <span class="count">1 guide</span>
+      </div>
+      <ul class="links">
+        <li><a href="master-tools/data-browser.html">How to inspect raw table data <span>&rsaquo;</span></a></li>
+      </ul>
+    </div>
 
-    </ul>
-  </div>
+  </div><!-- /cards -->
 
-  <!-- ═══════════════════════════════════════════════════════════
-       SECTION: Rules Explorer
-       Covers: Navigating, adding/editing rules, managing
-               allocations, viewing SQL
-  ═══════════════════════════════════════════════════════════ -->
-  <div class="section-group">
-    <div class="section-label">Rules Explorer</div>
-    <ul class="guide-list">
-
-      <li><a href="rules-explorer/navigate-rules-explorer.html">How to navigate the Rules Explorer <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="rules-explorer/rule-add-edit.html">How to add or edit a rule <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="rules-explorer/allocation-manage.html">How to manage allocations from the Rules Explorer <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="rules-explorer/view-sql.html">How to view rule SQL <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="rules-explorer/sql-sample-explained.html">When to use the SQL sample field <span class="arrow">&rsaquo;</span></a></li>
-
-    </ul>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════════════
-       SECTION: Data Quality Elements
-       Covers: Weights, Thresholds
-  ═══════════════════════════════════════════════════════════ -->
-  <div class="section-group">
-    <div class="section-label">Data Quality Elements</div>
-    <div class="empty-section">No guides in this section yet.</div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════════════
-       SECTION: Weights &amp; Thresholds
-  ═══════════════════════════════════════════════════════════ -->
-  <div class="section-group">
-    <div class="section-label">Weights &amp; Thresholds</div>
-    <div class="empty-section">No guides in this section yet.</div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════════════
-       SECTION: Import &amp; Export
-  ═══════════════════════════════════════════════════════════ -->
-  <div class="section-group">
-    <div class="section-label">Import &amp; Export</div>
-    <ul class="guide-list">
-      <li><a href="import-export/import-master.html">How to import the master data file <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="import-export/export-delta.html">How to export your delta <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="import-export/merge-steward-delta.html">How to merge a steward delta <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="import-export/export-csv-zip.html">How to export a full backup <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="import-export/fix-table-data-csv.html">How to fix table data using CSV import <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="import-export/uploader-export.html">How to produce a DQ engine uploader export <span class="arrow">&rsaquo;</span></a></li>
-    </ul>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════════════
-       SECTION: Table &amp; Field Profiling
-       Covers: Table Library (add/edit/remove),
-               Field Profiling (profile, update, filter, my data, SQL)
-  ═══════════════════════════════════════════════════════════ -->
-  <div class="section-group">
-    <div class="section-label">Table &amp; Field Profiling</div>
-    <ul class="guide-list">
-
-      <li><a href="profiling/table-add.html">How to add a table to the Table Library <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="profiling/table-edit.html">How to edit a table profile <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="profiling/table-remove.html">How to remove a table from the Table Library <span class="arrow">&rsaquo;</span></a></li>
-
-      <li><a href="profiling/field-profile.html">How to profile a field <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="profiling/field-update.html">How to update an existing field profile <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="profiling/field-filter.html">How to filter fields by profiling status <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="profiling/field-my-data.html">How to scope the view to your own data <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="profiling/field-copy-sql.html">How to copy the generated SQL for a field <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="profiling/field-cds-context.html">How to identify which CDS a field belongs to <span class="arrow">&rsaquo;</span></a></li>
-
-    </ul>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════════════
-       SECTION: RAG Simulator
-       Covers: Running a simulation, understanding the calculation
-  ═══════════════════════════════════════════════════════════ -->
-  <div class="section-group">
-    <div class="section-label">RAG Simulator</div>
-    <ul class="guide-list">
-      <li><a href="rag-simulator/run-simulation.html">How to run a RAG simulation <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="rag-simulator/rag-calculation.html">How the RAG rating is calculated <span class="arrow">&rsaquo;</span></a></li>
-    </ul>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════════════
-       SECTION: Rule Generator
-       Covers: Generating suggestions, reviewing and adding rules
-  ═══════════════════════════════════════════════════════════ -->
-  <div class="section-group">
-    <div class="section-label">Rule Generator</div>
-    <ul class="guide-list">
-      <li><a href="rule-generator/generate-suggestions.html">How to generate rule suggestions for a field <span class="arrow">&rsaquo;</span></a></li>
-      <li><a href="rule-generator/review-add-rules.html">How to review and add AI-suggested rules <span class="arrow">&rsaquo;</span></a></li>
-    </ul>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════════════
-       SECTION: Tools &amp; Advanced Features
-       Covers: DQ Assistant
-  ═══════════════════════════════════════════════════════════ -->
-  <div class="section-group">
-    <div class="section-label">Tools &amp; Advanced Features</div>
-    <div class="empty-section">No guides in this section yet.</div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════════════
-       SECTION: Master Steward Tools
-       Covers: Data Browser
-  ═══════════════════════════════════════════════════════════ -->
-  <div class="section-group">
-    <div class="section-label">Master Steward Tools</div>
-    <ul class="guide-list">
-      <li><a href="master-tools/data-browser.html">How to inspect raw table data <span class="arrow">&rsaquo;</span></a></li>
-    </ul>
-  </div>
-
-  <p class="note">
-    Guides are added here each time a feature is built or modified.
-    If a section is empty, no changes have been made to that area yet in this release.
-  </p>
 </main>
 
 <footer>
