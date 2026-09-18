@@ -5,6 +5,27 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260918-2015 — Fix: Failures/Denominator Counter rename; optional CDE fields; Task List UI fixes
+
+**Date:** 2026-09-18
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Failures Counter / Denominator Counter rename across source + docs | 5 min | 0 min | 20 min | |
+| Rule form sql_code optional | 3 min | 0 min | 5 min | |
+| Task List horizontal scroll + height + collapse all + summary card | 10 min | 0 min | 15 min | |
+| CDE panel optional fields + CDE Name rename + docs | 5 min | 0 min | 15 min | |
+| **Total** | **23 min** | **0 min** | **55 min** | |
+
+### Changes delivered
+- `src/166_form_panel_rule.js`: sql_code made optional; SELECT check retained when value provided
+- `src/10_constants.js`, `90_panels.js`, `141_view_cde_list.js`, `145_view_rules.js`, `200_screen_ddl.js`, `231_uploader_validation.js`, `232_uploader_export.js`: Failures Counter / Denominator Counter rename
+- `src/235_export_tasklist.js`: horizontal scroll fix, viewport height offset corrected, Collapse All / Expand All, summary card simplified
+- `src/140_view_cde.js`: CDE Name rename, Database/Table/CDE Name/Snapshot Filter made optional
+- 9 user guide pages updated for rename and CDE form changes
+
+---
+
 ## build-20260918-1836 — Docs: Task List export user guide updated; design and plan docs finalised
 
 **Date:** 2026-09-18

@@ -2811,7 +2811,7 @@ function AppHeader({ savedAt, totalRows, onShowReset, isMaster, stewardIdentity 
           <div className="header-app-id">
             <div>
               <div className="header-app-name">Data Quality Accelerator</div>
-              <div className="header-app-sub">build-20260918-1949</div>
+              <div className="header-app-sub">build-20260918-2015</div>
             </div>
           </div>
         </div>
@@ -5028,10 +5028,6 @@ function CriticalDataElementFormPanel({ record, isEdit, preCdsId, preTableName, 
   const validate = () => {
     const errs = {};
     if (!values.critical_data_set_id)                errs.critical_data_set_id    = 'Required';
-    if (!values.source_database_name?.trim())         errs.source_database_name    = 'Required';
-    if (!values.source_table_name?.trim())            errs.source_table_name       = 'Required';
-    if (!values.source_field_name?.trim())            errs.source_field_name       = 'Required';
-    if (!values.source_snapshot_filter?.trim())       errs.source_snapshot_filter  = 'Required';
     return errs;
   };
 
@@ -5209,15 +5205,15 @@ function CriticalDataElementFormPanel({ record, isEdit, preCdsId, preTableName, 
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
               {renderField("Platform", "source_platform_name", false, false, true)}
               {renderField("System", "source_system_name", false, false, true)}
-              {renderField("Database", "source_database_name", true, false, true)}
-              {renderField("Table", "source_table_name", true, false, true)}
+              {renderField("Database", "source_database_name", false, false, true)}
+              {renderField("Table", "source_table_name", false, false, true)}
             </div>
 
             {/* Field name - dropdown from DDL if available, else free text */}
             <div style={{ marginBottom:12 }}>
               <label style={{ display:'block', fontSize:11, fontWeight:600,
                 color: errors.source_field_name ? 'var(--red)' : 'var(--text2)', marginBottom:4 }}>
-                Field name <span style={{ color:'var(--red)' }}>*</span>
+                CDE Name (table column) <span style={{ fontSize:10, color:'var(--text3)', fontWeight:400, marginLeft:6 }}>(optional)</span>
               </label>
               {ddlCols.length > 0 ? (
                 <select value={values.source_field_name ?? ''}
@@ -5344,7 +5340,7 @@ function CriticalDataElementFormPanel({ record, isEdit, preCdsId, preTableName, 
               textTransform:'uppercase', color:'var(--text3)', marginBottom:10 }}>
               Filter
             </div>
-            {renderField("Snapshot filter", "source_snapshot_filter", true, true, true)}
+            {renderField("CDE Snapshot Filter", "source_snapshot_filter", false, true, true)}
           </div>
 
           {/* Description fields */}
@@ -6018,7 +6014,7 @@ function CriticalDataElementView({ initialSearch }) {
                                                   </span>
                                                 )}
                                                 {noFilter && (
-                                                  <span title="Missing snapshot filter"
+                                                  <span title="Missing CDE Snapshot filter"
                                                     style={{ color:'var(--red)', width:13, height:13,
                                                       flexShrink:0 }}>
                                                     <Icon.Warning/>
@@ -6154,7 +6150,7 @@ function CriticalDataElementView({ initialSearch }) {
                                                             alignItems:'center', gap:4 }}>
                                                             {rule.rule_name}
                                                             {missingFlt && (
-                                                              <span title="Missing snapshot filter -- SQL cannot be composed"
+                                                              <span title="Missing CDE Snapshot filter -- SQL cannot be composed"
                                                                 style={{ color:'var(--red)', flexShrink:0,
                                                                   width:11, height:11, display:'inline-flex' }}>
                                                                 <Icon.Warning/>
@@ -6203,8 +6199,8 @@ function CriticalDataElementView({ initialSearch }) {
                                                               color: missingFlt ? 'var(--red)' : 'var(--accent)' }}
                                                             disabled={missingFlt}
                                                             title={missingFlt
-                                                              ? 'Missing snapshot filter'
-                                                              : 'View composed rule SQL'}
+                                                              ? 'Missing CDE Snapshot filter'
+                                                              : 'View composed Failures Counter'}
                                                             onClick={e => {
                                                               e.stopPropagation();
                                                               openSql('rule', rule, alloc, cde, cds, agency);
@@ -6216,8 +6212,8 @@ function CriticalDataElementView({ initialSearch }) {
                                                               style={{ padding:'2px 5px', color:'var(--text2)' }}
                                                               disabled={missingFlt}
                                                               title={missingFlt
-                                                                ? 'Missing snapshot filter'
-                                                                : 'View composed sample SQL'}
+                                                                ? 'Missing CDE Snapshot filter'
+                                                                : 'View composed Denominator Counter'}
                                                               onClick={e => {
                                                                 e.stopPropagation();
                                                                 openSql('sample', rule, alloc, cde, cds, agency);
@@ -6641,7 +6637,7 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
               border:'1px solid var(--red)', borderRadius:'var(--radius)',
               fontSize:11, color:'var(--red)', display:'flex', gap:6, alignItems:'center' }}>
               <span style={{ width:13, height:13, flexShrink:0 }}><Icon.Warning/></span>
-              Missing snapshot filter on this CDE - SQL cannot be composed.
+              Missing the Snapshot filter on this CDE - SQL cannot be composed.
             </div>
           )}
         </div>

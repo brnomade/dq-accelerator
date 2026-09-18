@@ -649,7 +649,7 @@ function CriticalDataElementView({ initialSearch }) {
                                                   </span>
                                                 )}
                                                 {noFilter && (
-                                                  <span title="Missing snapshot filter"
+                                                  <span title="Missing CDE Snapshot filter"
                                                     style={{ color:'var(--red)', width:13, height:13,
                                                       flexShrink:0 }}>
                                                     <Icon.Warning/>
@@ -785,7 +785,7 @@ function CriticalDataElementView({ initialSearch }) {
                                                             alignItems:'center', gap:4 }}>
                                                             {rule.rule_name}
                                                             {missingFlt && (
-                                                              <span title="Missing snapshot filter -- SQL cannot be composed"
+                                                              <span title="Missing CDE Snapshot filter -- SQL cannot be composed"
                                                                 style={{ color:'var(--red)', flexShrink:0,
                                                                   width:11, height:11, display:'inline-flex' }}>
                                                                 <Icon.Warning/>
@@ -834,8 +834,8 @@ function CriticalDataElementView({ initialSearch }) {
                                                               color: missingFlt ? 'var(--red)' : 'var(--accent)' }}
                                                             disabled={missingFlt}
                                                             title={missingFlt
-                                                              ? 'Missing snapshot filter'
-                                                              : 'View composed rule SQL'}
+                                                              ? 'Missing CDE Snapshot filter'
+                                                              : 'View composed Failures Counter'}
                                                             onClick={e => {
                                                               e.stopPropagation();
                                                               openSql('rule', rule, alloc, cde, cds, agency);
@@ -847,8 +847,8 @@ function CriticalDataElementView({ initialSearch }) {
                                                               style={{ padding:'2px 5px', color:'var(--text2)' }}
                                                               disabled={missingFlt}
                                                               title={missingFlt
-                                                                ? 'Missing snapshot filter'
-                                                                : 'View composed sample SQL'}
+                                                                ? 'Missing CDE Snapshot filter'
+                                                                : 'View composed Denominator Counter'}
                                                               onClick={e => {
                                                                 e.stopPropagation();
                                                                 openSql('sample', rule, alloc, cde, cds, agency);
@@ -1272,7 +1272,7 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
               border:'1px solid var(--red)', borderRadius:'var(--radius)',
               fontSize:11, color:'var(--red)', display:'flex', gap:6, alignItems:'center' }}>
               <span style={{ width:13, height:13, flexShrink:0 }}><Icon.Warning/></span>
-              Missing snapshot filter on this CDE - SQL cannot be composed.
+              Missing the Snapshot filter on this CDE - SQL cannot be composed.
             </div>
           )}
         </div>

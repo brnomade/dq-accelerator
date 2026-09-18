@@ -143,10 +143,6 @@ function CriticalDataElementFormPanel({ record, isEdit, preCdsId, preTableName, 
   const validate = () => {
     const errs = {};
     if (!values.critical_data_set_id)                errs.critical_data_set_id    = 'Required';
-    if (!values.source_database_name?.trim())         errs.source_database_name    = 'Required';
-    if (!values.source_table_name?.trim())            errs.source_table_name       = 'Required';
-    if (!values.source_field_name?.trim())            errs.source_field_name       = 'Required';
-    if (!values.source_snapshot_filter?.trim())       errs.source_snapshot_filter  = 'Required';
     return errs;
   };
 
@@ -324,15 +320,15 @@ function CriticalDataElementFormPanel({ record, isEdit, preCdsId, preTableName, 
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
               {renderField("Platform", "source_platform_name", false, false, true)}
               {renderField("System", "source_system_name", false, false, true)}
-              {renderField("Database", "source_database_name", true, false, true)}
-              {renderField("Table", "source_table_name", true, false, true)}
+              {renderField("Database", "source_database_name", false, false, true)}
+              {renderField("Table", "source_table_name", false, false, true)}
             </div>
 
             {/* Field name - dropdown from DDL if available, else free text */}
             <div style={{ marginBottom:12 }}>
               <label style={{ display:'block', fontSize:11, fontWeight:600,
                 color: errors.source_field_name ? 'var(--red)' : 'var(--text2)', marginBottom:4 }}>
-                Field name <span style={{ color:'var(--red)' }}>*</span>
+                CDE Name (table column) <span style={{ fontSize:10, color:'var(--text3)', fontWeight:400, marginLeft:6 }}>(optional)</span>
               </label>
               {ddlCols.length > 0 ? (
                 <select value={values.source_field_name ?? ''}
@@ -459,7 +455,7 @@ function CriticalDataElementFormPanel({ record, isEdit, preCdsId, preTableName, 
               textTransform:'uppercase', color:'var(--text3)', marginBottom:10 }}>
               Filter
             </div>
-            {renderField("Snapshot filter", "source_snapshot_filter", true, true, true)}
+            {renderField("CDE Snapshot Filter", "source_snapshot_filter", false, true, true)}
           </div>
 
           {/* Description fields */}

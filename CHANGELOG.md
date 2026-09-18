@@ -4,6 +4,17 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260918-2015 — Fix: Failures/Denominator Counter rename; optional CDE fields; Task List UI fixes
+
+### Changed
+- **`src/166_form_panel_rule.js`** — `sql_code` (Failures Counter) made optional in the Add/Edit Rule panel; SELECT validation retained when a value is provided.
+- **`src/10_constants.js`**, **`src/231_uploader_validation.js`**, **`src/232_uploader_export.js`**, **`src/90_panels.js`**, **`src/141_view_cde_list.js`**, **`src/145_view_rules.js`**, **`src/200_screen_ddl.js`** — `sql_code` relabelled to **Failures Counter** and `sql_code_sample` relabelled to **Denominator Counter** throughout all UI labels, tooltips, and validation messages.
+- **`src/235_export_tasklist.js`** — Task List export: horizontal scrollbar fixed (table width set to `max-content`); viewport height offset corrected so scrollbar is always visible without page scrolling; **Collapse All / Expand All** agency-group buttons added above the table; summary card simplified — description line removed, selection and scope count merged into a single "X of Y allocations selected" label beside the export button.
+- **`src/140_view_cde.js`** — Add/Edit CDE panel: `source_field_name` relabelled **CDE Name**; Database, Table, CDE Name, and Snapshot Filter all made optional (only Critical Data Set is required to save). Supports iterative CDE completion across multiple editing sessions.
+- **`documentation/user-guide/`** — 9 user guide pages updated: `rules-explorer/rule-add-edit.html`, `rules-explorer/sql-sample-explained.html`, `import-export/export-task-list.html`, `import-export/uploader-export.html`, `data-stewardship/rule-allocate.html`, `data-stewardship/cde-add.html`, `rules-engine/engine-processing.html`, `rules-explorer/view-sql.html`, `index.html` — all Failures Counter / Denominator Counter rename applied; `cde-add.html` updated to reflect optional source fields and CDE Name label.
+
+---
+
 ## build-20260918-1836 — Docs: Task List export user guide updated; design and plan docs finalised
 
 ### Changed
