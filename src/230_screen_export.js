@@ -103,7 +103,7 @@ function ExportScreen() {
   return (
     <div className="fade-in">
       <div className="page-title">Export</div>
-      <div className="page-sub">Download individual CSVs or the full dataset as a zip for AWS import.</div>
+      <div className="page-sub">Download individual CSVs or full datasets.</div>
 
       {/* Tab bar */}
       <div style={{ display:'flex', gap:0, marginBottom:20, borderBottom:'1px solid var(--border)' }}>
