@@ -85,11 +85,11 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
     </li>
     <li>
       <div class="snum">4</div>
-      <div class="sbody">Select or type the <span class="f">Source Field</span>. If you selected from the Table Library, a dropdown lists the known columns.</div>
+      <div class="sbody">Select or type the <span class="f">CDE Name</span>. If you selected from the Table Library, a dropdown lists the known columns. This field is optional &mdash; you can save the CDE now and add it later.</div>
     </li>
     <li>
       <div class="snum">5</div>
-      <div class="sbody">Enter the <span class="f">Snapshot Filter</span>. This is required and is used to construct the SQL queries run against this field.
+      <div class="sbody">Optionally enter the <span class="f">Snapshot Filter</span>. This is used to construct the SQL queries run against this field. You can add it later, but rules assigned to this CDE will show a warning and the SQL viewer will be disabled until it is set.
         <div class="sub">If you are unsure what value to use, see <a href="snapshot-filter.html" style="color:var(--blue)">What is a snapshot filter?</a></div>
       </div>
     </li>
@@ -107,16 +107,16 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
     </li>
   </ol>
 
-  <h2>Required fields</h2>
+  <h2>Form fields</h2>
 
   <table class="field-table">
     <thead><tr><th>Field</th><th>Notes</th></tr></thead>
     <tbody>
       <tr><td>Critical Data Set <span class="req">required</span></td><td>The data set this CDE belongs to. Fixed after saving.</td></tr>
-      <tr><td>Database Name <span class="req">required</span></td><td>The source database where this field lives.</td></tr>
-      <tr><td>Table Name <span class="req">required</span></td><td>The source table containing this field.</td></tr>
-      <tr><td>Field Name <span class="req">required</span></td><td>The exact column name in the source table.</td></tr>
-      <tr><td>Snapshot Filter <span class="req">required</span></td><td>A SQL <code style="font-family:var(--mono);font-size:11px">WHERE</code> clause fragment that isolates the current snapshot of the source table. Missing this causes a warning indicator on the CDE and prevents SQL from being generated. See <a href="snapshot-filter.html" style="color:var(--blue)">What is a snapshot filter?</a></td></tr>
+      <tr><td>Database <span class="opt">optional</span></td><td>The source database where this field lives. Can be added later.</td></tr>
+      <tr><td>Table <span class="opt">optional</span></td><td>The source table containing this field. Can be added later.</td></tr>
+      <tr><td>CDE Name <span class="opt">optional</span></td><td>The exact column name in the source table. Can be added later.</td></tr>
+      <tr><td>Snapshot Filter <span class="opt">optional</span></td><td>A SQL <code style="font-family:var(--mono);font-size:11px">WHERE</code> clause fragment that isolates the current snapshot of the source table. Can be added later, but a CDE without one shows a warning indicator and SQL cannot be generated until it is set. See <a href="snapshot-filter.html" style="color:var(--blue)">What is a snapshot filter?</a></td></tr>
       <tr><td>Platform <span class="opt">optional</span></td><td>Source platform name (e.g. AWS, Azure).</td></tr>
       <tr><td>System <span class="opt">optional</span></td><td>Source system name (e.g. the application that owns the data).</td></tr>
       <tr><td>Definition <span class="opt">optional</span></td><td>Business definition of the field.</td></tr>
@@ -124,7 +124,7 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
     </tbody>
   </table>
 
-  <div class="note">A CDE with a missing snapshot filter shows a red warning indicator in the hierarchy. Rules assigned to that CDE will also show a warning and the SQL viewer will be disabled until the filter is added. Edit the CDE to fix this.</div>
+  <div class="note">Only the Critical Data Set is required to save a CDE. All source location fields (Database, Table, CDE Name, Snapshot Filter) can be filled in across multiple editing sessions. A CDE without a Snapshot Filter shows a warning indicator in the hierarchy and SQL cannot be generated for its rules until the filter is added.</div>
 
   <div class="related">
     <div class="rtitle">Related guides</div>
