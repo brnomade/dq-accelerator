@@ -99,15 +99,14 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
 
   <h2>How the SQL is composed</h2>
 
-  <p style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:14px">The rule SQL template contains tokens that the application replaces with the CDE's actual source details at view time. Common tokens include:</p>
+  <p style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:14px">The rule SQL template contains placeholders that the application replaces with the CDE's actual source details at view time. Valid placeholders are:</p>
 
   <table class="badge-table">
     <thead><tr><th>Token</th><th>Replaced with</th></tr></thead>
     <tbody>
-      <tr><td>&#123;table&#125;</td><td>The CDE's source table name</td></tr>
-      <tr><td>&#123;field&#125;</td><td>The CDE's source field name</td></tr>
-      <tr><td>&#123;database&#125;</td><td>The CDE's source database name</td></tr>
-      <tr><td>&#123;snapshot&#125;</td><td>The CDE's snapshot filter expression</td></tr>
+      <tr><td>&#123;SOURCE_TABLE_NAME&#125;</td><td>The CDE's source table name</td></tr>
+      <tr><td>&#123;SOURCE_FIELD_NAME&#125;</td><td>The CDE's source field name</td></tr>
+      <tr><td>&#123;SOURCE_DATABASE_NAME&#125;</td><td>The CDE's source database name</td></tr>
     </tbody>
   </table>
 

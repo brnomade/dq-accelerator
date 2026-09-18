@@ -775,7 +775,7 @@ function TableGroupRow({ tableGroup, dimensions, onProfile, onEditDDL, onRetireD
               <span style={{ flexShrink:0 }}>{'\u24d8'}</span>
               <span>
                 {fields.filter(f => f.origin === 'SQL' || f.origin === 'CDE+SQL').length} field(s)
-                were extracted from rule SQL - verify they are relevant before profiling.
+                were extracted from Failures Counters - verify they are relevant before profiling.
               </span>
               <button onClick={() => onDismiss(tableKey)}
                 style={{ marginLeft:'auto', fontSize:10, padding:'1px 8px',

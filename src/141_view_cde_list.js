@@ -1228,7 +1228,7 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
               <div style={{ marginBottom:10 }}>
                 <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:4 }}>
                   <span style={{ fontSize:11, fontWeight:600, color:'var(--accent)',
-                    letterSpacing:'0.06em', textTransform:'uppercase' }}>Rule SQL</span>
+                    letterSpacing:'0.06em', textTransform:'uppercase' }}>Failures Counter</span>
                   <button className="btn btn-ghost" style={{ fontSize:11, padding:'2px 8px' }}
                     onClick={() => copyToClipboard(inlineSql.rule, setCopiedRule)}>
                     {copiedRule ? <><Icon.Check/> Copied</> : <><Icon.Copy/> Copy</>}
@@ -1246,7 +1246,7 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
                 <div>
                   <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:4 }}>
                     <span style={{ fontSize:11, fontWeight:600, color:'var(--text2)',
-                      letterSpacing:'0.06em', textTransform:'uppercase' }}>Sample SQL</span>
+                      letterSpacing:'0.06em', textTransform:'uppercase' }}>Denominator Counter</span>
                     <button className="btn btn-ghost" style={{ fontSize:11, padding:'2px 8px' }}
                       onClick={() => copyToClipboard(inlineSql.sample, setCopiedSample)}>
                       {copiedSample ? <><Icon.Check/> Copied</> : <><Icon.Copy/> Copy</>}
@@ -1262,7 +1262,7 @@ function CdeAllocFormPanel({ record, isEdit, onSave, onClose, data }) {
                 </div>
               ) : (
                 <div style={{ fontSize:11, color:'var(--text3)', fontStyle:'italic' }}>
-                  No sample SQL defined for this rule - engine uses default approach.
+                  No Denominator Counter defined for this rule - engine will apply the default approach.
                 </div>
               )}
             </div>

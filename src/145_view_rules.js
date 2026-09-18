@@ -161,24 +161,24 @@ function RulesCdeRow({ cdeEntry, rule, critGroupsSorted, critLevelsById, dimensi
             <button className="btn btn-ghost"
               style={{ padding:'2px 5px', color: missingFlt ? 'var(--red)' : 'var(--accent)' }}
               disabled={missingFlt}
-              title={missingFlt ? 'Missing snapshot filter' : 'View composed rule SQL'}
+              title={missingFlt ? 'Missing CDE snapshot filter' : 'View composed Failures Counter'}
               onClick={e => { e.stopPropagation(); onOpenSql('rule', rule, allocation, cde); }}>
               <div style={{ width:13, height:13 }}><Icon.Code/></div>
             </button>
             {hasSample
               ? <button className="btn btn-ghost" style={{ padding:'2px 5px', color:'var(--text2)' }}
                   disabled={missingFlt}
-                  title={missingFlt ? 'Missing snapshot filter' : 'View composed sample SQL'}
+                  title={missingFlt ? 'Missing CDE snapshot filter' : 'View composed Denominator Counter'}
                   onClick={e => { e.stopPropagation(); onOpenSql('sample', rule, allocation, cde); }}>
                   <div style={{ width:13, height:13 }}><Icon.Sample/></div>
                 </button>
               : <span style={{ fontSize:8, fontFamily:'var(--mono)', fontWeight:600, letterSpacing:'0.04em',
                   color:'var(--text3)', background:'var(--bg)', border:'1px solid var(--border)',
                   borderRadius:3, padding:'1px 4px', whiteSpace:'nowrap' }}
-                  title="No sample code -- engine uses default approach">DEF</span>
+                  title="No Denominator Counter -- default engine approach will be applied">DEF</span>
             }
             {missingFlt && (
-              <span title="Missing snapshot filter -- SQL cannot be composed"
+              <span title="Missing CDE snapshot filter -- SQL cannot be composed"
                 style={{ color:'var(--amber)', width:13, height:13, flexShrink:0, display:'inline-flex' }}>
                 <Icon.Warning/>
               </span>

@@ -59,7 +59,7 @@ function SqlPanel({ panel, onClose }) {
               textTransform:'uppercase', color: panel.mode === 'sample'
                 ? 'var(--text2)' : 'var(--accent)',
               marginBottom:4 }}>
-              {panel.mode === 'sample' ? 'Sample SQL' : 'Rule SQL'}
+              {panel.mode === 'sample' ? 'Denominator Counter' : 'Failures Counter'}
             </div>
             <div style={{ fontSize:13, fontWeight:500, color:'var(--text)',
               whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
@@ -93,6 +93,10 @@ function SqlPanel({ panel, onClose }) {
 
         {/* SQL body */}
         <div style={{ flex:1, overflow:'auto', padding:'16px 18px' }}>
+          <div style={{ fontSize:10, fontWeight:600, letterSpacing:'0.08em',
+            textTransform:'uppercase', color:'var(--text3)', marginBottom:6 }}>
+            Composed SQL Code
+          </div>
           <pre style={{
             fontFamily:'var(--mono)', fontSize:12, lineHeight:1.7,
             color:'var(--text)', background:'var(--bg)',
@@ -108,7 +112,7 @@ function SqlPanel({ panel, onClose }) {
             <div style={{ marginTop:14 }}>
               <div style={{ fontSize:10, fontWeight:600, letterSpacing:'0.08em',
                 textTransform:'uppercase', color:'var(--text3)', marginBottom:6 }}>
-                Snapshot filter appended
+                CDE Snapshot filter appended
               </div>
               <pre style={{
                 fontFamily:'var(--mono)', fontSize:11, lineHeight:1.6,
