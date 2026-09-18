@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SQL safety rules &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--red:#e05252;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+h3{font-size:14px;font-weight:600;color:var(--text);margin:20px 0 8px}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+p{font-size:14px;color:var(--text2);margin-bottom:14px;line-height:1.6}
+ul{font-size:14px;color:var(--text2);line-height:1.7;margin:0 0 16px 24px}
+li{margin-bottom:6px}
+.f{font-weight:600;color:var(--blue)}
+.mono{font-family:var(--mono);font-size:12px;color:var(--text2);background:var(--bg3);padding:1px 5px;border-radius:3px}
+.code-block{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;font-family:var(--mono);font-size:12px;color:var(--text2);margin:12px 0;overflow-x:auto;white-space:pre;line-height:1.7}
+.code-label{font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:4px;margin-top:16px}
+.rule-list{list-style:none;padding:0;margin:0 0 16px;display:flex;flex-direction:column;gap:8px}
+.rule-list li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text2);line-height:1.6;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius)}
+.rule-list li .rule-icon{flex-shrink:0;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--red);background:rgba(224,82,82,0.1);border:1px solid rgba(224,82,82,0.3);border-radius:3px;padding:2px 6px;margin-top:1px}
+.note{margin-top:20px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.callout{margin:20px 0;padding:16px 18px;background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:var(--radius);font-size:14px;color:var(--text2);line-height:1.65}
+.warn-box{margin:20px 0;padding:14px 18px;background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.3);border-radius:var(--radius);font-size:13px;color:var(--amber);line-height:1.6}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px;margin:0;padding:0}
+.rlist li{margin:0}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; DQ Engine Reference</div>
+  <h1>SQL safety rules</h1>
+  <p class="lead">Before execution, every rule SQL is validated. Rules that fail the check are skipped and an audit record is written &mdash; they do not stop the rest of the run.</p>
+
+  <h2>What the engine blocks</h2>
+  <p>A rule is blocked and logged if its SQL:</p>
+
+  <ul class="rule-list">
+    <li><span class="rule-icon">BLOCKED</span>Does not start with <span class="mono">SELECT</span>. Leading comments are not allowed. The first non-whitespace characters must be <span class="mono">SELECT</span>.</li>
+    <li><span class="rule-icon">BLOCKED</span>Contains a semicolon outside string literals. Only single statements are permitted. A semicolon inside a string literal (e.g. <span class="mono">WHERE note = 'call at 3;30pm'</span>) will also be rejected &mdash; rewrite the literal to avoid it.</li>
+    <li><span class="rule-icon">BLOCKED</span>Contains any of the following as standalone tokens: <span class="mono">INSERT</span>, <span class="mono">UPDATE</span>, <span class="mono">DELETE</span>, <span class="mono">MERGE</span>, <span class="mono">DROP</span>, <span class="mono">TRUNCATE</span>, <span class="mono">ALTER</span>, <span class="mono">CREATE</span>.</li>
+    <li><span class="rule-icon">BLOCKED</span>Uses a CTE (<span class="mono">WITH &hellip; AS (&hellip;)</span>). CTEs are not currently supported. Rewrite CTE logic as a subquery instead (see below).</li>
+  </ul>
+
+  <h2>Additional validation rules</h2>
+  <p>Beyond the structural rules above, the engine also validates the shape and safety of the query to ensure it produces a single count and does not expose raw data:</p>
+
+  <ul>
+    <li>The outermost <span class="mono">SELECT</span> must return a single numeric value from an aggregate function (<span class="mono">COUNT</span>, <span class="mono">SUM</span>, or <span class="mono">APPROX_DISTINCT</span>). <span class="mono">MAX</span> and <span class="mono">MIN</span> are permitted only when their result is consumed by a comparison (for example, inside a <span class="mono">CASE WHEN MAX(date_col) &lt; CURRENT_DATE</span> expression &mdash; not returned bare).</li>
+    <li>No <span class="mono">SELECT *</span> or multi-column projections in the outermost <span class="mono">SELECT</span>.</li>
+    <li>No <span class="mono">GROUP BY</span> in the outermost <span class="mono">SELECT</span>.</li>
+    <li>No <span class="mono">CROSS JOIN</span> or implicit comma joins. All joins must have explicit <span class="mono">ON</span> or <span class="mono">USING</span> conditions with column references.</li>
+    <li>No access to <span class="mono">information_schema</span>, <span class="mono">system</span>, or other metadata catalogs.</li>
+    <li>No <span class="mono">UNION</span> at the outermost level. <span class="mono">UNION ALL</span> inside a <span class="mono">FROM</span>-clause derived table is permitted (see below).</li>
+    <li>No <span class="mono">WITH RECURSIVE</span> (recursive CTEs).</li>
+    <li>At most 5 tables directly joined within a single <span class="mono">FROM</span>&thinsp;/&thinsp;<span class="mono">JOIN</span> chain. Pre-aggregated subqueries that each reference one table do not count against this limit.</li>
+    <li>Partition filters must be present for any table registered as partitioned in the engine configuration.</li>
+  </ul>
+
+  <h2>CTEs are not supported &mdash; use subqueries</h2>
+  <p>Queries that start with <span class="mono">WITH</span> are blocked because they do not start with <span class="mono">SELECT</span>. Rewrite the same logic as a subquery in the <span class="mono">FROM</span> clause:</p>
+
+  <div class="code-label">Blocked &mdash; starts with WITH, not SELECT</div>
+  <div class="code-block">WITH recent AS (
+  SELECT * FROM &#123;SOURCE_DATABASE_NAME&#125;.&#123;SOURCE_TABLE_NAME&#125;
+  WHERE snapshot_date = (SELECT MAX(snapshot_date)
+                         FROM &#123;SOURCE_DATABASE_NAME&#125;.&#123;SOURCE_TABLE_NAME&#125;)
+)
+SELECT COUNT(*) FROM recent
+WHERE &#123;SOURCE_FIELD_NAME&#125; IS NULL</div>
+
+  <div class="code-label">Allowed &mdash; same logic as an inline subquery</div>
+  <div class="code-block">SELECT COUNT(*) FROM (
+  SELECT * FROM &#123;SOURCE_DATABASE_NAME&#125;.&#123;SOURCE_TABLE_NAME&#125;
+  WHERE snapshot_date = (SELECT MAX(snapshot_date)
+                         FROM &#123;SOURCE_DATABASE_NAME&#125;.&#123;SOURCE_TABLE_NAME&#125;)
+)
+WHERE &#123;SOURCE_FIELD_NAME&#125; IS NULL</div>
+
+  <h2>UNION ALL in subqueries</h2>
+  <p><span class="mono">UNION ALL</span> is permitted when it appears inside a <span class="mono">FROM</span>-clause derived table (an inline subquery). It is not permitted inside a CTE body or at the outermost level.</p>
+
+  <div class="code-label">Allowed &mdash; UNION ALL inside a FROM-clause derived table</div>
+  <div class="code-block">SELECT COUNT(*)
+FROM (
+  SELECT id FROM &#123;SOURCE_DATABASE_NAME&#125;.table_a WHERE status = 'failed'
+  UNION ALL
+  SELECT id FROM &#123;SOURCE_DATABASE_NAME&#125;.table_b WHERE status = 'failed'
+)
+WHERE 1=1</div>
+
+  <h2>What happens when a rule is blocked</h2>
+  <p>When a rule fails the safety check:</p>
+  <ul>
+    <li>No measurement row is written for that rule.</li>
+    <li>An audit row is written with <span class="mono">is_blocked = true</span> and the rejection reason in <span class="mono">blocked_reason</span>.</li>
+    <li>The engine moves on to the next rule &mdash; the rest of the run is unaffected.</li>
+  </ul>
+
+  <div class="callout">To diagnose a blocked rule, look up its most recent entry in the compiled SQL audit table. The <span class="mono">blocked_reason</span> field will identify which rule it failed and why. The <span class="mono">compiled_sql</span> field shows the post-substitution SQL the engine attempted to validate &mdash; this is often more useful for debugging than the original template.</div>
+
+  <div class="related">
+    <div class="rtitle">Related guides</div>
+    <ul class="rlist">
+      <li><a href="automated-rule-sql.html">How to write SQL for automated rules &rsaquo;</a></li>
+      <li><a href="manual-rule-sql.html">How to write SQL for manual rules &rsaquo;</a></li>
+      <li><a href="authoring-checklist.html">Rule authoring checklist &rsaquo;</a></li>
+      <li><a href="engine-processing.html">How the engine processes a rule &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>

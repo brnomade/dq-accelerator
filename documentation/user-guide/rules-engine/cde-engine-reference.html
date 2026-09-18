@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How to define a CDE for the engine &mdash; DQ Accelerator User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#18212e;--bg3:#1e2d40;--border:#2d4060;--text:#edf0fa;--text2:#9aaecc;--text3:#5f7294;--green:#22c98e;--amber:#f5a623;--blue:#18b4d4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.back{font-size:12px;color:var(--blue);text-decoration:none;font-family:var(--mono)}.back:hover{text-decoration:underline}
+main{max-width:680px;margin:0 auto;padding:40px 40px 80px}
+.crumb{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:28px}.crumb a{color:var(--text3);text-decoration:none}.crumb a:hover{color:var(--blue)}
+h1{font-size:22px;font-weight:600;margin-bottom:10px}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.lead{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.6}
+p{font-size:14px;color:var(--text2);margin-bottom:14px;line-height:1.6}
+ul{font-size:14px;color:var(--text2);line-height:1.7;margin:0 0 16px 24px}
+li{margin-bottom:4px}
+.f{font-weight:600;color:var(--blue)}
+.mono{font-family:var(--mono);font-size:12px;color:var(--text2);background:var(--bg3);padding:1px 5px;border-radius:3px}
+.field-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.field-table th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)}
+.field-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top;line-height:1.55}
+.field-table tr:last-child td{border-bottom:none}
+.field-table td:first-child{font-family:var(--mono);font-size:12px;color:var(--text);white-space:nowrap;padding-right:16px}
+.req{font-size:10px;color:var(--amber);font-family:var(--mono);margin-left:4px}
+.opt{font-size:10px;color:var(--text3);font-family:var(--mono);margin-left:4px}
+.note{margin-top:20px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.6}
+.callout{margin:20px 0;padding:16px 18px;background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:var(--radius);font-size:14px;color:var(--text2);line-height:1.65}
+.related{margin-top:40px}.rtitle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:4px;margin:0;padding:0}
+.rlist li{margin:0}
+.rlist li a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);color:var(--text2);text-decoration:none;font-size:13px;border:1px solid transparent}
+.rlist li a:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="htitle">DQ Accelerator</div><div class="hsub">Ministry of Justice &mdash; Data Quality Store</div></div>
+  <a class="back" href="../index.html">&larr; User Guide</a>
+</header>
+<main>
+  <div class="crumb"><a href="../index.html">User Guide</a> &rsaquo; DQ Engine Reference</div>
+  <h1>How to define a CDE for the engine</h1>
+  <p class="lead">The Critical Data Element tells the engine which Athena table and column to check. This page covers each CDE field from the engine's perspective &mdash; what it does and when it is required.</p>
+
+  <h2>CDE field reference</h2>
+  <p>When the engine processes a rule allocation, it looks up the linked CDE and uses these fields to build and execute the SQL.</p>
+
+  <table class="field-table">
+    <thead><tr><th>Field</th><th>Required</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>critical_data_element_id</td>
+        <td><span class="req">required</span></td>
+        <td>Unique identifier for this CDE. Referenced by rule allocations.</td>
+      </tr>
+      <tr>
+        <td>critical_dataset_id</td>
+        <td><span class="req">required</span></td>
+        <td>The parent Critical Data Set this CDE belongs to.</td>
+      </tr>
+      <tr>
+        <td>source_database_name</td>
+        <td><span class="req">required</span></td>
+        <td>The Athena database name. Substituted into the rule SQL wherever <span class="mono">&#123;SOURCE_DATABASE_NAME&#125;</span> appears.</td>
+      </tr>
+      <tr>
+        <td>source_table_name</td>
+        <td><span class="req">required</span></td>
+        <td>The Athena table name. Substituted into the rule SQL wherever <span class="mono">&#123;SOURCE_TABLE_NAME&#125;</span> appears.</td>
+      </tr>
+      <tr>
+        <td>source_field_name</td>
+        <td><span class="opt">automated rules only</span></td>
+        <td>The column to check. Substituted into the rule SQL wherever <span class="mono">&#123;SOURCE_FIELD_NAME&#125;</span> appears. Leave blank for manual rules or rules that do not reference a specific column.</td>
+      </tr>
+      <tr>
+        <td>source_snapshot_filter</td>
+        <td><span class="opt">optional</span></td>
+        <td>A SQL predicate that pins the check to the most recent data load. Applied to both the failures query and the denominator query. See below.</td>
+      </tr>
+      <tr>
+        <td>retiring_timestamp</td>
+        <td><span class="opt">optional</span></td>
+        <td>Set to a past timestamp to deactivate this CDE. Leave blank to keep the CDE active. When retired, all rule allocations linked to this CDE are also excluded from runs.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>The snapshot filter</h2>
+  <p>Many source tables accumulate multiple data loads over time &mdash; daily extracts, monthly snapshots, or SCD history. Without a snapshot filter, a rule would evaluate every row in the table, mixing current and historical records.</p>
+  <p>The snapshot filter is a SQL <span class="mono">WHERE</span> clause fragment that identifies which rows represent the current picture. The engine appends it to your rule SQL as <span class="mono">AND {filter}</span> after snapshot filter injection, so your rule SQL must always have an outer <span class="mono">WHERE</span> clause when a filter is set.</p>
+
+  <div class="callout">The snapshot filter is shared between the failures query and the denominator query. Both measure the same slice of data, so the pass rate is meaningful rather than comparing different record populations.</div>
+
+  <p>The filter value can use the same <span class="mono">&#123;SOURCE_DATABASE_NAME&#125;</span> and <span class="mono">&#123;SOURCE_TABLE_NAME&#125;</span> placeholders as the rule SQL. These are substituted before the filter is appended.</p>
+  <p>Example filter value:</p>
+  <p style="font-family:var(--mono);font-size:12px;color:var(--text2);background:var(--bg3);padding:10px 14px;border-radius:var(--radius);border:1px solid var(--border);margin:8px 0 16px">glueexporteddate = (SELECT MAX(glueexporteddate) FROM &#123;source_database_name&#125;.&#123;source_table_name&#125;)</p>
+  <p>For guidance on identifying the right filter value for a CDE, see <a href="../data-stewardship/snapshot-filter.html" style="color:var(--blue)">What is a snapshot filter?</a></p>
+
+  <h2>source_field_name &mdash; when it is required</h2>
+  <p>This field is only needed when the rule SQL contains the <span class="mono">&#123;SOURCE_FIELD_NAME&#125;</span> placeholder. Rules that check table-level conditions (row counts, date ranges across the whole table) do not need it. Rules that check a specific column &mdash; null checks, format checks, allowed-value checks &mdash; do.</p>
+  <ul>
+    <li>For manual rules: leave blank. The SQL for a manual rule points at an upload table and does not reference individual source columns.</li>
+    <li>For automated rules that use <span class="mono">&#123;SOURCE_FIELD_NAME&#125;</span>: the field must be populated or the substitution will produce invalid SQL.</li>
+  </ul>
+
+  <div class="note">The three source fields (database, table, field) are substituted as double-quoted Athena identifiers. You do not need to add quotes in the CDE &mdash; the engine adds them automatically during placeholder substitution.</div>
+
+  <div class="related">
+    <div class="rtitle">Related guides</div>
+    <ul class="rlist">
+      <li><a href="../data-stewardship/cde-add.html">How to add a Critical Data Element &rsaquo;</a></li>
+      <li><a href="../data-stewardship/snapshot-filter.html">What is a snapshot filter? &rsaquo;</a></li>
+      <li><a href="automated-rule-sql.html">How to write SQL for automated rules &rsaquo;</a></li>
+    </ul>
+  </div>
+</main>
+<footer>DQ Accelerator &mdash; Ministry of Justice &mdash; &copy; Cognizant Technology Solutions</footer>
+</body>
+</html>
