@@ -5,6 +5,20 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260922-0823 — Feature: Task List export — CSV / JSON format toggle
+
+**Date:** 2026-09-22
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| CSV / JSON format toggle on Task List export | 5 min | 0 min | 10 min | |
+| **Total** | **5 min** | **0 min** | **10 min** | |
+
+### Changes delivered
+- `src/235_export_tasklist.js`: `buildTaskListJSON()` added; `exportFormat` state; segmented CSV/JSON toggle UI; `handleExport` branches on format
+
+---
+
 ## build-20260918-2015 — Fix: Failures/Denominator Counter rename; optional CDE fields; Task List UI fixes
 
 **Date:** 2026-09-18
