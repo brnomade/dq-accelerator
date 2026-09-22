@@ -75,10 +75,14 @@ footer{border-top:1px solid var(--border);padding:16px 40px;font-size:11px;color
 
   <h2>Exporting the file</h2>
   <ol class="steps">
-    <li><div class="snum">9</div><div class="sbody">Click <span class="f">Export N selected rows</span>. The button shows the number of currently selected rows and is disabled when none are selected. A file save dialog opens &mdash; choose a location and confirm. The filename follows the pattern <span class="mono">dq_task_list_[name]_[timestamp].csv</span>.</div></li>
+    <li><div class="snum">9</div><div class="sbody">Choose the export format using the <span class="f">CSV / JSON</span> toggle to the left of the export button.<div class="sub">
+      &bull; <strong>CSV</strong> (default) &mdash; RFC 4180 comma-separated file, 13 labelled columns. Suitable for import into Excel, Google Sheets, or Trello automation tools.<br/>
+      &bull; <strong>JSON</strong> &mdash; Pretty-printed JSON array, one object per row, using snake_case keys. Suitable for programmatic processing or API integration.
+    </div></div></li>
+    <li><div class="snum">10</div><div class="sbody">Click <span class="f">Export N selected rows</span>. The button shows the number of currently selected rows and is disabled when none are selected. A file save dialog opens &mdash; choose a location and confirm. The filename follows the pattern <span class="mono">dq_task_list_[name]_[timestamp].csv</span> or <span class="mono">.json</span> depending on the chosen format.</div></li>
   </ol>
 
-  <div class="note">The exported CSV contains 13 columns: Task Type, Agency Acronym, CDS Name, CDE Table, CDE Database, CDE Field, Quality Dimension, Rule Name, Rule Explanation, Steward Name, Failures Counter SQL, Denominator Counter SQL, and CDE Snapshot Filter SQL. SQL columns are populated only for TEST rows &mdash; they are empty for IMPLEMENT rows. When multiple stewards are assigned to a CDS their names appear in the Steward Name column separated by a hyphen. Collapsing a group in the preview does not affect what is exported &mdash; only the checkbox state determines inclusion.</div>
+  <div class="note">Both formats contain the same 13 fields: Task Type, Agency Acronym, CDS Name, CDE Table, CDE Database, CDE Field, Quality Dimension, Rule Name, Rule Explanation, Steward Name, Failures Counter SQL, Denominator Counter SQL, and CDE Snapshot Filter SQL. SQL fields are populated only for TEST rows &mdash; they are empty for IMPLEMENT rows. When multiple stewards are assigned to a CDS their names appear in the Steward Name field separated by a hyphen. Collapsing a group in the preview does not affect what is exported &mdash; only the checkbox state determines inclusion.</div>
 
   <div class="related">
     <div class="rtitle">Related guides</div>

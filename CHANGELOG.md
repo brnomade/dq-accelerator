@@ -4,6 +4,13 @@ Records high-level changes delivered in each build. Most recent release is liste
 
 ---
 
+## build-20260922-0823 — Feature: Task List export — CSV / JSON format toggle
+
+### Changed
+- **`src/235_export_tasklist.js`** — Task List export panel: added a CSV / JSON segmented toggle control beside the export button. Selecting JSON exports the selected rows as a pretty-printed JSON array (snake_case keys); selecting CSV retains the existing RFC 4180 behaviour. The filename extension and MIME type update automatically to match the chosen format.
+
+---
+
 ## build-20260918-2015 — Fix: Failures/Denominator Counter rename; optional CDE fields; Task List UI fixes
 
 ### Changed

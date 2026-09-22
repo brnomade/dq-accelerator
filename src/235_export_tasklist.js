@@ -125,6 +125,18 @@ function buildTaskListCSV(rows) {
 }
 
 // ---------------------------------------------------------------------------
+// buildTaskListJSON -- converts selected row objects to pretty-printed JSON array
+// ---------------------------------------------------------------------------
+function buildTaskListJSON(rows) {
+  const arr = rows.map(row => {
+    const obj = {};
+    TASK_LIST_COLS.forEach(c => { obj[c.key] = row[c.key] !== undefined ? row[c.key] : null; });
+    return obj;
+  });
+  return JSON.stringify(arr, null, 2);
+}
+
+// ---------------------------------------------------------------------------
 // groupRows -- groups flat row array by agency then CDS, sorts within groups
 // ---------------------------------------------------------------------------
 function groupRows(rows, sortCol, sortDir) {
@@ -286,6 +298,7 @@ function TaskListExportTab() {
   const [selectedKeys,      setSelectedKeys]      = useState(() => new Set());
   const [selectedRow,       setSelectedRow]       = useState(null);
   const [exporting,         setExporting]         = useState(false);
+  const [exportFormat,      setExportFormat]      = useState('csv');
 
   const headerCheckRef = useRef(null);
 
@@ -374,15 +387,21 @@ function TaskListExportTab() {
     setExporting(true);
     try {
       const selected = rows.filter((_, i) => selectedKeys.has(i));
-      const csv      = buildTaskListCSV(selected);
-      const blob     = new Blob([csv], { type: 'text/csv' });
       const ts       = new Date().toISOString().replace(/[:\-T.Z]/g, '').slice(0, 14);
       const namePart = isMaster
         ? 'master'
         : (stewardIdentity && stewardIdentity.name
             ? stewardIdentity.name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')
             : 'unknown');
-      await saveWithPicker(blob, 'dq_task_list_' + namePart + '_' + ts + '.csv', 'CSV File', '.csv');
+      if (exportFormat === 'json') {
+        const json = buildTaskListJSON(selected);
+        const blob = new Blob([json], { type: 'application/json' });
+        await saveWithPicker(blob, 'dq_task_list_' + namePart + '_' + ts + '.json', 'JSON File', '.json');
+      } else {
+        const csv  = buildTaskListCSV(selected);
+        const blob = new Blob([csv], { type: 'text/csv' });
+        await saveWithPicker(blob, 'dq_task_list_' + namePart + '_' + ts + '.csv', 'CSV File', '.csv');
+      }
     } finally {
       setExporting(false);
     }
@@ -430,6 +449,23 @@ function TaskListExportTab() {
       <div className="card" style={{ marginBottom: 16 }}>
         <div className="card-title"><span className="dot"/>Task List</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{
+            display: 'flex', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius)', overflow: 'hidden',
+          }}>
+            {['csv', 'json'].map(fmt => (
+              <button key={fmt} onClick={() => setExportFormat(fmt)}
+                style={{
+                  padding: '4px 10px', fontSize: 11,
+                  fontFamily: 'var(--mono)', fontWeight: 700,
+                  border: 'none', cursor: 'pointer', textTransform: 'uppercase',
+                  background: exportFormat === fmt ? 'var(--accent)' : 'var(--bg3)',
+                  color:      exportFormat === fmt ? '#fff'           : 'var(--text2)',
+                }}>
+                {fmt}
+              </button>
+            ))}
+          </div>
           <button className="btn btn-primary" onClick={handleExport}
             disabled={exporting || selCount === 0}>
             <Icon.Download/>
