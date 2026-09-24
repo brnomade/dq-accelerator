@@ -1,0 +1,63 @@
+============================================================
+DQ Accelerator V2 — AWS Browser Compatibility Spike Test
+============================================================
+
+Configuration:
+  Region:         eu-west-1
+  Access Key ID:  AKIAXOZJ************
+  Session Token:  not set
+  S3 Bucket:      dq-accelerator-metada-store-512798217240-eu-west-1-an
+  Workgroup:      primary
+  Origin header:  http://localhost
+
+
+[Test 1] CORS preflight to Athena API endpoint
+  [PASS] Athena CORS preflight
+         OPTIONS https://athena.eu-west-1.amazonaws.com/
+         Response status: 200
+         Access-Control-Allow-Origin: *
+         Access-Control-Allow-Methods: POST
+         Access-Control-Allow-Headers: authorization, content-type, x-amz-date, x-amz-security-token
+
+[Test 2] Authenticated Athena API call (ListWorkGroups)
+  [PASS] Athena authenticated API call (ListWorkGroups)
+         HTTP 200 — WorkGroups found: ['primary']
+
+[Test 3] CORS preflight to S3 endpoint
+  [PASS] S3 CORS preflight
+         OPTIONS https://dq-accelerator-metada-store-512798217240-eu-west-1-an.s3.eu-west-1.amazonaws.com/
+         Response status: 200
+         Access-Control-Allow-Origin: *
+         Note: S3 CORS is opt-in per bucket. If this FAILS, add a CORS rule to the bucket (AllowedOrigin: *, AllowedMethod: GET/PUT/DELETE, AllowedHeader: *).
+
+[Test 4] Authenticated S3 PutObject
+  [PASS] S3 PutObject
+         HTTP 200 — PUT s3://dq-accelerator-metada-store-512798217240-eu-west-1-an/dq-spike-test/cors_spike_probe.txt
+
+[Test 5] Authenticated S3 GetObject
+  [PASS] S3 GetObject
+         HTTP 200 — GET s3://dq-accelerator-metada-store-512798217240-eu-west-1-an/dq-spike-test/cors_spike_probe.txt
+         Body: dq-accelerator-cors-spike-probe
+
+[Test 6] Authenticated S3 DeleteObject (cleanup)
+  [PASS] S3 DeleteObject (cleanup)
+         HTTP 204 — DELETE s3://dq-accelerator-metada-store-512798217240-eu-west-1-an/dq-spike-test/cors_spike_probe.txt
+
+============================================================
+SPIKE TEST SUMMARY
+============================================================
+  [PASS] Athena CORS preflight
+  [PASS] Athena authenticated API call (ListWorkGroups)
+  [PASS] S3 CORS preflight
+  [PASS] S3 PutObject
+  [PASS] S3 GetObject
+  [PASS] S3 DeleteObject (cleanup)
+
+RECOMMENDATION
+------------------------------------------------------------
+  All critical tests passed.
+  Direct browser → AWS calls are viable.
+  Proceed to Phase 1 of PLAN_V2_CLOUD_DATABASE.md.
+============================================================
+
+Process finished with exit code 0

@@ -1,26 +1,87 @@
 #!/usr/bin/env python3
 """
-build.py  --  assembles dist/dq-accelerator.html from src/ modules
-Usage:  python build.py
-Output: dist/dq-accelerator.html
-        dist/dq-accelerator-<build-number>.zip  (HTML + CHANGELOG.md + KNOWN_ISSUES.md + README.md + EXECUTIVE_SUMMARY.md + user-guide/)
+build.py  --  assembles dist/dq-accelerator[-<suffix>].html from src/ modules
+
+Usage:
+  python build.py
+
+Output filename and changelog selection are determined automatically from the
+current git branch:
+
+  Branch          Output HTML                        Changelog
+  ─────────────── ────────────────────────────────── ─────────────────────
+  master          dq-accelerator.html                CHANGELOG.md
+  v2              dq-accelerator-v2.html             CHANGELOG_V2.md
+  feat/phase1 *   dq-accelerator-v2-feat-phase1.html CHANGELOG_V2.md
+  feature/foo **  dq-accelerator.html                CHANGELOG.md
+
+  *  branch forked from v2 (detected via git merge-base)
+  ** branch forked from master
+
+ZIP:  dist/dq-accelerator[-<suffix>]-<build-number>.zip
+      (HTML + changelog + known-issues + README + EXECUTIVE_SUMMARY + user-guide/)
 """
 
-import glob, os, re, sys, hashlib, datetime, zipfile
+import glob, os, re, sys, hashlib, datetime, zipfile, subprocess
 from pathlib import Path
 
 ROOT         = Path(__file__).parent.parent
 SRC          = ROOT / 'src'
 DIST         = ROOT / 'dist'
 TEMPLATE     = ROOT / 'build' / 'template.html'
-OUT          = DIST / 'dq-accelerator.html'
-CHANGELOG         = ROOT / 'CHANGELOG.md'
-KNOWN_ISSUES      = ROOT / 'KNOWN_ISSUES.md'
 README            = ROOT / 'README.md'
 EXECUTIVE_SUMMARY = ROOT / 'EXECUTIVE_SUMMARY.md'
 USER_GUIDE        = ROOT / 'documentation' / 'user-guide'
 
 DIST.mkdir(exist_ok=True)
+
+# ── 0. Detect branch and determine build variant ──────────────
+def _get_branch():
+    try:
+        return subprocess.check_output(
+            ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
+            cwd=str(ROOT), stderr=subprocess.DEVNULL, text=True
+        ).strip()
+    except Exception:
+        return ''
+
+def _is_v2_descendant():
+    """True if the v2 branch is an ancestor of the current commit."""
+    try:
+        r = subprocess.run(
+            ['git', 'merge-base', '--is-ancestor', 'v2', 'HEAD'],
+            cwd=str(ROOT), capture_output=True
+        )
+        return r.returncode == 0
+    except Exception:
+        return False
+
+def _sanitize(name):
+    """Convert a branch name to a filename-safe slug."""
+    return re.sub(r'-+', '-', re.sub(r'[^a-z0-9]+', '-', name.lower())).strip('-')
+
+branch = _get_branch()
+
+if branch in ('master', ''):
+    suffix = ''
+elif branch == 'v2':
+    suffix = 'v2'
+elif _is_v2_descendant():
+    suffix = f'v2-{_sanitize(branch)}'
+else:
+    suffix = ''   # V1 feature branch: same output as master
+
+is_v2   = suffix.startswith('v2')
+html_name = f'dq-accelerator-{suffix}.html' if suffix else 'dq-accelerator.html'
+zip_stem  = f'dq-accelerator-{suffix}'       if suffix else 'dq-accelerator'
+
+OUT          = DIST / html_name
+CHANGELOG    = ROOT / ('CHANGELOG_V2.md'    if is_v2 else 'CHANGELOG.md')
+KNOWN_ISSUES = ROOT / ('KNOWN_ISSUES_V2.md' if is_v2 else 'KNOWN_ISSUES.md')
+
+print(f'  Branch : {branch or "(unknown)"}')
+print(f'  Variant: {"v2" if is_v2 else "v1"}')
+print(f'  Output : {html_name}')
 
 # ── 1. Load template ──────────────────────────────────────────
 template = TEMPLATE.read_text(encoding='utf-8')
@@ -30,7 +91,7 @@ css_files = sorted(SRC.glob('*.css'))
 if not css_files:
     sys.exit('ERROR: no .css files found in src/')
 css = '\n'.join(f.read_text(encoding='utf-8') for f in css_files)
-print(f"  CSS: {', '.join(f.name for f in css_files)}")
+print(f"  CSS    : {', '.join(f.name for f in css_files)}")
 
 # ── 3. Load JS in numeric order ───────────────────────────────
 def sort_key(p):
@@ -44,7 +105,7 @@ if not js_files:
 js_parts = []
 for f in js_files:
     js_parts.append(f.read_text(encoding='utf-8'))
-    print(f"  JS:  {f.name}  ({f.stat().st_size:,} bytes)")
+    print(f"  JS     : {f.name}  ({f.stat().st_size:,} bytes)")
 js = '\n'.join(js_parts)
 
 # ── 4a. Generate build number and inject into JS ─────────────
@@ -52,7 +113,7 @@ build_number = datetime.datetime.now().strftime('build-%Y%m%d-%H%M')
 if '<!-- INJECT_BUILD -->' not in js:
     sys.exit('ERROR: <!-- INJECT_BUILD --> placeholder not found in JS modules')
 js = js.replace('<!-- INJECT_BUILD -->', build_number)
-print(f"  Build: {build_number}")
+print(f"  Build  : {build_number}")
 
 # ── 4b. Validate JS: no non-ASCII ────────────────────────────
 bad = [(js[:i].count('\n')+1, ord(c), c)
@@ -82,19 +143,16 @@ html = html.replace('<!-- INJECT_JS -->',  js_block)
 # ── 6. Validate output ────────────────────────────────────────
 errors = []
 
-# One babel block
 babel_blocks = re.findall(r'<script[^>]+text/babel', html, re.IGNORECASE)
 if len(babel_blocks) != 1:
     errors.append(f'Expected 1 babel block, found {len(babel_blocks)}')
 
-# No </script> inside babel block
 b_start = html.index('<script type="text/babel">') + len('<script type="text/babel">')
 b_end   = html.index('</script>', b_start)
 babel_inner = html[b_start:b_end]
 if '</script>' in babel_inner.lower():
     errors.append('</script> found inside babel block')
 
-# Each structural tag appears exactly once
 for tag in ['<head>', '</head>', '<body>', '</body>']:
     n = html.lower().count(tag.lower())
     if n != 1:
@@ -115,18 +173,18 @@ md5         = hashlib.md5(html.encode()).hexdigest()
 babel_lines = babel_inner.count('\n')
 
 # ── 8. Zip the output (HTML + release docs + user guide) ──────
-zip_name = f'dq-accelerator-{build_number}.zip'
+zip_name = f'{zip_stem}-{build_number}.zip'
 zip_path = DIST / zip_name
 
 guide_files = sorted(USER_GUIDE.rglob('*')) if USER_GUIDE.exists() else []
 guide_files = [f for f in guide_files if f.is_file()]
 
 with zipfile.ZipFile(zip_path, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
-    zf.write(OUT, arcname='dq-accelerator.html')
+    zf.write(OUT, arcname=html_name)
     if CHANGELOG.exists():
-        zf.write(CHANGELOG, arcname='CHANGELOG.md')
+        zf.write(CHANGELOG, arcname=CHANGELOG.name)
     if KNOWN_ISSUES.exists():
-        zf.write(KNOWN_ISSUES, arcname='KNOWN_ISSUES.md')
+        zf.write(KNOWN_ISSUES, arcname=KNOWN_ISSUES.name)
     if README.exists():
         zf.write(README, arcname='README.md')
     if EXECUTIVE_SUMMARY.exists():
@@ -137,9 +195,9 @@ with zipfile.ZipFile(zip_path, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
 
 zip_size = zip_path.stat().st_size
 
-bundled = ['dq-accelerator.html']
-if CHANGELOG.exists():         bundled.append('CHANGELOG.md')
-if KNOWN_ISSUES.exists():      bundled.append('KNOWN_ISSUES.md')
+bundled = [html_name]
+if CHANGELOG.exists():         bundled.append(CHANGELOG.name)
+if KNOWN_ISSUES.exists():      bundled.append(KNOWN_ISSUES.name)
 if README.exists():            bundled.append('README.md')
 if EXECUTIVE_SUMMARY.exists(): bundled.append('EXECUTIVE_SUMMARY.md')
 if guide_files:                bundled.append(f'user-guide/ ({len(guide_files)} files)')
