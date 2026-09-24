@@ -2,17 +2,28 @@
 
 **Design:** `designs/version-2/DESIGN_V2_CLOUD_DATABASE.md`  
 **Date:** 2026-09-24  
-**Status:** Ready for implementation (pending spike test result)
+**Status:** In implementation. Phase 0 complete; Phase 1 in progress on branch `feature/aws-sigv4`.
 
 ---
 
 ## Prerequisites
 
-Before any implementation begins:
+All prerequisites are satisfied:
 
-1. Run `tests/spike_athena_cors.py` (see Phase 0)
-2. Review spike results and choose transport strategy (direct browser calls vs local proxy)
-3. If proxy fallback is needed, append a Phase 0.5 to this plan before proceeding
+1. ~~Run `tests/spike_athena_cors.py` (see Phase 0)~~ -- done 2026-09-24
+2. ~~Review spike results and choose transport strategy~~ -- all 6 tests PASS; **direct browser calls confirmed, no local proxy required**
+3. ~~If proxy fallback is needed, append a Phase 0.5 to this plan~~ -- not needed; no Phase 0.5
+
+### File numbering
+
+Confirmed 2026-09-24, superseding the numbers in the first draft of the design. The foundation files sit in the low band because they have no dependencies; only the React screen stays in the 200s. See "Numbering rationale" in the design doc.
+
+| Draft number | Actual number | Reason |
+|---|---|---|
+| `213_aws_sigv4.js` | `15_aws_sigv4.js` | Zero dependencies; pure `SubtleCrypto` primitive |
+| `214_connector_base.js` | `16_connector_base.js` | Zero dependencies; must load before any connector registers |
+| `216_connector_athena.js` | `47_connector_athena.js` | Needs `SCHEMA` (10), sigv4 (15), registry (16), `coerceValue` (20), `tableToCSV` (40) |
+| `217_screen_db_settings.js` | `217_screen_db_settings.js` | Unchanged -- React screen, belongs with the other screens |
 
 ---
 
@@ -37,8 +48,8 @@ Before any implementation begins:
 
 | Task | Description | Done |
 |---|---|---|
-| 1.1 | Create `src/213_aws_sigv4.js` — implement `signAwsRequest(method, url, headers, body, credentials, region, service)` using `SubtleCrypto.digest` and `SubtleCrypto.sign` | [ ] |
-| 1.2 | Manually test in browser console: sign a synthetic request, verify the Authorization header format matches AWS SigV4 spec | [ ] |
+| 1.1 | Create `src/15_aws_sigv4.js` — implement `signAwsRequest(method, url, headers, body, credentials, region, service)` using `SubtleCrypto.digest` and `SubtleCrypto.sign` | [x] **Done, build-20260924-2008.** Ported from `tests/spike_athena_cors.py`. ASCII-clean; loads between `10_constants.js` and `20_data_utils.js` |
+| 1.2 | Manually test in browser console: sign a synthetic request, verify the Authorization header format matches AWS SigV4 spec | [x] **PASS 2026-09-24.** All 3 frozen-clock cases (Athena with and without session token, S3 PutObject) produced signatures identical to the Python reference. `host` correctly excluded from returned headers; payload hash verified |
 
 **Key constraints:**
 - No non-ASCII characters in JS
@@ -55,9 +66,9 @@ Before any implementation begins:
 
 | Task | Description | Done |
 |---|---|---|
-| 2.1 | Create `src/214_connector_base.js` — define `ConnectorRegistry = {}` (initially empty), add `FieldDef` and `StepResult` type documentation as comments | [ ] |
+| 2.1 | Create `src/16_connector_base.js` — define `ConnectorRegistry = {}` (initially empty), add `FieldDef` and `StepResult` type documentation as comments | [ ] |
 
-**Note:** `AthenaConnector` registers itself at the bottom of `216_connector_athena.js` via `ConnectorRegistry['athena'] = AthenaConnector` — no changes to `214_connector_base.js` needed when adding future connectors.
+**Note:** `AthenaConnector` registers itself at the bottom of `47_connector_athena.js` via `ConnectorRegistry['athena'] = AthenaConnector` — no changes to `16_connector_base.js` needed when adding future connectors.
 
 **Expected duration:** 30 minutes
 
@@ -71,7 +82,7 @@ Build and test each method in isolation before wiring into the UI.
 
 | Task | Description | Done |
 |---|---|---|
-| 3.1 | Create `src/216_connector_athena.js` skeleton — `getConfigSchema()` and config constant | [ ] |
+| 3.1 | Create `src/47_connector_athena.js` skeleton — `getConfigSchema()` and config constant | [ ] |
 | 3.2 | Implement Athena API helper: `athenaQuery(config, queryString)` — calls StartQueryExecution, polls GetQueryExecution, returns QueryExecutionId | [ ] |
 | 3.3 | Implement `athenaGetResults(config, queryExecutionId)` — paginated GetQueryResults, returns array of row objects | [ ] |
 | 3.4 | Implement S3 helper: `s3PutObject(config, key, csvString)` | [ ] |
@@ -197,4 +208,6 @@ Build and test each method in isolation before wiring into the UI.
 
 ## Decision gate
 
-Phase 0 (spike) is a hard gate. Do not begin Phase 1 until the CORS question is resolved and the transport strategy is confirmed.
+Phase 0 (spike) was a hard gate: Phase 1 could not begin until the CORS question was resolved and the transport strategy confirmed.
+
+**Gate cleared 2026-09-24.** All 6 spike tests passed against region `eu-west-1` (see `designs/version-2/spike-results.txt`). Athena and S3 both returned `Access-Control-Allow-Origin: *`. Transport strategy is direct browser `fetch` with SigV4 signing; no local proxy.
