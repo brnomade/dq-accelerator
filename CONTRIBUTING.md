@@ -4,13 +4,27 @@ Branching rules, commit conventions, and PR process for the DQ Accelerator.
 
 ---
 
+## Release lines
+
+The repository has two parallel, long-lived release lines:
+
+| Branch | Purpose |
+|---|---|
+| `master` | V1 — current production line; ongoing bug fixes and V1 features |
+| `v2` | V2 — Cloud Database Integration line; never merged into `master` |
+
+These lines are permanently parallel. Code does not flow between them.
+
+---
+
 ## Branch rules
 
 | Rule | Detail |
 |---|---|
-| **Never commit directly to `master`** | All changes — code, documentation, designs, plans — must go through a branch and a PR |
-| **No branch-from-branch** | Always branch from `master`. Do not create a feature branch off another feature branch |
-| **Keep branches short-lived** | A branch should represent one coherent unit of work. Merge back to `master` as soon as it is tested and reviewed |
+| **Never commit directly to `master` or `v2`** | All changes must go through a feature/fix branch and a PR |
+| **Branch from your release line's base** | V1 work branches from `master`; V2 work branches from `v2`. No cross-line branching. |
+| **No branch-from-branch** | Do not create a feature branch off another feature branch |
+| **Keep branches short-lived** | A branch should represent one coherent unit of work. Merge back to its base as soon as it is tested and reviewed |
 
 ---
 
@@ -22,16 +36,25 @@ fix/<issue-id>-<kebab-case-description>
 docs/<kebab-case-description>
 ```
 
-**Examples:**
+**Examples — V1 (branched from `master`):**
 
 ```
 feature/csv-table-import
-feature/dashboard-integrity-improvements
 fix/ki9-conflict-card-context
 docs/developer-onboarding
 ```
 
-Use `fix/ki<N>-...` when the branch addresses a specific known issue from `KNOWN_ISSUES.md`. Use `feature/` for new functionality. Use `docs/` for documentation-only changes with no build involved.
+**Examples — V2 (branched from `v2`):**
+
+```
+feature/phase1-sigv4
+feature/athena-connector
+fix/cors-handling
+```
+
+Do not include "v2" in V2 branch names — the build script detects v2 ancestry automatically and adds the correct suffix to the output filename.
+
+Use `fix/ki<N>-...` when the branch addresses a specific known issue. For V2, reference `KNOWN_ISSUES_V2.md`. Use `feature/` for new functionality. Use `docs/` for documentation-only changes with no build involved.
 
 ---
 
@@ -71,16 +94,16 @@ Include the build ID in any commit that produces a build artefact. For documenta
 
 ## Pull requests
 
-1. Ensure the branch is up to date with `master` before opening the PR
+1. Ensure the branch is up to date with its base (`master` for V1, `v2` for V2) before opening the PR
 2. The PR title follows the same format as the commit message
 3. The PR description should reference:
    - The design document (`designs/DESIGN_FEATURE_NAME.md`) if one exists
    - The plan document (`plans/PLAN_FEATURE_NAME.md`) if one exists
    - Any known issues addressed (e.g., `Closes KI-9`)
-4. The PR must include a `CHANGELOG.md` entry
+4. The PR must include a changelog entry — `CHANGELOG.md` for V1, `CHANGELOG_V2.md` for V2
 5. All user guide updates must be included in the same PR as the feature change — not in a follow-up PR
 
-Merges to `master` use a merge commit (not squash or rebase) so the branch history is preserved.
+Merges use a merge commit (not squash or rebase) so the branch history is preserved.
 
 ---
 

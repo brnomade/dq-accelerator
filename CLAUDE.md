@@ -6,6 +6,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **dq-accelerator** is a browser-only single-page application (SPA) for managing Data Quality metadata for the Ministry of Justice (MOJ). It has no backend, no npm, no node_modules — everything runs from a single bundled HTML file (`dist/dq-accelerator.html`) using CDN-loaded dependencies compiled by Babel at runtime.
 
+## Branch
+
+This is the **v2** branch — Cloud Database Integration line. V1 development continues on `master`.
+
+- V2 feature branches must be forked from `v2`, not from `master`.
+- Branch naming: `feature/<description>` or `fix/<description>` (no need to include "v2" in the name — the build script detects ancestry automatically).
+- PRs merge back into `v2`, never into `master`.
+- `v2` is never merged into `master` — they are parallel release lines.
+
 ## Build
 
 ```bash
@@ -13,14 +22,19 @@ cd build
 python build.py
 ```
 
-Output: `dist/dq-accelerator.html` (~500KB, self-contained). Open directly in a browser via `file://` or HTTP — no server required.
+Output: `dist/dq-accelerator-v2.html` (self-contained). Open directly in a browser via `file://` or HTTP — no server required.
 
-The build script (`build/build.py`):
+The build script (`build/build.py`) auto-detects the current git branch:
+- On `v2` → outputs `dq-accelerator-v2.html`, bundles `CHANGELOG_V2.md` + `KNOWN_ISSUES_V2.md`
+- On a feature branch forked from `v2` → outputs `dq-accelerator-v2-<branch>.html`
+- On `master` or a V1 feature branch → outputs `dq-accelerator.html` (V1 behaviour unchanged)
+
+Steps:
 1. Reads `build/template.html`
 2. Concatenates all `src/*.css` and `src/*.js` files **in numeric filename order** (00–240)
 3. Injects a React destructuring shim so JSX components can use `const { useState } = React`
 4. Validates no non-ASCII characters in JS (CDN Babel limitation)
-5. Writes the final bundle to `dist/dq-accelerator.html`
+5. Writes the final bundle to `dist/dq-accelerator-v2.html`
 
 **There are no tests, no linter config, and no package.json.** Manual browser testing is the only validation mechanism.
 
@@ -54,7 +68,7 @@ Example of what NOT to do: user says "show rules named Generic - ... always, and
 Designs are stored in the designs folder. 
 Tasks or implementation plans are stored in the plans folder.
 For all major implementation activities, a design and implementation plan needs to be produced, stored and presented to the user. No implementation shall start without the review of such documents and explicit approval by the user.
-Issues are stored in the issues file called KNOWN_ISSUES.md
+Issues are stored in `KNOWN_ISSUES_V2.md` (v2 issues only; v1 issues remain in `KNOWN_ISSUES.md`).
 
 User documentation is stored in `documentation/user-guide/`. It consists of static HTML pages: an `index.html` main table of contents organised by topic, and individual "How to..." guide pages. Guides are text-only (no screenshots), written in direct step-focused language. Documentation grows alongside features — there is no separate retroactive documentation pass.
 
@@ -64,9 +78,9 @@ These four steps are required after every task. Triggers differ per step — rea
 
 1. **Update APP_TREE.md** — triggered by structural changes, not every build. Update immediately after any task that: creates, deletes, or renames a source file; adds, removes, or relabels a sidebar item; introduces or rewires a form panel; renames a component; or changes a route string. Move retired files to the Legacy section rather than deleting them. APP_TREE.md is the navigation map used at the start of every subsequent task — keep it accurate so the next session starts with correct file locations.
 
-2. **Update CHANGELOG.md and SESSION_METRICS.md before running the build** — the build script bundles `CHANGELOG.md` and `KNOWN_ISSUES.md` into the release zip at build time, so any entries added after the build are absent from the zip. The correct sequence is:
+2. **Update CHANGELOG_V2.md and SESSION_METRICS.md before running the build** — the build script bundles `CHANGELOG_V2.md` and `KNOWN_ISSUES_V2.md` into the release zip at build time, so any entries added after the build are absent from the zip. The correct sequence is:
    - Pre-generate the build ID by running: `python -c "import datetime; print(datetime.datetime.now().strftime('build-%Y%m%d-%H%M'))"`
-   - Write the CHANGELOG.md and SESSION_METRICS.md entries using that ID.
+   - Write the CHANGELOG_V2.md and SESSION_METRICS.md entries using that ID.
    - Run `python build.py` immediately (within the same minute so the ID matches).
    - The zip will now contain the up-to-date changelog.
 
