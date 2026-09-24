@@ -8,7 +8,7 @@ Tests whether a browser can make direct fetch() calls to AWS Athena and S3 witho
 CORS errors, and validates that SigV4 signing and credentials work end-to-end.
 
 All AWS signing uses Python stdlib only (hmac, hashlib, urllib) -- no boto3 or AWS SDK.
-This mirrors exactly what the browser SigV4 implementation (213_aws_sigv4.js) will do.
+This mirrors exactly what the browser SigV4 implementation (15_aws_sigv4.js) will do.
 
 Tests run:
   1. CORS preflight (OPTIONS) to Athena API endpoint

@@ -5,6 +5,34 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260924-2008 — V2 Phase 1: AWS SigV4 signing foundation
+
+**Date:** 2026-09-24
+**Branch:** `feature/aws-sigv4`
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Confirm next V2 task; review spike outcome and decision gate | 10 min | — | — | |
+| File numbering review (foundation files moved out of the 200s) | 10 min | — | — | |
+| Design + plan docs realigned to reality (numbering, CORS resolved, gate cleared) | — | 15 min | — | |
+| `15_aws_sigv4.js` implementation, ported from the Python reference | — | — | 20 min | |
+| Reference-value harness for byte-comparable verification | — | — | 10 min | |
+| APP_TREE corrections (new file + two pre-existing errors) | — | — | 5 min | |
+| **Total** | **20 min** | **15 min** | **35 min** | |
+
+### Changes delivered
+- `src/15_aws_sigv4.js` (new): `signAwsRequest()` plus SubtleCrypto primitives (`sigv4Sha256Hex`, `sigv4Hmac`, `sigv4SigningKey`) and canonicalisation helpers (`sigv4Timestamps`, `sigv4Encode`, `sigv4CanonicalQuery`)
+- `designs/version-2/DESIGN_V2_CLOUD_DATABASE.md`: file renumbering, numbering rationale, CORS risk closed out
+- `plans/PLAN_V2_CLOUD_DATABASE.md`: prerequisites and decision gate cleared, numbering table added
+- `APP_TREE.md`: `15_aws_sigv4.js` added; `30_export_utils.js` / `40_storage.js` descriptions un-swapped
+
+### Verification notes
+Expected SigV4 output for three frozen-clock cases (Athena with and without session token, S3 PutObject) was generated from the proven Python implementation in `tests/spike_athena_cors.py`, then compared against the browser port.
+
+**Task 1.2 result: PASS (2026-09-24).** All three signatures matched the reference byte-for-byte. `host` confirmed absent from the returned headers (browsers forbid setting it), and the `{}` payload hash matched. Definitive end-to-end proof against live AWS is task 3.10.
+
+---
+
 ## build-20260922-0823 — Feature: Task List export — CSV / JSON format toggle
 
 **Date:** 2026-09-22

@@ -115,9 +115,10 @@ All panels render at App level (outside scroll container) to avoid `position:fix
 | File | Contents |
 |---|---|
 | `10_constants.js` | `SCHEMA`, `SHEET_MAP`, `TABLE_GROUPS` -- single source of truth for all 18 tables |
+| `15_aws_sigv4.js` | `signAwsRequest(method, url, headers, body, credentials, region, service)` -- AWS Signature V4 signing for browser `fetch` via SubtleCrypto. Zero dependencies; numbered low so it sits below every consumer. V2 cloud database foundation |
 | `20_data_utils.js` | `buildLookups`, `getFkOptions`, `normalizeWhitespace`, misc data helpers |
-| `30_export_utils.js` | Excel / ZIP export helpers |
-| `40_storage.js` | localStorage read/write (`loadFromStorage`, `saveToStorage`, `loadStewardIdentity`) |
+| `30_export_utils.js` | **Despite the name, this is the localStorage layer:** `STORAGE_KEY`, `saveToStorage`, `loadFromStorage`, `clearStorage`, plus `runHealthCheck` |
+| `40_storage.js` | **Despite the name, this is the CSV/file export layer:** `tableToCSV`, `exportSingleCSV`, `buildAllCSVsBlob`, `saveWithPicker`. (`loadStewardIdentity` lives in `71_master_version.js`, not here) |
 | `45_rule_sql_warnings.js` | `computeRuleSqlWarnings(sql, sample)` pure function; `RuleSqlWarningNotices` display component |
 | `46_prompt_helpers.js` | All AI prompt construction: shared building blocks (`buildSqlStandardsPrompt`, `buildNamingConventionsPrompt`) plus full prompt builders (`buildRuleAssistantPrompt` for Rule Form Panel, `buildSuggestionPrompt` for Rule Generator). Edit this file to tune any AI prompt. |
 | `231_uploader_validation.js` | `computeUploaderExclusions(data, includeSoftDeleted)`, `buildUploaderReceipt(excluded, totalEvaluated)` -- allocation validity filter and receipt builder; pure logic, no UI |

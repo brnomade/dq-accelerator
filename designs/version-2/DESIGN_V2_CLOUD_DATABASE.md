@@ -109,9 +109,11 @@ Every connector implements:
 
 ### 3.3 HTTP transport — no SDK
 
-All AWS API calls are made via the browser's native `fetch` API with **AWS Signature Version 4** signing implemented in `213_aws_sigv4.js` using `SubtleCrypto` (built into all modern browsers). No external SDK is loaded; the app bundle stays small.
+All AWS API calls are made via the browser's native `fetch` API with **AWS Signature Version 4** signing implemented in `15_aws_sigv4.js` using `SubtleCrypto` (built into all modern browsers). No external SDK is loaded; the app bundle stays small.
 
-> **CORS risk — must be validated before implementation.** Athena's API endpoint must return `Access-Control-Allow-Origin` headers for browser `fetch` calls to succeed. S3 bucket CORS must also be configured. The spike test (`tests/spike_athena_cors.py`) validates both. If Athena's API endpoint does not support CORS, the fallback is a minimal local Python proxy script (~50 lines) that the master runs before opening the app; the connector interface is unaffected by this change.
+> **CORS: validated 2026-09-24, no proxy required.** Browser `fetch` calls to Athena's API endpoint and to S3 both require `Access-Control-Allow-Origin` headers. The spike test (`tests/spike_athena_cors.py`) confirmed all 6 checks PASS against region `eu-west-1`: both `athena.eu-west-1.amazonaws.com` and the S3 bucket endpoint return `Access-Control-Allow-Origin: *`, and authenticated Athena `ListWorkGroups` plus S3 `PutObject`/`GetObject`/`DeleteObject` all succeeded. Full output: `designs/version-2/spike-results.txt`. The local Python proxy fallback contemplated in the first draft is therefore **not** being built.
+>
+> One-time client prerequisite: S3 bucket CORS is opt-in per bucket, so the target bucket needs a CORS rule (AllowedOrigin `*`, AllowedMethod GET/PUT/DELETE/HEAD, AllowedHeader `*`) before the app can reach it.
 
 ---
 
@@ -168,7 +170,7 @@ s3://{s3Bucket}/
     {query-execution-id}.csv    ← Athena-managed result files; read during import
 ```
 
-### 5.3 SigV4 signing (`213_aws_sigv4.js`)
+### 5.3 SigV4 signing (`15_aws_sigv4.js`)
 
 Exports a single async function used by all Athena and S3 calls:
 
@@ -306,10 +308,18 @@ Tab content:
 
 | File | Contents | Load-order dependencies |
 |---|---|---|
-| `213_aws_sigv4.js` | `signAwsRequest()` async function; SigV4 via SubtleCrypto | none |
-| `214_connector_base.js` | `ConnectorRegistry` map; `FieldDef` and `StepResult` type comments | none |
-| `216_connector_athena.js` | `AthenaConnector` — full implementation | `213_aws_sigv4.js` |
-| `217_screen_db_settings.js` | `DatabaseSettingsScreen` component | `214_connector_base.js`, `216_connector_athena.js` |
+| `15_aws_sigv4.js` | `signAwsRequest()` async function; SigV4 via SubtleCrypto | none (pure `SubtleCrypto` + JS builtins) |
+| `16_connector_base.js` | `ConnectorRegistry` map; `FieldDef` and `StepResult` type comments | none |
+| `47_connector_athena.js` | Full `AthenaConnector` implementation | `10_constants.js` (`SCHEMA`), `15_aws_sigv4.js`, `16_connector_base.js`, `20_data_utils.js` (`coerceValue`), `40_storage.js` (`tableToCSV`) |
+| `217_screen_db_settings.js` | `DatabaseSettingsScreen` component | `16_connector_base.js`, `47_connector_athena.js` |
+
+### Numbering rationale
+
+The two foundation files sit in the low band rather than the 200s. `signAwsRequest()` and `ConnectorRegistry` have no dependencies whatsoever, so numbering them next to the screen files would imply a dependency chain that does not exist. `47_connector_athena.js` sits immediately after the existing utility band (20-46) because it consumes `SCHEMA`, `coerceValue` and `tableToCSV`. Only the React screen remains in the 200s, alongside the other screens.
+
+Two properties of `build/build.py` make the low numbers safe: its `sort_key` orders by the leading integer via `int()`, so no zero-padding is required for a low number to sort correctly; and CSS and JS are globbed separately into the `<style>` and `<script>` blocks, so a JS file numbered below 10 never competes with `00_styles.css`.
+
+**Load-time vs runtime dependencies.** The only hard load-order constraint in this set is that `16_connector_base.js` must be evaluated before `47_connector_athena.js`, because the registration line `ConnectorRegistry['athena'] = AthenaConnector` runs at load time. Every other reference in this feature resolves at runtime inside a function body, long after all files have loaded -- including the Import and Export screens calling connector methods from event handlers, and the connector calling `signAwsRequest()`.
 
 ### Existing files modified
 
