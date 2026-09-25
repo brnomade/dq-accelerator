@@ -5,6 +5,60 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260925-1619 — V2 Fix: StartQueryExecution ClientRequestToken
+
+**Date:** 2026-09-25
+**Branch:** `feature/athena-connector-core`
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Credential-loading feasibility question (env vars in the browser); options weighed, current form approach retained | 15 min | — | — | |
+| Diagnose `clientRequestToken is null or empty` from the 3.10 smoke test | — | — | 5 min | |
+| `athenaClientRequestToken()` + payload fix | — | — | 10 min | |
+| Plan constraint written up, including the task 3.7 retry consequence | — | 10 min | — | |
+| Changelog + metrics | — | — | 5 min | |
+| Repo hygiene: `.gitignore` added, `dist/` untracked (89 files), onboarding doc updated | 5 min | — | 10 min | |
+| **Total** | **20 min** | **10 min** | **30 min** | |
+
+### Changes delivered
+- `src/47_connector_athena.js`: `athenaClientRequestToken()` added; `ClientRequestToken` now sent on every `StartQueryExecution`
+- `plans/PLAN_V2_CLOUD_DATABASE.md`: Phase 3 key constraint added covering the token requirement and its task 3.7 retry consequence; tasks 3.2 and 3.10 annotated
+
+### Verification notes
+Found by the first live-Athena exercise of the `athenaQuery` path (plan task 3.10) — the Phase 0 spike could not have caught it, having only called `ListWorkGroups`. Fix is ASCII-clean and builds; the live re-test is outstanding.
+
+### Decision recorded
+Credential loading stays as designed (typed into Database Settings, persisted to localStorage). Browsers cannot read OS environment variables — no API exists — and build-time injection was rejected because `dist/` is tracked in git with no `.gitignore`, so baked credentials would enter history permanently. The existing optional `sessionToken` field already allows short-lived STS credentials with no code change.
+
+---
+
+## build-20260925-1600 — V2 Phase 2 + Phase 3 (part): Athena connector core
+
+**Date:** 2026-09-25
+**Branch:** `feature/athena-connector-core`
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Review plan, elaborate next task, agree branch scope (2.1 + 3.1 + 3.2 + 3.3 + 3.5) | 15 min | — | — | |
+| Resolve the three gaps the design did not settle (D1 query context, D2 prefix, D3 return shape) | 10 min | — | — | |
+| Design section 5.4 amended; plan decisions table and task ticks | — | 15 min | — | |
+| `16_connector_base.js` — registry and interface contracts | — | — | 10 min | |
+| `47_connector_athena.js` — config schema, signed transport, `athenaQuery`, `athenaGetResults`, `testConnection` | — | — | 40 min | |
+| APP_TREE + changelog + metrics | — | — | 10 min | |
+| **Total** | **25 min** | **15 min** | **60 min** | |
+
+### Changes delivered
+- `src/16_connector_base.js` (new): `ConnectorRegistry`; `FieldDef` / `StepResult` / `onProgress` / connector-interface contracts as comments
+- `src/47_connector_athena.js` (new): `AthenaConnector` with `getConfigSchema` and `testConnection` live; helpers `athenaApiCall`, `athenaQuery`, `athenaGetResults`, `athenaOutputLocation`, `athenaNormalisePrefix`, `athenaFormatError`, `athenaCredentials`, `athenaCellsMatchColumns`; `setupDatabase` / `importAllTables` / `exportAllTables` stubbed
+- `designs/version-2/DESIGN_V2_CLOUD_DATABASE.md`: section 5.4 amended — `QueryExecutionContext` removed, rationale recorded
+- `plans/PLAN_V2_CLOUD_DATABASE.md`: Phase 2 and tasks 3.1/3.2/3.3/3.5/3.9 ticked; Phase 3 decisions table added
+- `APP_TREE.md`: both new files added to the infrastructure table
+
+### Verification notes
+Static checks only in this session: both files confirmed ASCII-clean, and every new global name confirmed not to collide with an existing one anywhere in `src/`. No JavaScript runtime was available locally, so the build output is the first parse check and the live AWS smoke test (plan task 3.10) is outstanding — console recipe is in the CHANGELOG_V2 entry for this build.
+
+---
+
 ## build-20260924-2008 — V2 Phase 1: AWS SigV4 signing foundation
 
 **Date:** 2026-09-24
