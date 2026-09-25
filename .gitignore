@@ -9,3 +9,11 @@
 # in earlier commits -- ignoring the folder stops future churn, it does not rewrite
 # history.
 dist/
+
+# IDE settings. JetBrains project files are per-developer; the module paths and
+# workspace.xml in particular differ on every machine.
+.idea/
+
+# Claude Code machine-local settings. Deliberately narrower than ignoring all of
+# .claude/ -- a shared project-level .claude/settings.json can still be committed.
+.claude/settings.local.json
