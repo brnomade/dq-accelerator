@@ -95,7 +95,13 @@ Every connector implements:
   setupDatabase(config, onProgress): Promise<StepResult[]>,
 
   // Pull all 18 tables; return app-shaped data + any warnings
-  importAllTables(config, onProgress): Promise<{ data: object, warnings: string[] }>,
+  // Amended 2026-09-25, plan decisions D6 and D7. Attempts all 18 tables even
+  // after a failure, so one pass diagnoses every problem; ok is false if any
+  // table failed, and data must not be applied to local state unless ok.
+  // data holds only the tables actually fetched -- the four SCHEMA tables
+  // outside ATHENA_TABLES are absent, not empty, and are named in warnings.
+  importAllTables(config, onProgress):
+      Promise<{ ok: bool, data: object, warnings: string[], failedTables: string[] }>,
 
   // Push all 18 tables with connector-specific write strategy
   // Athena uses DROP+CREATE; future connectors may use upsert/merge
@@ -232,7 +238,9 @@ Per-table steps:
 4. Parse rows using existing `importSheet` type-coercion logic
 5. `onProgress(step, 20, tableName)`
 
-On success: replaces full local state and **resets the base snapshot** — the Athena dataset becomes the new delta baseline for steward delta tracking. Behaviour is identical to importing a master JSON file.
+On success (`ok: true`): replaces the 18 imported tables in local state and **resets the base snapshot** -- but see plan decisions D6 and D7. `data` carries only the 18 fetched tables, so Phase 5 must merge rather than assign, and must apply nothing at all when `ok` is false.
+
+Originally specified as: replaces full local state and resets the base snapshot — the Athena dataset becomes the new delta baseline for steward delta tracking. Behaviour is identical to importing a master JSON file.
 
 ### 5.8 Export flow with retry
 
