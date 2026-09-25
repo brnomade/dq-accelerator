@@ -6,6 +6,53 @@ For v1 history see `CHANGELOG.md`.
 
 ---
 
+## build-20260925-1707 - V2 Phase 3 (part): S3 upload + Athena database setup
+
+**Plan:** `plans/PLAN_V2_CLOUD_DATABASE.md` (Phase 3, tasks 3.4 and 3.8; new decisions D4 and D5; two new constraints on task 3.7)
+**Design:** `designs/version-2/DESIGN_V2_CLOUD_DATABASE.md` (sections 5.5 and 5.9, section 5.9 amended)
+**Branch:** `feature/athena-connector-operations`
+
+### Added
+- `src/47_connector_athena.js` - **`s3PutObject(config, key, csvString)`** (task 3.4). Signed `PUT` to the virtual-hosted endpoint `https://{bucket}.s3.{region}.amazonaws.com/{key}`, `Content-Type: text/plain`. Returns the `s3://` URI on success; throws on any non-2xx. This is the first code in the app that writes to S3 from the browser.
+  - `Content-Type` is set explicitly rather than left to `fetch()`. `fetch()` defaults a string body to `text/plain;charset=UTF-8`, which is not the value the signature was computed over, and S3 rejects the mismatch as `SignatureDoesNotMatch` with no useful detail.
+  - New `s3EncodeSegment()` encodes key path segments to RFC 3986, adding the `!'()*` characters that `encodeURIComponent` leaves alone but SigV4 expects percent-encoded. Segments are encoded individually so a `/` in the key stays a delimiter.
+  - New `s3FormatError()` parses S3's XML `<Error>` document for `<Code>` and `<Message>`. `athenaFormatError` could not be reused - Athena returns JSON, S3 returns XML.
+  - New `s3ObjectUrl()`, `athenaTableDataKey()` and `athenaTableLocation()` implement the design section 5.2 layout: `{databaseName}/{table_name}/data.csv` for the object, and the containing folder with a trailing slash for a `CREATE EXTERNAL TABLE` `LOCATION`.
+- `src/47_connector_athena.js` - **`AthenaConnector.setupDatabase(config, onProgress)`** (task 3.8), replacing the "not implemented yet" stub. 19 steps: `CREATE DATABASE IF NOT EXISTS`, then one `CREATE EXTERNAL TABLE IF NOT EXISTS` per table. Idempotent - it touches the catalog only, never data, so it is safe to re-run at any time. Returns one `StepResult` per step as documented in `16_connector_base.js`, and calls `onProgress(step, 19, message)` after each.
+  - **Failure handling.** A failed `CREATE DATABASE` aborts the run: all 18 table statements would fail for the same reason and bury the real cause under 18 identical errors. A failed individual table is recorded and the run continues, so a single pass reports every broken table rather than only the first.
+  - New `athenaCreateTableDDL(config, tableName)` generates the statement from `SCHEMA[table].cols` with every column declared `STRING` (design section 5.6).
+  - New `athenaAssertIdentifier()` validates `databaseName` against `/^[A-Za-z_][A-Za-z0-9_]*$/` before it is interpolated into SQL. Table and column names come from `SCHEMA` and are trusted; `databaseName` comes from the settings form and is not.
+- `src/47_connector_athena.js` - **`ATHENA_TABLES`**, the authoritative list of the 18 tables published to the cloud database. See decision D4 below for why it is an explicit list rather than `Object.keys(SCHEMA)`. A load-time check logs to the console if any name in it is missing from `SCHEMA`; it logs rather than throws because this file is concatenated into a single bundle with the whole app, and a throw would take down every screen over a cloud-database-only problem.
+
+### Changed
+- `designs/version-2/DESIGN_V2_CLOUD_DATABASE.md` - section 5.9's DDL block amended to `OpenCSVSerde` (decision D5), with the two write-side limits it cannot fix recorded against section 5.8. A second amendment note pins what "18 tables" means throughout the document (decision D4).
+- `plans/PLAN_V2_CLOUD_DATABASE.md` - tasks 3.4 and 3.8 ticked; decisions D4 and D5 added; two new Phase 3 key constraints added against task 3.7; new task 3.11 added with the browser smoke-test steps for this build.
+- `APP_TREE.md` - `47_connector_athena.js` entry updated with the new helpers and the `ATHENA_TABLES` constant.
+
+### Decisions recorded
+
+Two gaps between the design and the current codebase were found before any DDL was written, and resolved with the user.
+
+- **D4 - the cloud database holds 18 tables, not 22.** The design and plan both say "18 tables", but `SCHEMA` has grown to 22 entries since the design was written, and every existing export path (`230_screen_export.js`, `232_uploader_export.js`, `40_storage.js`) enumerates `Object.keys(SCHEMA)`. A literal reading of the design's "generate DDL from SCHEMA" constraint would therefore have created 22 tables and a 23-step setup. Decision: only the original 18, held as the explicit `ATHENA_TABLES` array. **Consequence:** `shortlist_group` and `cde_shortlist_tag` do not survive an Athena round trip, and `source_table_ddl` and `field_profiling` stay local-only.
+- **D5 - `OpenCSVSerde` instead of `ROW FORMAT DELIMITED`.** `tableToCSV()` (`40_storage.js:11`) emits RFC 4180 quoted fields, but design section 5.9 specified the delimited SerDe, which has no concept of quoting. Against real data that corrupts silently - a `data_set_description` of `Offenders, victims and cases` splits into two columns and shifts every later field on the row, and quoted values keep their literal `"` characters. At least five free-text columns in the 18-table set are exposed. `OpenCSVSerde` reads the quoting correctly and requires all-`STRING` columns, which the design already mandates, so it is a drop-in swap.
+
+### Known limits carried forward to task 3.7
+
+`OpenCSVSerde` fixes commas and quotes. Two write-side problems remain, and neither can be fixed by any SerDe choice - both are now recorded as task 3.7 constraints in the plan:
+
+- **Newlines inside a value.** Athena's `TextInputFormat` splits records on newlines before the SerDe sees them, so a multi-line description becomes two broken rows. `exportAllTables` must replace `\r\n` and `\n` in each value with a space. Multi-line text loses its line breaks; nothing else corrupts.
+- **Backslashes inside a value.** `OpenCSVSerde`'s `escapeChar` is `\` and cannot be disabled, so a literal backslash consumes the character after it on read. `tableToCSV()` doubles `"` but does not touch `\`. `exportAllTables` must double backslashes. Most likely to bite on regex patterns in `data_quality_rule`.
+
+### Not included
+- Tasks 3.6 `importAllTables` and 3.7 `exportAllTables` remain stubbed and still throw a named "not implemented yet" error.
+- No user-facing change. Nothing is wired into the UI - `setupDatabase` is reachable only from the browser console until the Database Settings screen lands in Phase 4 - so there is no user documentation change in this build.
+
+### Verification status - NOT YET TESTED
+Build is ASCII-clean and bundles. **Plan task 3.11 is outstanding** and is the first real browser preflight against S3: the Phase 0 spike only simulated an `Origin` header from Python, so the bucket CORS rule on `dq-accelerator-metada-store-512798217240-eu-west-1-an` is exercised by a real browser for the first time here. The user confirmed on 2026-09-25 that the rule is applied. Smoke-test steps are in the plan under "Task 3.11 smoke test steps" - note the bundle must be served over `http://localhost`, because a `file://` origin is `null` and S3 CORS will reject it.
+
+---
+
+
 ## build-20260925-1619 - Fix: StartQueryExecution requires ClientRequestToken
 
 **Plan:** `plans/PLAN_V2_CLOUD_DATABASE.md` (Phase 3, task 3.2; constraint added to task 3.7)

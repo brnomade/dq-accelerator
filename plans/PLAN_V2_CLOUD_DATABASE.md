@@ -2,7 +2,7 @@
 
 **Design:** `designs/version-2/DESIGN_V2_CLOUD_DATABASE.md`  
 **Date:** 2026-09-24  
-**Status:** In implementation. Phases 0, 1 and 2 complete; Phase 3 partially complete and smoke-tested against live Athena (3.1, 3.2, 3.3, 3.5, 3.9, 3.10 all PASS) on branch `feature/athena-connector-core`. Remaining in Phase 3: 3.4 `s3PutObject`, 3.6 `importAllTables`, 3.7 `exportAllTables`, 3.8 `setupDatabase`.
+**Status:** In implementation. Phases 0, 1 and 2 complete. Phase 3: 3.1, 3.2, 3.3, 3.5, 3.9, 3.10 done and smoke-tested against live Athena on branch `feature/athena-connector-core`; 3.4 `s3PutObject` and 3.8 `setupDatabase` written on branch `feature/athena-connector-operations` and **awaiting the 3.11 browser smoke test**. Remaining in Phase 3: 3.6 `importAllTables`, 3.7 `exportAllTables`.
 
 ---
 
@@ -34,6 +34,13 @@ Three questions were not settled by the design doc. Resolved with the user 2026-
 | D1 | `QueryExecutionContext.Database` cannot name a database that does not yet exist, so `CREATE DATABASE` (task 3.8) needs different handling from every other statement | **Never send `QueryExecutionContext` at all.** Every statement passed to `athenaQuery` must fully qualify its table as `{databaseName}.{table_name}`. One code path for all SQL, no special case for 3.8. **Supersedes the body shape shown in design section 5.4.** |
 | D2 | How to handle a `queryResultsPrefix` with a missing, leading or doubled slash | **Normalise silently.** `athenaNormalisePrefix()` strips leading and trailing slashes, so `athena-results`, `athena-results/` and `/athena-results/` behave identically. No validation error, no Phase 4 UI work. |
 | D3 | What `athenaQuery` returns on success | **The bare `QueryExecutionId` string**, exactly as task 3.2 specifies. Callers needing statistics or output location re-fetch `GetQueryExecution` themselves. |
+
+Two further gaps were found when task 3.8 was started, and resolved with the user on 2026-09-25 before any DDL was written.
+
+| # | Question | Decision |
+|---|---|---|
+| D4 | The design and this plan both say "18 tables", but `SCHEMA` has grown to 22 since the design was written. The four later additions are `source_table_ddl`, `field_profiling`, `shortlist_group` and `cde_shortlist_tag`. Every existing export path (`230_screen_export.js`, `232_uploader_export.js`, `40_storage.js`) enumerates `Object.keys(SCHEMA)`, so the literal reading of the design's "generate DDL from SCHEMA" constraint would have produced 22 tables and a 23-step setup. | **Only the original 18.** Recorded as the explicit `ATHENA_TABLES` array in `47_connector_athena.js`, in SCHEMA declaration order, and **not** derived from `Object.keys(SCHEMA)`. It is the authoritative table set for 3.6, 3.7 and 3.8 alike. A load-time check logs to the console if a name in it is missing from `SCHEMA`; it logs rather than throws, because the file is concatenated into one bundle with the whole app. **Consequence:** step counts are 19 for setup and 20 for import/export (2 overhead + 18), not the 23/24 the literal reading gave. **Consequence:** shortlist groups and CDE shortlist tags do not survive an Athena round trip, and profiling data stays local-only. |
+| D5 | `tableToCSV()` (`40_storage.js:11`) emits RFC 4180 quoted fields, but design section 5.9 specifies `ROW FORMAT DELIMITED FIELDS TERMINATED BY ','` -- Hive's LazySimpleSerDe, which has no concept of quoting. Against real data this corrupts silently: `data_set_description` = `Offenders, victims and cases` splits into two columns and shifts every later field left, and quoted values keep their literal `"` characters. At least five free-text columns in the 18-table set are exposed: `data_set_description`, `data_element_definition`, `data_element_explanation`, `source_snapshot_filter`, and the rule description fields. | **Use `OpenCSVSerde`**, with `separatorChar ','`, `quoteChar '"'`, `escapeChar '\\'`. It reads RFC 4180 quoting correctly and requires all columns to be `STRING`, which design section 5.6 already mandates -- so it is a drop-in swap. **Supersedes the `ROW FORMAT DELIMITED` block in design section 5.9.** This fixes commas and quotes only; see the two write-side constraints on task 3.7 below for what it cannot fix. |
 
 Design section 5.4 has been amended to record D1. D2 and D3 are implementation detail below the level of the design doc and are recorded only here.
 
@@ -97,18 +104,46 @@ Build and test each method in isolation before wiring into the UI.
 | 3.1 | Create `src/47_connector_athena.js` skeleton — `getConfigSchema()` and config constant | [x] **Done, build-20260925-1600.** `ATHENA_CONFIG_SCHEMA` holds all 8 fields from design section 5.1; `setupDatabase` / `importAllTables` / `exportAllTables` stubbed to throw a named "not implemented yet" error |
 | 3.2 | Implement Athena API helper: `athenaQuery(config, queryString)` — calls StartQueryExecution, polls GetQueryExecution, returns QueryExecutionId | [x] **Done, build-20260925-1600.** 250 ms poll, 60 s timeout, returns the bare `QueryExecutionId` string; throws with `StateChangeReason` on FAILED/CANCELLED and with the state on timeout. Shares one signed transport helper `athenaApiCall()` with every other Athena operation. **Amended build-20260925-1619:** a fresh `ClientRequestToken` is now sent on every call -- the raw API rejects StartQueryExecution without it (found by the 3.10 smoke test) |
 | 3.3 | Implement `athenaGetResults(config, queryExecutionId)` — paginated GetQueryResults, returns array of row objects | [x] **Done, build-20260925-1600.** 1 000 rows/page via `NextToken`; column names taken from `ResultSetMetadata.ColumnInfo`; the repeated header row Athena returns as row 1 of page 1 is dropped only when its cells match the column names exactly. Values stay raw strings (coercion belongs to 3.6) |
-| 3.4 | Implement S3 helper: `s3PutObject(config, key, csvString)` | [ ] |
+| 3.4 | Implement S3 helper: `s3PutObject(config, key, csvString)` | [x] **Done, build-20260925-1707.** Signed `PUT https://{bucket}.s3.{region}.amazonaws.com/{key}`, virtual-hosted style, `Content-Type: text/plain`. Returns the `s3://` URI on success, throws on any non-2xx. `Content-Type` is set explicitly rather than left to `fetch()`, which would default a string body to `text/plain;charset=UTF-8` and break the signature. Key path segments RFC 3986-encoded via `s3EncodeSegment` (`encodeURIComponent` plus `!'()*`, which SigV4 expects encoded). S3 errors are XML not JSON, so `s3FormatError` parses `<Code>`/`<Message>` instead of reusing `athenaFormatError`. Helpers `athenaTableDataKey` and `athenaTableLocation` added for the design section 5.2 layout |
 | 3.5 | Implement `testConnection(config)` — calls ListWorkGroups, returns ok/error | [x] **Done, build-20260925-1600.** Pre-flights the required fields for a readable error, then calls ListWorkGroups. Returns `{ ok }` / `{ ok, error }` exactly as the design interface specifies |
 | 3.6 | Implement `importAllTables(config, onProgress)` — orchestrates 18 serial SELECT queries using 3.2 + 3.3, applies importSheet-style type coercion | [ ] |
 | 3.7 | Implement `exportAllTables(config, data, onProgress)` — orchestrates 18 serial S3 upload + DROP + CREATE sequences with 3-attempt retry (2 s / 5 s backoff) | [ ] |
-| 3.8 | Implement `setupDatabase(config, onProgress)` — CREATE DATABASE IF NOT EXISTS + 18 × CREATE EXTERNAL TABLE IF NOT EXISTS, DDL generated from SCHEMA constant | [ ] |
+| 3.8 | Implement `setupDatabase(config, onProgress)` — CREATE DATABASE IF NOT EXISTS + 18 × CREATE EXTERNAL TABLE IF NOT EXISTS, DDL generated from SCHEMA constant | [x] **Done, build-20260925-1707.** 19 steps (1 database + 18 tables), idempotent, returns one `StepResult` per step. DDL built by `athenaCreateTableDDL` from `SCHEMA[table].cols`, every column `STRING`. Table set is the new `ATHENA_TABLES` constant, see decision D4. SerDe changed from the design's `ROW FORMAT DELIMITED`, see decision D5. `databaseName` passes `athenaAssertIdentifier` before it is interpolated into SQL. **Failure handling:** a failed CREATE DATABASE aborts the run (all 18 table statements would fail for the same reason and bury the cause); a failed table is recorded and the run continues, so one pass reports every broken table |
 | 3.9 | Register connector: `ConnectorRegistry['athena'] = AthenaConnector` at bottom of file | [x] **Done early, build-20260925-1600.** Brought forward from its planned position because 3.5 is not reachable from the console without it |
 | 3.10 | Browser smoke test: open built app, call `testConnection` from browser console with real credentials | [x] **PASS 2026-09-25, build-20260925-1619**, live Athena in `eu-west-1` from `http://localhost`. `testConnection` returns `{ ok: true }`. `athenaQuery` + `athenaGetResults` on a table-less `SELECT 1 AS one, 'abc' AS two` returned QueryExecutionId `2a70d9ec-...` and exactly one row `{ one: '1', two: 'abc' }`. Confirms three things: the `ClientRequestToken` fix works, decision D1 holds (no `QueryExecutionContext` sent and a table-less SELECT is accepted), and the repeated-header-row suppression in `athenaGetResults` behaves against real Athena output (1 row, not 2) |
+| 3.11 | Browser smoke test for 3.4 and 3.8: `s3PutObject` against the live bucket, then `setupDatabase` end to end | [ ] **Steps below.** This is the first real browser preflight against S3 -- the Phase 0 spike only simulated an `Origin` header from Python, so the bucket CORS rule is proven for the first time here. User confirmed 2026-09-25 that the rule is applied to `dq-accelerator-metada-store-512798217240-eu-west-1-an` |
+
+### Task 3.11 smoke test steps
+
+Open the built bundle over `http://localhost` (not `file://` -- a `file://` origin is `null` and S3 CORS will reject it), then in the console:
+
+```js
+const cfg = {
+  region: 'eu-west-1', accessKeyId: '...', secretAccessKey: '...',
+  s3Bucket: 'dq-accelerator-metada-store-512798217240-eu-west-1-an',
+  databaseName: 'dq_accelerator', workgroup: 'primary',
+  queryResultsPrefix: 'athena-results',
+};
+
+// 1. S3 write path (task 3.4). Expect the s3:// URI back, no throw.
+await s3PutObject(cfg, 'smoke-test/probe.csv', 'a,b\n1,2');
+
+// 2. Inspect one generated statement before running 19 of them (task 3.8).
+console.log(athenaCreateTableDDL(cfg, 'critical_data_set'));
+
+// 3. Full setup. Expect 19 StepResults, every one ok: true.
+const steps = await AthenaConnector.setupDatabase(cfg, (s, t, m) => console.log(s + '/' + t, m));
+console.log(steps.filter(s => !s.ok));   // expect []
+```
+
+Then confirm in the AWS console that database `dq_accelerator` exists with 18 tables. Re-run step 3 once more to prove idempotency -- it must return 19 `ok: true` results again, not errors.
 
 **Key constraints:**
 - **Every `StartQueryExecution` must carry a fresh `ClientRequestToken`.** AWS documents the field as optional because the official SDKs generate it silently; the raw API rejects the call with `InvalidRequestException: clientRequestToken is null or empty`. Handled inside `athenaQuery` by `athenaClientRequestToken()`, so callers get this for free -- but note **the token must never be reused across retry attempts in task 3.7**: Athena treats a repeated token as a repeat of the original request and returns the first `QueryExecutionId` rather than re-running the query, so a retry reusing a token would silently return the very failure it was meant to replace. Because `athenaQuery` mints a new token per call, a retry that re-invokes `athenaQuery` is already correct; a retry that caches and replays a payload would not be.
+- **Task 3.7 must collapse newlines inside values before upload.** `OpenCSVSerde` (decision D5) fixes commas and quotes but cannot read a newline inside a quoted value: Athena's `TextInputFormat` splits records on newlines before the SerDe ever sees them, so a multi-line description becomes two broken rows. No SerDe choice can recover this, so the fix has to be on the write side -- replace `\r\n` and `\n` in each value with a single space. Multi-line text loses its line breaks; nothing else corrupts. Agreed with the user 2026-09-25 as part of D5.
+- **Task 3.7 must also double backslashes inside values before upload.** `OpenCSVSerde`'s `escapeChar` is `\` (its default; there is no way to disable escaping), so a literal backslash in the data consumes the character after it on read. `tableToCSV()` doubles `"` but does **not** touch `\`, so this is not handled today. Most likely to bite on regex patterns in `data_quality_rule`. Same fix location as the newline constraint above.
 - `exportAllTables` must implement all-or-nothing semantics: if any table exhausts all 3 retry attempts, mark overall export as failed and return `{ ok: false, failedTables: [...] }`
-- All Athena DDL strings must be generated dynamically from `SCHEMA` (not hardcoded per table)
+- All Athena DDL strings must be generated dynamically from `SCHEMA` (not hardcoded per table), but iterating the `ATHENA_TABLES` list, never `Object.keys(SCHEMA)` -- see decision D4
 - All column types in DDL → `STRING` regardless of SCHEMA type
 - No non-ASCII characters in JS strings
 
