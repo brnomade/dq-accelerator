@@ -5,6 +5,43 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260925-1735 — V2 Phase 3 (part): Athena import, and 3.11 smoke test passed
+
+**Date:** 2026-09-25
+**Branch:** `feature/athena-connector-transfer`
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Orientation: read plan tracker, confirm what Phase 3 has left, agree branch scope | 10 min | — | — | |
+| Corrected the task reference — 3.1 was already signed off; the outstanding test was 3.11 | 5 min | — | — | |
+| Branch created and test bundle built so the 3.11 test had an artifact (build-20260925-1718, byte-identical to the operations build) | — | — | 5 min | |
+| **Task 3.11 browser smoke test run by the user against live AWS** — S3 write, DDL review, 19-step setup, idempotency re-run | — | — | — | |
+| Found and raised the import failure-semantics gap (decision D6) — neither design nor plan specified it, and the two existing precedents disagree | 10 min | — | — | |
+| Found and raised the missing-four-tables gap in the returned `data` (decision D7) | 10 min | — | — | |
+| `athenaCoerceRecord` + `athenaCoerceTable` + `athenaUnfetchedTables` (task 3.6 coercion and warnings) | — | — | 30 min | |
+| `importAllTables` orchestration, step numbering and failure policy (task 3.6) | — | — | 25 min | |
+| Design amendments for D6 and D7; plan decisions, 3.6 and 3.11 ticks, status line; `16_connector_base.js` contract | — | 25 min | — | |
+| APP_TREE, changelog + metrics | — | — | 15 min | |
+| **Total** | **35 min** | **25 min** | **75 min** | |
+
+### Changes delivered
+- `src/47_connector_athena.js`: `importAllTables` (task 3.6) implemented, stub removed; `athenaCoerceRecord`, `athenaCoerceTable`, `athenaUnfetchedTables` added
+- `src/16_connector_base.js`: `importAllTables` interface contract widened and its caller obligations documented (D6, D7)
+- `designs/version-2/DESIGN_V2_CLOUD_DATABASE.md`: section 5.5 signature and section 5.7 success behaviour amended
+- `plans/PLAN_V2_CLOUD_DATABASE.md`: tasks 3.6 and 3.11 ticked, decisions D6 and D7 recorded, status line updated
+- `APP_TREE.md`: `47_connector_athena.js` entry updated
+
+### Verification notes
+**Task 3.11 passed** against live AWS in `eu-west-1` over `http://localhost`, on build-20260925-1718. `s3PutObject` returned the expected `s3://` URI with no CORS block — the bucket CORS rule is now proven from a real browser origin, not just the simulated `Origin` header of the Phase 0 spike. `setupDatabase` returned 19 of 19 `ok: true`, and a second run returned the same, proving idempotency. That closes tasks 3.4, 3.8 and 3.11.
+
+Task 3.6 itself is **untested**. It is ASCII-clean and both new code regions balance, but nothing exercises it yet: the Import screen tab is Phase 5, so `importAllTables` is console-only, and `exportAllTables` is still stubbed, so no round trip is possible — the 18 Athena tables exist but hold no data. The task 3.12 smoke test in the plan covers this.
+
+### Decisions recorded
+- **D6** — `importAllTables` attempts all 18 tables even after a failure, then reports `ok: false` with `failedTables`. Diagnoses every problem in one pass while still preventing a partial dataset from being applied. Widens the design's return contract.
+- **D7** — the four `SCHEMA` tables outside `ATHENA_TABLES` are omitted from the returned `data`, not returned as empty arrays, and are named in `warnings`. Phase 5 must merge rather than assign, or a database import would silently wipe local profiling data and shortlist groups.
+
+---
+
 ## build-20260925-1707 — V2 Phase 3 (part): S3 upload + Athena database setup
 
 **Date:** 2026-09-25
@@ -30,7 +67,7 @@ Testing time is filled in manually by the user after browser validation.
 - `APP_TREE.md`: `47_connector_athena.js` entry updated
 
 ### Verification notes
-Not yet tested. Build is ASCII-clean and bundles, but plan task 3.11 is outstanding and nothing here is reachable from the UI — `setupDatabase` and `s3PutObject` are console-only until the Phase 4 settings screen exists. Task 3.11 is also the first genuine browser CORS preflight against S3; the Phase 0 spike only simulated an `Origin` header from Python. The bundle must be served over `http://localhost` for that test, since a `file://` origin is `null` and S3 CORS rejects it.
+**Superseded 2026-09-25: task 3.11 passed on build-20260925-1718, so tasks 3.4 and 3.8 are now verified.** As written at the time: not yet tested. Build is ASCII-clean and bundles, but plan task 3.11 is outstanding and nothing here is reachable from the UI — `setupDatabase` and `s3PutObject` are console-only until the Phase 4 settings screen exists. Task 3.11 is also the first genuine browser CORS preflight against S3; the Phase 0 spike only simulated an `Origin` header from Python. The bundle must be served over `http://localhost` for that test, since a `file://` origin is `null` and S3 CORS rejects it.
 
 ### Decisions recorded
 - **D4** — the cloud database holds the original 18 tables, not all 22 now in `SCHEMA`. `ATHENA_TABLES` is an explicit list, deliberately not `Object.keys(SCHEMA)`. Shortlist groups, CDE shortlist tags and all profiling data are excluded from the Athena round trip.

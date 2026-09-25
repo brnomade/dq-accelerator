@@ -6,6 +6,40 @@ For v1 history see `CHANGELOG.md`.
 
 ---
 
+## build-20260925-1735 - V2 Phase 3 (part): Athena import, and 3.11 smoke test passed
+
+**Plan:** `plans/PLAN_V2_CLOUD_DATABASE.md` (Phase 3, tasks 3.6 and 3.11; new decisions D6 and D7)
+**Design:** `designs/version-2/DESIGN_V2_CLOUD_DATABASE.md` (sections 5.5 and 5.7, both amended)
+**Branch:** `feature/athena-connector-transfer`
+
+### Added
+- `src/47_connector_athena.js` - **`AthenaConnector.importAllTables(config, onProgress)`** (task 3.6), replacing the "not implemented yet" stub. 20 steps: connect, then one `SELECT * FROM` per table, then completion. Each table runs `athenaQuery` + `athenaGetResults` and coerces the result into app-shaped records. All SQL is fully qualified and no `QueryExecutionContext` is sent (decision D1).
+  - Step 1 calls `testConnection` before any table is read, so bad credentials fail in one round trip instead of eighteen.
+  - **Failure handling** (decision D6). Every table is attempted even after one fails, so a single run diagnoses every problem rather than only the first. The result carries `ok: false` and `failedTables` when any table failed. This widens the design's return contract from `{ data, warnings }` to `{ ok, data, warnings, failedTables }`.
+  - New `athenaCoerceRecord(tableName, row)` is the string-input subset of `importSheet` (`20_data_utils.js:29`). Athena returns every cell as a string or null, so `importSheet`'s Date-object and Excel-serial branches are unreachable here and are deliberately not reproduced. Behaviour for string input matches `importSheet` exactly, including the `YYYY-MM-DD` datetime normalisation from local date parts - never `toISOString`, which shifts the day east of UTC - and the empty-string-to-null collapse. An Athena import and an Excel import of the same values therefore produce identical records.
+  - New `athenaCoerceTable(tableName, rawRows)` drops rows with no primary key exactly as `importSheet` does, but reports what it dropped instead of swallowing it. It also warns on a `SCHEMA` column missing from the cloud table (once per column, not once per row - every value for it silently becomes null) and on duplicate primary keys, which break FK resolution because the lookup maps in `50_context.js` keep only the last occurrence.
+  - New `athenaUnfetchedTables()` names the `SCHEMA` tables this connector does not hold. Derived from `ATHENA_TABLES` rather than hardcoded, so a future `SCHEMA` addition surfaces here automatically.
+
+### Changed
+- `src/16_connector_base.js` - the `importAllTables` interface contract updated for decisions D6 and D7: the return shape, the rule that callers must apply nothing unless `ok` is true, and the rule that `data` may legitimately omit tables and so must be merged rather than assigned.
+- `designs/version-2/DESIGN_V2_CLOUD_DATABASE.md` - section 5.5's interface signature and section 5.7's success behaviour amended for D6 and D7. Section 5.7 previously said a successful import "replaces full local state"; it now records that only the 18 fetched tables are replaced.
+- `plans/PLAN_V2_CLOUD_DATABASE.md` - tasks 3.6 and 3.11 ticked; decisions D6 and D7 added; status line updated.
+- `APP_TREE.md` - `47_connector_athena.js` entry updated with `importAllTables` and the three new import helpers.
+
+### Tested
+- **Task 3.11 browser smoke test PASSED** (2026-09-25, build-20260925-1718) against live AWS in `eu-west-1`, served over `http://localhost`. This closes out tasks 3.4 and 3.8.
+  - `s3PutObject` returned `s3://dq-accelerator-metada-store-512798217240-eu-west-1-an/smoke-test/probe.csv` with no CORS block. This is the first write to S3 from a real browser origin - the Phase 0 spike only simulated an `Origin` header from Python, so the bucket CORS rule is proven for the first time here.
+  - `athenaCreateTableDDL` output reviewed and correct.
+  - `setupDatabase` returned 19 steps, all `ok: true`, in `ATHENA_TABLES` order - 1 database plus 18 tables, confirming decision D4 holds and the four later `SCHEMA` additions are absent.
+  - A second identical run returned the same 19 successes, proving the `IF NOT EXISTS` idempotency.
+
+### Known limitations
+- `importAllTables` is not yet reachable from the UI - the Import screen tab is Phase 5. It is callable from the browser console and awaits the task 3.12 smoke test.
+- `exportAllTables` (task 3.7) remains stubbed, so a full round trip cannot be tested yet.
+- Per decision D7, `source_table_ddl`, `field_profiling`, `shortlist_group` and `cde_shortlist_tag` are absent from the returned `data` and are named in `warnings`. Phase 5 must merge the result into existing state, not assign over it, or local profiling data and shortlist groups would be lost on every database import.
+
+---
+
 ## build-20260925-1707 - V2 Phase 3 (part): S3 upload + Athena database setup
 
 **Plan:** `plans/PLAN_V2_CLOUD_DATABASE.md` (Phase 3, tasks 3.4 and 3.8; new decisions D4 and D5; two new constraints on task 3.7)

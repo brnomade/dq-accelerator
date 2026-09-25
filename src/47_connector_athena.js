@@ -451,6 +451,135 @@ function athenaCreateTableDDL(config, tableName) {
 }
 
 // ---------------------------------------------------------------------------
+// Import helpers (task 3.6)
+// ---------------------------------------------------------------------------
+
+// SCHEMA tables that importAllTables does not fetch, named in the warnings so
+// the caller can tell "not fetched" from "genuinely empty". Derived rather than
+// hardcoded, so adding a table to SCHEMA surfaces here automatically.
+// See plan decisions D4 and D7.
+function athenaUnfetchedTables() {
+  return Object.keys(SCHEMA).filter(function (t) {
+    return ATHENA_TABLES.indexOf(t) === -1;
+  });
+}
+
+// Coerce one Athena result row into an app-shaped record.
+//
+// This is the string-input subset of importSheet (20_data_utils.js:29). Athena
+// returns every cell as a string or null -- OpenCSVSerde with all-STRING
+// columns, per decision D5 -- so importSheet's Date-object and Excel-serial
+// branches are unreachable here and are deliberately not reproduced. The
+// type-by-type behaviour for string input matches importSheet exactly,
+// including the YYYY-MM-DD normalisation of datetime and the empty-string to
+// null collapse, so an Athena import and an Excel import of the same values
+// produce identical records.
+function athenaCoerceRecord(tableName, row) {
+  const schema = SCHEMA[tableName];
+  const record = {};
+
+  schema.cols.forEach(function (col) {
+    const raw = Object.prototype.hasOwnProperty.call(row, col.name) ? row[col.name] : null;
+
+    if (raw === null || raw === undefined || String(raw).trim() === '') {
+      record[col.name] = null;
+      return;
+    }
+
+    const val = String(raw).trim();
+
+    switch (col.type) {
+      case 'bool':
+        record[col.name] = val.toLowerCase() === 'true';
+        break;
+      case 'int': {
+        const n = parseInt(val, 10);
+        record[col.name] = isNaN(n) ? null : n;
+        break;
+      }
+      case 'float': {
+        const n = parseFloat(val);
+        record[col.name] = isNaN(n) ? null : n;
+        break;
+      }
+      case 'datetime': {
+        // Same normalisation as importSheet: local date parts, never
+        // toISOString, which would shift the day for anything east of UTC.
+        const parsed = new Date(val);
+        if (!isNaN(parsed)) {
+          const y = parsed.getFullYear();
+          const m = String(parsed.getMonth() + 1).padStart(2, '0');
+          const d = String(parsed.getDate()).padStart(2, '0');
+          record[col.name] = y + '-' + m + '-' + d;
+        } else {
+          record[col.name] = val;
+        }
+        break;
+      }
+      case 'str':
+      case 'text':
+      default:
+        record[col.name] = val;
+        break;
+    }
+  });
+
+  return record;
+}
+
+// Coerce a whole result set, dropping rows with no primary key exactly as
+// importSheet does, and reporting what was dropped rather than swallowing it.
+// Returns { rows, warnings }.
+function athenaCoerceTable(tableName, rawRows) {
+  const schema   = SCHEMA[tableName];
+  const pk       = schema.pk;
+  const warnings = [];
+  const rows     = [];
+  let dropped    = 0;
+
+  // A column in SCHEMA but absent from the result set means the cloud table is
+  // stale relative to the app -- every value for it silently becomes null, so
+  // say so once per column rather than once per row.
+  if (rawRows.length) {
+    const present = rawRows[0];
+    schema.cols.forEach(function (col) {
+      if (!Object.prototype.hasOwnProperty.call(present, col.name)) {
+        warnings.push(tableName + ': column "' + col.name +
+                      '" is missing from the cloud table -- imported as empty');
+      }
+    });
+  }
+
+  rawRows.forEach(function (raw) {
+    const record = athenaCoerceRecord(tableName, raw);
+    if (record[pk] === null || record[pk] === undefined) { dropped++; return; }
+    rows.push(record);
+  });
+
+  if (dropped) {
+    warnings.push(tableName + ': ' + dropped + ' row' + (dropped === 1 ? '' : 's') +
+                  ' skipped with no ' + pk);
+  }
+
+  // Duplicate primary keys break FK resolution downstream, and the lookups in
+  // 50_context.js keep only the last one silently. Same check importWorkbook
+  // makes on an Excel import.
+  const seen  = {};
+  const dupes = [];
+  rows.forEach(function (r) {
+    const key = String(r[pk]);
+    if (seen[key]) { if (dupes.indexOf(key) === -1) dupes.push(key); }
+    seen[key] = true;
+  });
+  if (dupes.length) {
+    warnings.push(tableName + ': duplicate ' + pk + ' value' + (dupes.length === 1 ? '' : 's') +
+                  ' ' + athenaTruncate(dupes.join(', '), 120));
+  }
+
+  return { rows: rows, warnings: warnings };
+}
+
+// ---------------------------------------------------------------------------
 // Connector object
 // ---------------------------------------------------------------------------
 
@@ -538,11 +667,74 @@ const AthenaConnector = {
     return results;
   },
 
-  // --- Not yet implemented (plan tasks 3.6, 3.7) ---------------------------
+  // --- Import (task 3.6) ---------------------------------------------------
+  //
+  // 20 steps: connect, then one SELECT per table, then completion -- the step
+  // numbering of design section 5.7.
+  //
+  // Every table is attempted even after one fails, so a single run diagnoses
+  // every problem, and `ok` is false if any did (decision D6). `data` is
+  // therefore always partial on failure and must not be applied to local state
+  // unless `ok` is true. `data` holds only the ATHENA_TABLES set, never the
+  // four later SCHEMA additions, which are named in `warnings` (decision D7).
+  importAllTables: async function (config, onProgress) {
+    const cfg          = config || {};
+    const data         = {};
+    const warnings     = [];
+    const failedTables = [];
+    const total        = ATHENA_TABLES.length + 2;
 
-  importAllTables: async function () {
-    throw new Error('AthenaConnector.importAllTables is not implemented yet (plan task 3.6).');
+    const report = function (step, message) {
+      if (typeof onProgress === 'function') onProgress(step, total, message);
+    };
+
+    // Step 1: fail on bad credentials here rather than 18 queries later.
+    report(1, 'Connecting to AWS');
+    const database = athenaAssertIdentifier(cfg.databaseName, 'Athena Database Name');
+    const probe    = await AthenaConnector.testConnection(cfg);
+    if (!probe.ok) {
+      throw new Error('Cannot connect to AWS: ' + probe.error);
+    }
+
+    for (let i = 0; i < ATHENA_TABLES.length; i++) {
+      const tableName = ATHENA_TABLES[i];
+      report(i + 2, 'Importing ' + tableName);
+
+      try {
+        // Fully qualified, no QueryExecutionContext -- decision D1.
+        const queryId = await athenaQuery(
+          cfg, 'SELECT * FROM `' + database + '`.`' + tableName + '`'
+        );
+        const rawRows  = await athenaGetResults(cfg, queryId);
+        const coerced  = athenaCoerceTable(tableName, rawRows);
+        data[tableName] = coerced.rows;
+        coerced.warnings.forEach(function (w) { warnings.push(w); });
+      } catch (e) {
+        failedTables.push(tableName);
+        warnings.push(tableName + ': import failed -- ' + ((e && e.message) ? e.message : String(e)));
+      }
+    }
+
+    const unfetched = athenaUnfetchedTables();
+    if (unfetched.length) {
+      warnings.push('Not held in the cloud database, so left untouched by this import: ' +
+                    unfetched.join(', '));
+    }
+
+    const loaded = ATHENA_TABLES.length - failedTables.length;
+    report(total, failedTables.length
+      ? 'Finished with errors -- ' + loaded + ' of ' + ATHENA_TABLES.length + ' tables loaded'
+      : 'Complete -- ' + loaded + ' tables loaded');
+
+    return {
+      ok:           failedTables.length === 0,
+      data:         data,
+      warnings:     warnings,
+      failedTables: failedTables,
+    };
   },
+
+  // --- Not yet implemented (plan task 3.7) ---------------------------------
 
   exportAllTables: async function () {
     throw new Error('AthenaConnector.exportAllTables is not implemented yet (plan task 3.7).');

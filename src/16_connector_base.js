@@ -72,8 +72,14 @@ const ConnectorRegistry = {};
 //     // Idempotent DDL: create the database and all SCHEMA tables if absent.
 //     setupDatabase(config, onProgress): Promise<StepResult[]>,
 //
-//     // Pull every SCHEMA table; return app-shaped data keyed by table name.
-//     importAllTables(config, onProgress): Promise<{ data: object, warnings: string[] }>,
+//     // Pull the connector's table set; return app-shaped data keyed by table
+//     // name. Attempts every table even after one fails, so a single run
+//     // reports every problem. ok is false if any table failed, and data is
+//     // then partial -- callers must apply nothing unless ok is true. data may
+//     // legitimately omit SCHEMA tables the connector does not hold; those are
+//     // named in warnings, so callers must merge rather than assign.
+//     importAllTables(config, onProgress):
+//         Promise<{ ok: bool, data: object, warnings: string[], failedTables: string[] }>,
 //
 //     // Push every SCHEMA table using the connector's own write strategy.
 //     // Athena and Synapse use DROP + CREATE; BigQuery may upsert instead.
