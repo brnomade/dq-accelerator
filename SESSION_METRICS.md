@@ -5,6 +5,40 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260925-1803 — V2 Phase 3 complete (implementation): Athena export, and retry on both transfer directions
+
+**Date:** 2026-09-25
+**Branch:** `feature/athena-connector-export`
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Orientation: read the plan tracker, confirm 3.7 is the only implementation task left in Phase 3 | 10 min | — | — | |
+| Raised the CSV sanitisation location before coding — `tableToCSV()` is shared with three V1 export paths; user directed an Athena-local writer (decision D8) | 10 min | — | — | |
+| Branch `feature/athena-connector-export` created from `v2` | — | — | 5 min | |
+| `athenaSanitiseValue` / `athenaCsvField` / `athenaBuildTableCSV` — the Athena-local CSV writer (D8, D10) | — | — | 25 min | |
+| `athenaExportTable` — upload + DROP + CREATE as one retry unit | — | — | 10 min | |
+| `exportAllTables` orchestration: 20 steps, 3-attempt retry with 2 s / 5 s backoff, all-or-nothing policy, widened return shape (D9) | — | — | 30 min | |
+| Recovered from a shell heredoc that halved every backslash in the inserted code — caught by a byte-level ASCII scan, one line re-applied through the editor | — | — | 10 min | |
+| Design amendments for D8, D9 and D10; plan decisions, 3.7 tick, new task 3.13 with console steps, status line; `16_connector_base.js` contract | — | 30 min | — | |
+| APP_TREE, changelog + metrics | — | — | 15 min | |
+| User asked for the retry on the table download too (decision D11) — extracted the shared `athenaRunWithRetry`, wired both directions through it, renamed the constants | 5 min | — | 25 min | |
+| Design 5.7 amendment for D11; plan decision D11, task 3.6 note, 3.13 retry-provoking steps; changelog and metrics folded into the same build entry | — | 20 min | — | |
+| **Task 3.13 browser smoke test** — export, then round trip back through `importAllTables` (task 3.12), then the retry branches provoked on both sides | — | — | — | |
+| **Total** | **25 min** | **50 min** | **120 min** | |
+
+### Changes delivered
+- `src/47_connector_athena.js`: `exportAllTables` (task 3.7) implemented, last stub removed; `athenaSanitiseValue`, `athenaCsvField`, `athenaBuildTableCSV`, `athenaExportTable` added; `athenaRunWithRetry` added and `importAllTables` wired through it (D11)
+- `src/16_connector_base.js`: `exportAllTables` interface contract widened and its all-or-nothing rule documented (D9)
+- `designs/version-2/DESIGN_V2_CLOUD_DATABASE.md`: section 5.5 signature, section 5.7 import retry and section 5.8 write path amended (D8 to D11)
+- `plans/PLAN_V2_CLOUD_DATABASE.md`: task 3.7 ticked, decisions D8-D11, task 3.13 added, 3.12 unblocked
+- `APP_TREE.md`: connector entry updated
+
+### Notes
+- No user documentation change. Nothing in Phase 3 is reachable from the UI; the Export tab is Phase 6.
+- Phase 3 implementation is now complete. Both remaining Phase 3 tasks are browser smoke tests, to be run as one round trip: 3.13 (export) then 3.12 (import).
+
+---
+
 ## build-20260925-1735 — V2 Phase 3 (part): Athena import, and 3.11 smoke test passed
 
 **Date:** 2026-09-25
