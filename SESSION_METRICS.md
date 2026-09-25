@@ -5,6 +5,62 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260925-1923 — Retired rows now survive an Athena round trip (decision D13)
+
+**Date:** 2026-09-25
+**Branch:** `fix/athena-select-quoting`
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Task 3.12 round trip passed; recorded the result and decision D12 in the plan and in memory | — | 10 min | — | |
+| Task 3.13 step 1 (local vs exported row counts) passed — `live` equalled `exported` on all 18 tables | — | — | — | |
+| The same output exposed 47 retired rows across 6 tables that would not survive a round trip. Checked that `retiring_timestamp` is already a `SCHEMA` column on all six, so no DDL change was implied, then put the decision to the user with the counts | 15 min | — | — | |
+| User decided retired rows should be exported (D13); one argument changed, with the reasoning and the consumer-filter consequence recorded at the call site | — | — | 5 min | |
+| Plan decision D13, task 3.7 amendment note, task 3.13 outstanding list rewritten to require a re-run under D13 | — | 15 min | — | |
+| Changelog and metrics | — | — | 10 min | |
+| **Re-run the export and round trip under D13** — `rowCounts` must now equal the local total on all 18, and the 47 retired rows must come back still marked retired | — | — | — | |
+| **Finish task 3.13** — sanitisation read-back, S3 console check, retry provocation on both sides | — | — | — | |
+| **Total** | **15 min** | **25 min** | **15 min** | |
+
+### Changes delivered
+- `src/47_connector_athena.js`: `exportAllTables` passes `includeSoftDeleted = true` (decision D13) — one argument plus an explanatory comment
+- `plans/PLAN_V2_CLOUD_DATABASE.md`: decision D13 added; task 3.7 amended; task 3.12 ticked as passed; task 3.13 outstanding list updated
+
+### Notes
+- No `APP_TREE.md` or user-guide change: no new files, no UI, no route or sidebar change.
+- **Design section 5.8 needs amending to record D13** — the design still states the excluding behaviour. Outstanding.
+- The retired-row question had been flagged as undecided since the 3.7 build. It was settled only once task 3.13 produced the actual counts, which is a fair argument for running the cheap row-count check early rather than last.
+
+---
+
+## build-20260925-1845 — Fix: Athena import rejected with HTTP 400 (backtick identifiers in DML)
+
+**Date:** 2026-09-25
+**Branch:** `fix/athena-select-quoting`
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Orientation: read the plan tracker to confirm what Phase 3 had left — 3.13 then 3.12, as one round trip | 5 min | — | — | |
+| Explained how to serve the bundle over `http://localhost`; spotted that `dist/dq-accelerator-v2.html` predated all of Phase 3 and would have failed with `AthenaConnector is not defined` | 10 min | — | — | |
+| Task 3.13 steps 1 and 2 run by the user against live AWS — CSV inspection clean, 18-table export `ok: true`, no retries | — | — | — | |
+| `getAppData()` in the plan's console steps turned out to be placeholder shorthand, not a real function; traced the store shape and gave the real `loadFromStorage().data` | 5 min | — | — | |
+| Task 3.12 failed: HTTP 400 on all 18 tables. Diagnosed by comparing quoting across the connector's four generated statements — the failing one is the only DML | 10 min | — | — | |
+| Fix applied: double-quoted identifiers in the `SELECT`, with the Hive/Trino split recorded in a comment at the call site | — | — | 5 min | |
+| Plan decision D12; `getAppData()` replaced throughout the 3.13 steps; tasks 3.12 and 3.13 statuses and the header status line updated | — | 20 min | — | |
+| Changelog and metrics | — | — | 10 min | |
+| **Re-run task 3.12 against this build, then finish 3.13** — round-trip row-count diff, sanitisation read-back, S3 console check, retry provocation on both sides | — | — | — | |
+| **Total** | **30 min** | **20 min** | **15 min** | |
+
+### Changes delivered
+- `src/47_connector_athena.js`: `importAllTables` `SELECT` now uses double-quoted identifiers instead of backticks (decision D12) — one line plus an explanatory comment; the three DDL statements are untouched
+- `plans/PLAN_V2_CLOUD_DATABASE.md`: decision D12 added; the `getAppData()` placeholder in the task 3.13 console steps replaced with `loadFromStorage().data` and annotated; tasks 3.12 and 3.13 statuses and the header status line updated
+
+### Notes
+- No user documentation change and no `APP_TREE.md` change: no new or renamed files, no UI, no route or sidebar change. Nothing in Phase 3 is reachable from the UI.
+- The bug was a single character class in one statement, but it had been invisible through three passing live-AWS tests — 3.10 quotes no identifiers, and 3.11 and 3.13 exercise Hive DDL only. Task 3.12 is the first test in the whole plan to issue DML against a named table.
+
+---
+
 ## build-20260925-1803 — V2 Phase 3 complete (implementation): Athena export, and retry on both transfer directions
 
 **Date:** 2026-09-25

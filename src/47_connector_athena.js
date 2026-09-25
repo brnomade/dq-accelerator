@@ -848,8 +848,13 @@ const AthenaConnector = {
       const fetched = await athenaRunWithRetry(
         async function () {
           // Fully qualified, no QueryExecutionContext -- decision D1.
+          // Double quotes, not backticks: Athena runs DDL through Hive (which
+          // accepts backticks) but DML through Trino (which does not, and
+          // rejects the statement as InvalidRequestException / HTTP 400 at
+          // StartQueryExecution). This is the only DML statement in the file --
+          // see decision D12.
           const queryId = await athenaQuery(
-            cfg, 'SELECT * FROM `' + database + '`.`' + tableName + '`'
+            cfg, 'SELECT * FROM "' + database + '"."' + tableName + '"'
           );
           return athenaGetResults(cfg, queryId);
         },
@@ -949,9 +954,17 @@ const AthenaConnector = {
 
       // Built once, outside the retry loop: a CSV that cannot be built is a
       // deterministic failure and three attempts would not change the outcome.
+      //
+      // Retired rows ARE exported (the true third argument) -- decision D13.
+      // The round trip must be lossless: a row retired locally comes back still
+      // marked retired, so retirement behaves as the soft delete it is rather
+      // than as a hard delete once the data has been through the cloud.
+      // retiring_timestamp is a SCHEMA column on every table that has one, so
+      // it is already in the DDL and no catalog change is needed. Anything
+      // querying Athena directly must filter on retiring_timestamp IS NULL.
       let built;
       try {
-        built = athenaBuildTableCSV(tableName, state);
+        built = athenaBuildTableCSV(tableName, state, true);
       } catch (e) {
         failedTables.push(tableName);
         errors[tableName] = (e && e.message) ? e.message : String(e);
