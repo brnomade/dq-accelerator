@@ -263,6 +263,194 @@ function athenaCellsMatchColumns(cells, columns) {
 }
 
 // ---------------------------------------------------------------------------
+// Tables published to the cloud database
+// ---------------------------------------------------------------------------
+// The 18 core metadata tables, in SCHEMA declaration order.
+//
+// Deliberately an explicit list rather than Object.keys(SCHEMA). SCHEMA has
+// since grown to 22 entries, and source_table_ddl, field_profiling,
+// shortlist_group and cde_shortlist_tag are excluded from the cloud database by
+// decision on 2026-09-25 -- the first two are local profiling working data, and
+// all four post-date the design. This is the authoritative table set for
+// setupDatabase, importAllTables and exportAllTables alike.
+const ATHENA_TABLES = [
+  'executive_agency_type',
+  'executive_agency',
+  'directorate',
+  'critical_data_set',
+  'critical_data_element',
+  'data_quality_rule',
+  'data_quality_rule_allocation',
+  'cde_criticality',
+  'stewardship',
+  'data_patron',
+  'data_owner',
+  'data_steward',
+  'quality_dimension',
+  'criticality_group',
+  'criticality_level',
+  'criticality_group_weight',
+  'quality_dimension_weight',
+  'steward_role_type',
+];
+
+// Load-time consistency check, so a table rename in 10_constants.js surfaces
+// here rather than as an Athena error mid-export. Logged rather than thrown:
+// this file is concatenated into a single bundle with the whole app, so a throw
+// would take down every screen over a cloud-database-only problem.
+ATHENA_TABLES.forEach(function (t) {
+  if (!SCHEMA[t]) {
+    console.error('47_connector_athena.js: ATHENA_TABLES names "' + t + '", which is not in SCHEMA.');
+  }
+});
+
+// ---------------------------------------------------------------------------
+// S3 helpers (task 3.4)
+// ---------------------------------------------------------------------------
+
+// RFC 3986 encoding for one path segment. encodeURIComponent leaves !'()* alone
+// but SigV4 expects them percent-encoded, and a mismatch between the path we
+// sign and the path we send is a SignatureDoesNotMatch with no useful detail.
+function s3EncodeSegment(segment) {
+  return encodeURIComponent(segment).replace(/[!'()*]/g, function (c) {
+    return '%' + c.charCodeAt(0).toString(16).toUpperCase();
+  });
+}
+
+// Virtual-hosted-style endpoint: the form the Phase 0 spike validated, and the
+// only form that honours a per-bucket CORS rule. Segments are encoded one at a
+// time so a '/' in the key stays a delimiter. S3 signs the single-encoded path,
+// which is exactly what URL.pathname gives back for the string built here.
+function s3ObjectUrl(config, key) {
+  const bucket  = String(config.s3Bucket || '').trim();
+  const region  = String(config.region || '').trim();
+  const encoded = String(key || '')
+    .split('/')
+    .filter(function (seg) { return seg !== ''; })
+    .map(s3EncodeSegment)
+    .join('/');
+  return 'https://' + bucket + '.s3.' + region + '.amazonaws.com/' + encoded;
+}
+
+// {databaseName}/{table_name}/data.csv -- design section 5.2. One CSV per
+// table, overwritten on each export.
+function athenaTableDataKey(config, tableName) {
+  return String(config.databaseName || '').trim() + '/' + tableName + '/data.csv';
+}
+
+// The LOCATION a CREATE EXTERNAL TABLE must point at. Athena requires the
+// containing folder, never the file, and requires the trailing slash.
+function athenaTableLocation(config, tableName) {
+  return 's3://' + String(config.s3Bucket || '').trim() + '/' +
+         String(config.databaseName || '').trim() + '/' + tableName + '/';
+}
+
+// S3 reports errors as an XML <Error> document, not the JSON that Athena uses,
+// so athenaFormatError cannot be reused here.
+function s3FormatError(operation, status, bodyText) {
+  const body = String(bodyText || '');
+  const code = (body.match(/<Code>([^<]*)<\/Code>/) || [])[1] || '';
+  const msg  = (body.match(/<Message>([^<]*)<\/Message>/) || [])[1] || '';
+  const detail = (code || msg)
+    ? ((code ? code + ': ' : '') + msg)
+    : athenaTruncate(body, 400);
+  return 'S3 ' + operation + ' failed (HTTP ' + status + '): ' + detail;
+}
+
+// Uploads one object with a signed PUT. Returns the s3:// URI on success and
+// throws on any non-2xx, mirroring how athenaQuery reports failure.
+//
+// Content-Type is set here rather than left to fetch() on purpose. fetch()
+// defaults a string body to 'text/plain;charset=UTF-8', which is not the value
+// the signature was computed over, and S3 would reject that as
+// SignatureDoesNotMatch. Setting it explicitly keeps signed and sent identical.
+async function s3PutObject(config, key, csvString) {
+  const region = String(config.region || '').trim();
+  const url    = s3ObjectUrl(config, key);
+  const body   = String((csvString === null || csvString === undefined) ? '' : csvString);
+
+  const signed = await signAwsRequest(
+    'PUT', url, { 'Content-Type': 'text/plain' }, body,
+    athenaCredentials(config), region, 's3'
+  );
+
+  let res;
+  try {
+    res = await fetch(url, { method: 'PUT', headers: signed, body: body });
+  } catch (e) {
+    // The browser withholds CORS detail, so name the likely causes instead.
+    throw new Error(
+      'S3 PutObject could not reach ' + url +
+      '. Check the bucket name, the region, and that the bucket has a CORS rule allowing PUT. (' +
+      (e && e.message ? e.message : String(e)) + ')'
+    );
+  }
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(s3FormatError('PutObject', res.status, text));
+  }
+
+  return 's3://' + String(config.s3Bucket || '').trim() + '/' + key;
+}
+
+// ---------------------------------------------------------------------------
+// DDL generation (task 3.8)
+// ---------------------------------------------------------------------------
+
+// Identifiers are interpolated straight into SQL text. Table and column names
+// come from SCHEMA and are trusted; databaseName comes from the settings form
+// and is not, so it is checked before it reaches a statement.
+function athenaAssertIdentifier(value, what) {
+  const s = String(value || '').trim();
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(s)) {
+    throw new Error(
+      what + ' must start with a letter or underscore and contain only letters, ' +
+      'numbers and underscores. Got: "' + athenaTruncate(s, 60) + '"'
+    );
+  }
+  return s;
+}
+
+// Every column is declared STRING regardless of its SCHEMA type (design section
+// 5.6). Coercion happens in the app on import, which stops Athena rejecting a
+// row over an empty int or an out-of-range date.
+//
+// OpenCSVSerde replaces the ROW FORMAT DELIMITED shown in design section 5.9.
+// tableToCSV() emits RFC 4180 quoted fields and the delimited SerDe has no
+// concept of quoting, so a description containing a comma would shift every
+// later column on that row. OpenCSVSerde also requires all-STRING columns,
+// which the design already mandates. Decided with the user 2026-09-25.
+//
+// Known remaining limit: OpenCSVSerde still cannot read a newline inside a
+// quoted value, because Athena splits records on newlines before the SerDe sees
+// them. exportAllTables (task 3.7) must collapse newlines in values on upload.
+function athenaCreateTableDDL(config, tableName) {
+  const database = athenaAssertIdentifier(config.databaseName, 'Athena Database Name');
+  const schema   = SCHEMA[tableName];
+  if (!schema) {
+    throw new Error('athenaCreateTableDDL: no SCHEMA entry for table "' + tableName + '".');
+  }
+
+  const columns = schema.cols.map(function (c) {
+    return '  `' + c.name + '` STRING';
+  }).join(',\n');
+
+  return 'CREATE EXTERNAL TABLE IF NOT EXISTS `' + database + '`.`' + tableName + '` (\n' +
+    columns + '\n' +
+    ')\n' +
+    "ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'\n" +
+    'WITH SERDEPROPERTIES (\n' +
+    "  'separatorChar' = ',',\n" +
+    "  'quoteChar' = '\"',\n" +
+    "  'escapeChar' = '\\\\'\n" +
+    ')\n' +
+    'STORED AS TEXTFILE\n' +
+    "LOCATION '" + athenaTableLocation(config, tableName) + "'\n" +
+    "TBLPROPERTIES ('skip.header.line.count' = '1')";
+}
+
+// ---------------------------------------------------------------------------
 // Connector object
 // ---------------------------------------------------------------------------
 
@@ -296,10 +484,61 @@ const AthenaConnector = {
     }
   },
 
-  // --- Not yet implemented (plan tasks 3.6, 3.7, 3.8) ----------------------
-  setupDatabase: async function () {
-    throw new Error('AthenaConnector.setupDatabase is not implemented yet (plan task 3.8).');
+  // Task 3.8 -- idempotent catalog setup: CREATE DATABASE IF NOT EXISTS, then
+  // one CREATE EXTERNAL TABLE IF NOT EXISTS per entry in ATHENA_TABLES. Safe to
+  // re-run at any time; it never touches data, only the catalog. Returns one
+  // StepResult per step, as documented in 16_connector_base.js.
+  //
+  // Failure handling: if CREATE DATABASE fails the run stops, because every
+  // table statement would then fail for the same reason and bury the real cause
+  // under 18 identical errors. A single table failure is recorded and the run
+  // continues, so one pass reports every broken table rather than just the first.
+  setupDatabase: async function (config, onProgress) {
+    const cfg     = config || {};
+    const results = [];
+    const total   = 1 + ATHENA_TABLES.length;
+
+    const report = function (step, ok, message, error) {
+      const entry = { step: step, ok: ok, message: message };
+      if (!ok) entry.error = error;
+      results.push(entry);
+      if (typeof onProgress === 'function') onProgress(step, total, message);
+      return entry;
+    };
+
+    let database;
+    try {
+      database = athenaAssertIdentifier(cfg.databaseName, 'Athena Database Name');
+      await athenaQuery(cfg, 'CREATE DATABASE IF NOT EXISTS `' + database + '`');
+      report(1, true, 'Database ' + database + ' created or already present');
+    } catch (e) {
+      report(
+        1, false,
+        'Failed to create database ' + (String(cfg.databaseName || '').trim() || '(not set)'),
+        (e && e.message) ? e.message : String(e)
+      );
+      return results;
+    }
+
+    for (let i = 0; i < ATHENA_TABLES.length; i++) {
+      const tableName = ATHENA_TABLES[i];
+      const step      = i + 2;
+      try {
+        await athenaQuery(cfg, athenaCreateTableDDL(cfg, tableName));
+        report(step, true, 'Table ' + database + '.' + tableName + ' created or already present');
+      } catch (e) {
+        report(
+          step, false,
+          'Failed to create table ' + database + '.' + tableName,
+          (e && e.message) ? e.message : String(e)
+        );
+      }
+    }
+
+    return results;
   },
+
+  // --- Not yet implemented (plan tasks 3.6, 3.7) ---------------------------
 
   importAllTables: async function () {
     throw new Error('AthenaConnector.importAllTables is not implemented yet (plan task 3.6).');

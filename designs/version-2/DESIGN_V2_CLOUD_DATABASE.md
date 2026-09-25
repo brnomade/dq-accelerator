@@ -260,17 +260,28 @@ Idempotent — safe to re-run at any time.
 1. `StartQueryExecution`: `CREATE DATABASE IF NOT EXISTS {databaseName}`; poll to completion
 2. For each of the 18 tables in SCHEMA order:  
    ```sql
-   CREATE EXTERNAL TABLE IF NOT EXISTS {databaseName}.{table_name} (
-     col1 STRING, col2 STRING, ...   -- all columns STRING regardless of app type
+   CREATE EXTERNAL TABLE IF NOT EXISTS `{databaseName}`.`{table_name}` (
+     `col1` STRING, `col2` STRING, ...   -- all columns STRING regardless of app type
    )
-   ROW FORMAT DELIMITED
-   FIELDS TERMINATED BY ','
-   LINES TERMINATED BY '\n'
+   ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+   WITH SERDEPROPERTIES (
+     'separatorChar' = ',',
+     'quoteChar' = '"',
+     'escapeChar' = '\\'
+   )
    STORED AS TEXTFILE
-   TBLPROPERTIES ('skip.header.line.count'='1')
    LOCATION 's3://{s3Bucket}/{databaseName}/{table_name}/'
+   TBLPROPERTIES ('skip.header.line.count'='1')
    ```
 3. `onProgress` called after each step
+
+> **Amended 2026-09-25 (decision D5 in the plan).** The SerDe above replaces the `ROW FORMAT DELIMITED / FIELDS TERMINATED BY ','` block in the first draft. `tableToCSV()` emits RFC 4180 quoted fields, and the delimited SerDe (LazySimpleSerDe) has no concept of quoting — a `data_set_description` containing a comma would split into two columns and shift every later field on that row, and quoted values would keep their literal `"` characters. `OpenCSVSerde` reads the quoting correctly and requires all columns to be `STRING`, which section 5.6 already mandates, so it is a drop-in swap.
+>
+> Two limits `OpenCSVSerde` does **not** fix, both handled on the write side in section 5.8 rather than here:
+> - **Newlines inside a value.** Athena's `TextInputFormat` splits records on newlines before the SerDe sees them, so no SerDe can recover a multi-line value. The export must replace `\r\n` and `\n` in each value with a space.
+> - **Backslashes inside a value.** `escapeChar` is `\` and cannot be disabled, so a literal backslash consumes the next character on read. The export must double backslashes. Most likely to bite on regex patterns in `data_quality_rule`.
+
+> **Amended 2026-09-25 (decision D4 in the plan).** Every "18 tables" in this document means the 18 named in section 4, held as the explicit `ATHENA_TABLES` constant in `47_connector_athena.js` — **not** `Object.keys(SCHEMA)`, which has since grown to 22. `source_table_ddl`, `field_profiling`, `shortlist_group` and `cde_shortlist_tag` are excluded from the cloud database: the first two are local profiling working data, and all four post-date this design. Shortlist groups and CDE shortlist tags therefore do not survive an Athena round trip.
 
 ---
 

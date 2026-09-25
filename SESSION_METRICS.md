@@ -5,6 +5,39 @@ Testing time is filled in manually by the user after browser validation.
 
 ---
 
+## build-20260925-1707 — V2 Phase 3 (part): S3 upload + Athena database setup
+
+**Date:** 2026-09-25
+**Branch:** `feature/athena-connector-operations`
+
+| Activity | Discussion | Design / Plan | Coding | Testing |
+|----------|-----------|--------------|--------|---------|
+| Orientation: read plan tracker, confirm next task, check the S3 CORS blocker, agree branch scope | 10 min | — | — | |
+| Found and raised the 18-vs-22 table discrepancy between the design and current `SCHEMA` (decision D4) | 10 min | — | — | |
+| Found and raised the SerDe / RFC 4180 quoting defect in design section 5.9 (decision D5), including the two write-side limits no SerDe can fix | 15 min | — | — | |
+| `s3PutObject` + `s3ObjectUrl` / `s3EncodeSegment` / `s3FormatError` / `athenaTableDataKey` / `athenaTableLocation` (task 3.4) | — | — | 25 min | |
+| `ATHENA_TABLES` + load-time consistency check (decision D4) | — | — | 10 min | |
+| `athenaCreateTableDDL` + `athenaAssertIdentifier` (task 3.8 DDL generation) | — | — | 20 min | |
+| `setupDatabase` orchestration, StepResult reporting and failure policy (task 3.8) | — | — | 20 min | |
+| Design doc amendments for D4 and D5; plan decisions, task ticks, task 3.7 constraints, task 3.11 smoke-test steps | — | 30 min | — | |
+| APP_TREE, changelog + metrics | — | — | 15 min | |
+| **Total** | **35 min** | **30 min** | **90 min** | |
+
+### Changes delivered
+- `src/47_connector_athena.js`: `s3PutObject` (task 3.4) and `setupDatabase` (task 3.8) implemented; `ATHENA_TABLES`, `athenaCreateTableDDL`, `athenaAssertIdentifier`, `s3ObjectUrl`, `s3EncodeSegment`, `s3FormatError`, `athenaTableDataKey`, `athenaTableLocation` added; `setupDatabase` stub removed
+- `designs/version-2/DESIGN_V2_CLOUD_DATABASE.md`: section 5.9 DDL block amended to `OpenCSVSerde`; two amendment notes added for D5 and D4
+- `plans/PLAN_V2_CLOUD_DATABASE.md`: tasks 3.4 and 3.8 ticked, task 3.11 added, decisions D4 and D5 recorded, two task 3.7 constraints added
+- `APP_TREE.md`: `47_connector_athena.js` entry updated
+
+### Verification notes
+Not yet tested. Build is ASCII-clean and bundles, but plan task 3.11 is outstanding and nothing here is reachable from the UI — `setupDatabase` and `s3PutObject` are console-only until the Phase 4 settings screen exists. Task 3.11 is also the first genuine browser CORS preflight against S3; the Phase 0 spike only simulated an `Origin` header from Python. The bundle must be served over `http://localhost` for that test, since a `file://` origin is `null` and S3 CORS rejects it.
+
+### Decisions recorded
+- **D4** — the cloud database holds the original 18 tables, not all 22 now in `SCHEMA`. `ATHENA_TABLES` is an explicit list, deliberately not `Object.keys(SCHEMA)`. Shortlist groups, CDE shortlist tags and all profiling data are excluded from the Athena round trip.
+- **D5** — `OpenCSVSerde` replaces the `ROW FORMAT DELIMITED` in design section 5.9, because `tableToCSV()` emits RFC 4180 quoted fields the delimited SerDe cannot read. Newlines and backslashes inside values still have to be sanitised on the write side in task 3.7; that is now a recorded plan constraint rather than a latent bug.
+
+---
+
 ## build-20260925-1619 — V2 Fix: StartQueryExecution ClientRequestToken
 
 **Date:** 2026-09-25
