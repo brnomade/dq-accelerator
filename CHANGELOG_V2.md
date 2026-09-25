@@ -6,6 +6,48 @@ For v1 history see `CHANGELOG.md`.
 
 ---
 
+## build-20260925-1803 - V2 Phase 3 complete (implementation): Athena export, and retry on both transfer directions
+
+**Plan:** `plans/PLAN_V2_CLOUD_DATABASE.md` (Phase 3, task 3.7; new decisions D8 to D11; new task 3.13)
+**Design:** `designs/version-2/DESIGN_V2_CLOUD_DATABASE.md` (sections 5.5, 5.7 and 5.8, all amended)
+**Branch:** `feature/athena-connector-export`
+
+### Added
+- `src/47_connector_athena.js` - **`AthenaConnector.exportAllTables(config, data, onProgress)`** (task 3.7), replacing the last "not implemented yet" stub. 20 steps: connect, one step per table, then completion. Per table: `s3PutObject` of the table CSV, then `DROP TABLE IF EXISTS`, then `CREATE EXTERNAL TABLE`. All SQL is fully qualified and no `QueryExecutionContext` is sent (decision D1).
+  - Step 1 calls `testConnection` before anything is written, so bad credentials fail in one round trip instead of eighteen - same shape as `importAllTables`.
+  - **Retry.** 3 attempts per table with a 2 s then 5 s wait, as design section 5.8 specifies. New `athenaExportTable` wraps upload + DROP + CREATE as a single retry unit, so a retry re-uploads as well as re-creating and a half-finished attempt leaves nothing behind that the next attempt does not overwrite. Each attempt re-invokes `athenaQuery`, which mints a fresh `ClientRequestToken` per call - load-bearing, because Athena treats a repeated token as a repeat of the original request and would return the very failure the retry was meant to replace.
+  - **All-or-nothing**, per design section 5.8: one table exhausting its attempts makes the whole export `ok: false` and the master must re-run the lot, which is always safe because each table is DROP + CREATE. Every table is still attempted, so one run reports every problem rather than only the first.
+  - The CSV is built once per table, outside the retry loop: a CSV that cannot be built is a deterministic failure and three attempts would not change the outcome.
+- `src/47_connector_athena.js` - **new Athena-local CSV writer** (decision D8). `athenaBuildTableCSV(tableName, data)` returns `{ csv, rowCount }`, mirroring `tableToCSV()`'s structure - `SCHEMA.cols` order, header row first (the DDL declares `skip.header.line.count = 1`), RFC 4180 quoting via `athenaCsvField`.
+  - `athenaSanitiseValue(value)` applies the two write-side fixes `OpenCSVSerde` cannot do for itself: newlines collapse to a single space, because Athena splits records on line terminators before the SerDe sees the quoting, and backslashes are doubled, because `escapeChar` is `\` and cannot be disabled. Backslashes are doubled first, so the backslash that escapes a backslash is not doubled again by the newline pass.
+  - Both fixes are lossy, which is why they are **not** applied to `tableToCSV()`.
+
+### Changed
+- `src/47_connector_athena.js` - **`importAllTables` now retries each table download** (decision D11, requested by the user): 3 attempts, 2 s then 5 s apart, identical to the export. Previously a single dropped connection, throttled API call or expired session token failed that table outright - and under decision D6 one failed table makes the whole import `ok: false`, so the master applied nothing and re-ran all 18 by hand.
+  - New shared `athenaRunWithRetry(run, onAttempt)` holds the single copy of the policy and is used by both transfer directions. It returns `{ ok, value }` or `{ ok, error }` and never throws, because both callers carry on through the remaining tables after a failure. The export's inline retry loop was replaced by it, and the constants renamed `ATHENA_EXPORT_*` to `ATHENA_TRANSFER_*` to match.
+  - The retry unit on import is the `SELECT` plus its paginated fetch together. A retry re-runs the query rather than resuming a half-read result set: a `QueryExecutionId` whose pagination failed part way through is not worth resuming, and the query is cheap to repeat.
+  - Coercion stays outside the retry. It touches no network and is deterministic, so a second pass would fail identically and would duplicate the warnings the first pass already produced. A coercion failure is still recorded as a failed table rather than unwinding the whole import.
+  - The progress bar gains the same retry indicator the export has: `Importing data_quality_rule (retry 2/3)`.
+- `src/16_connector_base.js` - the `exportAllTables` interface contract updated for decision D9: the widened return shape, the all-or-nothing rule, and the note that a connector-agnostic caller may read only `ok` and `failedTables`.
+- `designs/version-2/DESIGN_V2_CLOUD_DATABASE.md` - section 5.5's `exportAllTables` signature amended for D9; section 5.8 amended for D8 and D10, and its retry step gained the `ClientRequestToken` rationale.
+- `plans/PLAN_V2_CLOUD_DATABASE.md` - task 3.7 ticked; decisions D8, D9 and D10 added; task 3.13 added with its console steps; task 3.12 unblocked; status line updated.
+- `APP_TREE.md` - `47_connector_athena.js` entry updated with `exportAllTables`, the four new write helpers, and the standing warning not to "fix" `tableToCSV()` to suit the Athena path.
+
+### Decisions recorded
+- **D8 - Athena-local CSV writer; `tableToCSV()` untouched.** Directed by the user. `tableToCSV()` (`40_storage.js:11`) feeds the V1 ZIP export, the uploader export and the CSV-per-table export, where multi-line free text is valid output that must be preserved. Sanitising there would degrade three working V1 paths to fix one V2 path. **Consequence:** the two writers must be kept in step by hand.
+- **D9 - widened `exportAllTables` return shape** to `{ ok, failedTables, rowCounts, errors }`. Phase 6 must show a per-table row count summary (6.4) and per-table error detail (6.5); neither is derivable from `{ ok, failedTables }`. Same precedent as D6 for import.
+- **D10 - a lone CR is collapsed too.** The design names only `\r\n` and `\n`, but Hadoop's line reader treats a bare CR as a record terminator, so leaving it would split exactly the row the fix exists to protect.
+- **D11 - the table download retries as well.** Requested by the user. The design specified retry for export only. **Consequence:** a genuinely broken import now takes up to 7 s longer per failing table before it reports, and a wholly unreachable database takes around 2 minutes to fail all 18 rather than failing fast. Accepted because step 1 still pre-flights the credentials, so the common case of bad credentials fails in one round trip.
+
+### Known limitations
+- **Untested.** `exportAllTables` has not been run against live AWS - that is task 3.13, and it must be run before task 3.12. Every line of the export path is unexercised, and the retry branches are unexercised on both sides: a clean run never enters them, so they need provoking deliberately. Plan task 3.13 records how (point `s3Bucket` or `databaseName` at something that does not exist).
+- **`importAllTables` changed after its own code was written and has not been re-run** either. The retry wrapper is new on a path that was already untested.
+- **Retired rows are excluded from the cloud database.** This is the literal reading of design section 5.8, which calls `tableToCSV(tableName, data)` with `includeSoftDeleted` defaulted to false. A row retired locally disappears from the cloud store rather than arriving marked as retired. `athenaBuildTableCSV` takes the same third argument, so this is a one-word change if the round trip shows retirement state needs to survive.
+- `exportAllTables` is not yet reachable from the UI - the Export screen tab is Phase 6. It is callable from the browser console.
+- Per decision D4, `source_table_ddl`, `field_profiling`, `shortlist_group` and `cde_shortlist_tag` are not exported. Profiling data and shortlist groups remain local-only.
+
+---
+
 ## build-20260925-1735 - V2 Phase 3 (part): Athena import, and 3.11 smoke test passed
 
 **Plan:** `plans/PLAN_V2_CLOUD_DATABASE.md` (Phase 3, tasks 3.6 and 3.11; new decisions D6 and D7)

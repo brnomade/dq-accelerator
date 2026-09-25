@@ -105,7 +105,13 @@ Every connector implements:
 
   // Push all 18 tables with connector-specific write strategy
   // Athena uses DROP+CREATE; future connectors may use upsert/merge
-  exportAllTables(config, data, onProgress): Promise<{ ok: bool, failedTables: string[] }>,
+  // Amended 2026-09-25 (decision D9): rowCounts and errors added, both keyed by
+  // table name -- rowCounts for the tables that succeeded, errors for those that
+  // failed. Sections 7's row count summary and failed-table detail are not
+  // derivable from ok and failedTables alone. Those two keep their meaning, so a
+  // caller reading only them is unaffected.
+  exportAllTables(config, data, onProgress):
+      Promise<{ ok: bool, failedTables: string[], rowCounts: object, errors: object }>,
 }
 
 // onProgress(step: number, total: number, message: string)
@@ -238,6 +244,10 @@ Per-table steps:
 4. Parse rows using existing `importSheet` type-coercion logic
 5. `onProgress(step, 20, tableName)`
 
+> **Amended 2026-09-25 (decision D11 in the plan).** Steps 1–3 above carry the same per-table retry as the export: 3 attempts, 2 s then 5 s apart. The first draft specified retry only for export, but a dropped connection, a throttled API or an expired session token reads the same on a `SELECT` as on an upload, and without retry a single transient fault on any one of 18 serial reads fails the whole import — which under decision D6 means the master applies nothing and re-runs all 18 by hand. The retry unit is step 1 plus step 3 together: a retry re-runs the `SELECT` rather than resuming a half-read result set, because a `QueryExecutionId` whose pagination failed part way through is not worth resuming and the query is cheap to repeat. Step 4 sits outside the retry — it touches no network and is deterministic, so a second pass would fail identically and would duplicate the warnings the first pass already produced. The progress bar shows the same retry indicator as the export ("Importing data_quality_rule… (retry 2/3)").
+>
+> Both halves now share one implementation, `athenaRunWithRetry(run, onAttempt)`, holding the single copy of the 3-attempt / 2 s / 5 s policy.
+
 On success (`ok: true`): replaces the 18 imported tables in local state and **resets the base snapshot** -- but see plan decisions D6 and D7. `data` carries only the 18 fetched tables, so Phase 5 must merge rather than assign, and must apply nothing at all when `ok` is false.
 
 Originally specified as: replaces full local state and resets the base snapshot — the Athena dataset becomes the new delta baseline for steward delta tracking. Behaviour is identical to importing a master JSON file.
@@ -260,6 +270,14 @@ Each attempt covers the full per-table sequence as a unit:
 **All-or-nothing rule:** if any table fails all 3 attempts, the overall export is marked failed. The UI displays which tables failed and their error details. The master must retry the entire export. Because each table export is DROP + CREATE, a clean full retry is always safe — previously-succeeded tables are simply overwritten.
 
 The progress bar shows a retry indicator (e.g. "Exporting data_quality_rule… (retry 2/3)") during retry attempts.
+
+> **Amended 2026-09-25 (decision D8 in the plan).** Step 1 above no longer calls `tableToCSV()`. That function feeds the V1 ZIP export, the uploader export and the CSV-per-table export, where multi-line free text is valid output that must be preserved — applying the newline and backslash fixes there would degrade three working V1 paths to fix one V2 path. The Athena connector instead has its own writer, `athenaBuildTableCSV(tableName, data)`, which mirrors `tableToCSV()`'s structure (`SCHEMA.cols` order, header row first, RFC 4180 quoting) and applies `athenaSanitiseValue` to every value on the way out. It returns `{ csv, rowCount }`, so the row count summary in section 7 does not have to re-derive the soft-delete filter. The two functions must now be kept in step by hand: a future column-order or quoting change in `tableToCSV()` does not reach the Athena path.
+>
+> **Retired rows.** The literal reading of step 1 above — `tableToCSV(tableName, data)`, with `includeSoftDeleted` left to default to false — is what was implemented, so a row retired locally disappears from the cloud database rather than arriving marked as retired. `athenaBuildTableCSV` accepts the same third argument, so this is a one-word change if the round trip in plan task 3.13 shows retirement state needs to survive.
+>
+> **Amended 2026-09-25 (decision D10 in the plan).** The newline fix collapses a lone CR as well as CRLF and LF. Hadoop's line reader treats a bare CR as a record terminator too, so leaving it would split exactly the row the fix exists to protect.
+>
+> **Retry and idempotency tokens.** Each attempt re-runs the whole three-step sequence, upload included, and re-invokes `athenaQuery`, which mints a fresh `ClientRequestToken` per call. This is load-bearing: Athena treats a repeated token as a repeat of the original request and returns the first `QueryExecutionId`, so a retry that cached and replayed a payload would silently return the very failure it was meant to replace.
 
 ### 5.9 Setup Database flow
 

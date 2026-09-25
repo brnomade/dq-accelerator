@@ -10,7 +10,8 @@
 //   15_aws_sigv4.js      signAwsRequest()
 //   16_connector_base.js ConnectorRegistry (registration at bottom of this file)
 //   20_data_utils.js     coerceValue()      -- used by importAllTables
-//   40_storage.js        tableToCSV()       -- used by exportAllTables
+//   (exportAllTables does not use 40_storage.js tableToCSV() -- it builds its
+//    own CSV, see athenaBuildTableCSV)
 //
 // Transport was validated end-to-end against live Athena and S3 in region
 // eu-west-1 on 2026-09-24; see designs/version-2/spike-results.txt.
@@ -580,6 +581,140 @@ function athenaCoerceTable(tableName, rawRows) {
 }
 
 // ---------------------------------------------------------------------------
+// Per-table transfer retry (tasks 3.6 and 3.7)
+// ---------------------------------------------------------------------------
+
+// The retry policy of design section 5.8, applied to the import of one table as
+// well as the export of one table. The design specifies it only for export, but
+// a dropped connection, a throttled API or an expired session token reads the
+// same on a SELECT as on an upload, and a transient fault on any one of 18
+// serial reads would otherwise fail the whole import (decision D11).
+const ATHENA_TRANSFER_ATTEMPTS      = 3;              // design section 5.8
+const ATHENA_TRANSFER_RETRY_WAIT_MS = [2000, 5000];   // wait before attempts 2 and 3
+
+// Runs one per-table transfer with up to 3 attempts. Returns
+// { ok: true, value } or { ok: false, error }, and never throws: both callers
+// carry on through the remaining tables after a table fails, so a failure here
+// is a value to record, not an exception to unwind.
+//
+// onAttempt(attempt) is called before each attempt after the first, so the
+// caller can put the retry count on the progress bar.
+//
+// `run` is re-invoked in full on every attempt rather than resumed. That is
+// load-bearing for Athena: athenaQuery mints a fresh ClientRequestToken per
+// call, and Athena treats a repeated token as a repeat of the original request
+// and hands back its QueryExecutionId -- so a retry that replayed a cached
+// payload would silently return the very failure it was meant to replace.
+async function athenaRunWithRetry(run, onAttempt) {
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= ATHENA_TRANSFER_ATTEMPTS; attempt++) {
+    if (attempt > 1 && typeof onAttempt === 'function') onAttempt(attempt);
+    try {
+      return { ok: true, value: await run() };
+    } catch (e) {
+      lastError = (e && e.message) ? e.message : String(e);
+      if (attempt < ATHENA_TRANSFER_ATTEMPTS) {
+        await athenaSleep(ATHENA_TRANSFER_RETRY_WAIT_MS[attempt - 1]);
+      }
+    }
+  }
+
+  return { ok: false, error: lastError };
+}
+
+// ---------------------------------------------------------------------------
+// Export helpers (task 3.7)
+// ---------------------------------------------------------------------------
+
+// Two characters survive tableToCSV() but cannot survive OpenCSVSerde, so both
+// are neutralised here, on the write side. Each fix is lossy by design and was
+// agreed with the user on 2026-09-25 as part of decision D5:
+//
+//   Backslash -- OpenCSVSerde's escapeChar is '\' and cannot be disabled, so a
+//   literal backslash consumes the character after it on read. Doubled here.
+//   tableToCSV() doubles '"' but never touches '\'. Most likely to show up in
+//   the regex patterns held in data_quality_rule.
+//
+//   Newline -- Athena splits records on line terminators before the SerDe ever
+//   sees the quoting, so a multi-line value becomes two broken rows. No SerDe
+//   setting can recover this. Collapsed to a single space, which costs the line
+//   break and nothing else.
+//
+// Order matters: backslashes are doubled first, so the backslash that escapes a
+// backslash is not itself doubled by a later pass.
+//
+// A lone CR is collapsed as well as CRLF and LF. The design names only '\r\n'
+// and '\n', but Hadoop's line reader treats a bare CR as a record terminator
+// too, so leaving it would break exactly the row this fix exists to protect.
+function athenaSanitiseValue(value) {
+  if (value === null || value === undefined) return '';
+  return String(value)
+    .replace(/\\/g, '\\\\')
+    .replace(/\r\n|\r|\n/g, ' ');
+}
+
+// RFC 4180 quoting, applied after sanitisation. Same rule as tableToCSV()
+// (40_storage.js:11), which is deliberately left untouched: it feeds the V1 ZIP
+// and uploader exports, where multi-line text is valid and must be preserved.
+// The newline test tableToCSV() makes is dropped here because athenaSanitiseValue
+// has already removed every newline by this point.
+function athenaCsvField(value) {
+  const s = athenaSanitiseValue(value);
+  if (s.indexOf(',') !== -1 || s.indexOf('"') !== -1) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
+// One table as a CSV string ready for upload, plus the number of data rows it
+// holds so the caller can report a per-table count without re-deriving it.
+// Athena-local equivalent of tableToCSV(), with the sanitisation above applied
+// to every value.
+//
+// Column order follows SCHEMA.cols, matching the DDL athenaCreateTableDDL()
+// generates, and a header row is always written because that DDL declares
+// skip.header.line.count = 1. An empty table therefore uploads as a
+// header-only file, which Athena reads back as zero rows.
+//
+// Soft-deleted rows -- any row carrying retiring_timestamp -- are excluded,
+// which is what design section 5.8 specifies by calling tableToCSV(tableName,
+// data) with its includeSoftDeleted argument left to default to false. Retired
+// rows therefore disappear from the cloud database rather than arriving in it
+// marked as retired.
+function athenaBuildTableCSV(tableName, data, includeSoftDeleted) {
+  const schema = SCHEMA[tableName];
+  if (!schema) {
+    throw new Error('athenaBuildTableCSV: no SCHEMA entry for table "' + tableName + '".');
+  }
+
+  const all  = (data && data[tableName]) || [];
+  const rows = includeSoftDeleted
+    ? all
+    : all.filter(function (r) { return !r.retiring_timestamp; });
+
+  const header = schema.cols.map(function (c) { return c.name; }).join(',');
+  const lines  = rows.map(function (row) {
+    return schema.cols.map(function (c) { return athenaCsvField(row[c.name]); }).join(',');
+  });
+
+  return { csv: [header].concat(lines).join('\n'), rowCount: rows.length };
+}
+
+// One table's full export sequence. The retry loop treats this as a single
+// unit, so a retry re-uploads as well as re-creating -- a half-finished attempt
+// leaves nothing behind that the next attempt does not overwrite.
+//
+// DROP comes before CREATE so a stale column list from an earlier app version
+// cannot survive an export. Both statements are fully qualified and send no
+// QueryExecutionContext (decision D1).
+async function athenaExportTable(config, database, tableName, csv) {
+  await s3PutObject(config, athenaTableDataKey(config, tableName), csv);
+  await athenaQuery(config, 'DROP TABLE IF EXISTS `' + database + '`.`' + tableName + '`');
+  await athenaQuery(config, athenaCreateTableDDL(config, tableName));
+}
+
+// ---------------------------------------------------------------------------
 // Connector object
 // ---------------------------------------------------------------------------
 
@@ -672,6 +807,10 @@ const AthenaConnector = {
   // 20 steps: connect, then one SELECT per table, then completion -- the step
   // numbering of design section 5.7.
   //
+  // Each table gets the same 3-attempt retry as the export, 2 s then 5 s apart
+  // (decision D11) -- the SELECT and its paginated fetch are one retry unit.
+  // A table is recorded as failed only once all 3 attempts are spent.
+  //
   // Every table is attempted even after one fails, so a single run diagnoses
   // every problem, and `ok` is false if any did (decision D6). `data` is
   // therefore always partial on failure and must not be applied to local state
@@ -698,20 +837,46 @@ const AthenaConnector = {
 
     for (let i = 0; i < ATHENA_TABLES.length; i++) {
       const tableName = ATHENA_TABLES[i];
-      report(i + 2, 'Importing ' + tableName);
+      const step      = i + 2;
 
+      report(step, 'Importing ' + tableName);
+
+      // The query and the paginated fetch are one retry unit: a retry re-runs
+      // the SELECT rather than resuming a half-read result set, because a
+      // QueryExecutionId whose pagination failed part way through is not worth
+      // resuming and athenaQuery is cheap to repeat (decision D11).
+      const fetched = await athenaRunWithRetry(
+        async function () {
+          // Fully qualified, no QueryExecutionContext -- decision D1.
+          const queryId = await athenaQuery(
+            cfg, 'SELECT * FROM `' + database + '`.`' + tableName + '`'
+          );
+          return athenaGetResults(cfg, queryId);
+        },
+        function (attempt) {
+          report(step, 'Importing ' + tableName +
+                       ' (retry ' + attempt + '/' + ATHENA_TRANSFER_ATTEMPTS + ')');
+        }
+      );
+
+      if (!fetched.ok) {
+        failedTables.push(tableName);
+        warnings.push(tableName + ': import failed after ' + ATHENA_TRANSFER_ATTEMPTS +
+                      ' attempts -- ' + fetched.error);
+        continue;
+      }
+
+      // Coercion sits outside the retry: it touches no network and is
+      // deterministic, so a second pass would fail identically and would
+      // duplicate the warnings the first pass already produced.
       try {
-        // Fully qualified, no QueryExecutionContext -- decision D1.
-        const queryId = await athenaQuery(
-          cfg, 'SELECT * FROM `' + database + '`.`' + tableName + '`'
-        );
-        const rawRows  = await athenaGetResults(cfg, queryId);
-        const coerced  = athenaCoerceTable(tableName, rawRows);
+        const coerced = athenaCoerceTable(tableName, fetched.value);
         data[tableName] = coerced.rows;
         coerced.warnings.forEach(function (w) { warnings.push(w); });
       } catch (e) {
         failedTables.push(tableName);
-        warnings.push(tableName + ': import failed -- ' + ((e && e.message) ? e.message : String(e)));
+        warnings.push(tableName + ': rows could not be read -- ' +
+                      ((e && e.message) ? e.message : String(e)));
       }
     }
 
@@ -734,10 +899,95 @@ const AthenaConnector = {
     };
   },
 
-  // --- Not yet implemented (plan task 3.7) ---------------------------------
+  // --- Export (task 3.7) ---------------------------------------------------
+  //
+  // 20 steps: connect, one step per table, then completion -- the step
+  // numbering of design section 5.8.
+  //
+  // Per table: upload the CSV to S3, DROP TABLE, CREATE EXTERNAL TABLE. The
+  // whole sequence is one retry unit, run through athenaRunWithRetry -- so a
+  // retry re-uploads as well as re-creating, and nothing a failed attempt left
+  // behind survives the next one.
+  //
+  // All-or-nothing, per design section 5.8: one table exhausting its attempts
+  // makes the whole export ok: false and the master must re-run the lot. Every
+  // table is still attempted, so one run reports every problem, and because
+  // each table is DROP + CREATE a clean full retry is always safe -- tables
+  // that succeeded are simply overwritten.
+  //
+  // Only the ATHENA_TABLES set is written (decision D4), so shortlist groups,
+  // CDE shortlist tags and local profiling data are not exported.
+  //
+  // Widens the interface return shape from { ok, failedTables } with rowCounts
+  // and errors, which Phase 6 needs for the per-table row count summary (6.4)
+  // and the failed-table detail (6.5) it is specified to display.
+  exportAllTables: async function (config, data, onProgress) {
+    const cfg          = config || {};
+    const state        = data || {};
+    const failedTables = [];
+    const errors       = {};
+    const rowCounts    = {};
+    const total        = ATHENA_TABLES.length + 2;
 
-  exportAllTables: async function () {
-    throw new Error('AthenaConnector.exportAllTables is not implemented yet (plan task 3.7).');
+    const report = function (step, message) {
+      if (typeof onProgress === 'function') onProgress(step, total, message);
+    };
+
+    // Step 1: one round trip to fail on bad credentials, rather than 18.
+    report(1, 'Connecting to AWS');
+    const database = athenaAssertIdentifier(cfg.databaseName, 'Athena Database Name');
+    const probe    = await AthenaConnector.testConnection(cfg);
+    if (!probe.ok) {
+      throw new Error('Cannot connect to AWS: ' + probe.error);
+    }
+
+    for (let i = 0; i < ATHENA_TABLES.length; i++) {
+      const tableName = ATHENA_TABLES[i];
+      const step      = i + 2;
+
+      report(step, 'Exporting ' + tableName);
+
+      // Built once, outside the retry loop: a CSV that cannot be built is a
+      // deterministic failure and three attempts would not change the outcome.
+      let built;
+      try {
+        built = athenaBuildTableCSV(tableName, state);
+      } catch (e) {
+        failedTables.push(tableName);
+        errors[tableName] = (e && e.message) ? e.message : String(e);
+        continue;
+      }
+
+      const written = await athenaRunWithRetry(
+        function () {
+          return athenaExportTable(cfg, database, tableName, built.csv);
+        },
+        function (attempt) {
+          report(step, 'Exporting ' + tableName +
+                       ' (retry ' + attempt + '/' + ATHENA_TRANSFER_ATTEMPTS + ')');
+        }
+      );
+
+      if (written.ok) {
+        rowCounts[tableName] = built.rowCount;
+      } else {
+        failedTables.push(tableName);
+        errors[tableName] = written.error;
+      }
+    }
+
+    const exported = ATHENA_TABLES.length - failedTables.length;
+    report(total, failedTables.length
+      ? 'Failed -- ' + failedTables.length + ' of ' + ATHENA_TABLES.length +
+        ' tables could not be exported; re-run the full export'
+      : 'Complete -- ' + exported + ' tables exported');
+
+    return {
+      ok:           failedTables.length === 0,
+      failedTables: failedTables,
+      rowCounts:    rowCounts,
+      errors:       errors,
+    };
   },
 };
 

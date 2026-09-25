@@ -83,6 +83,13 @@ const ConnectorRegistry = {};
 //
 //     // Push every SCHEMA table using the connector's own write strategy.
 //     // Athena and Synapse use DROP + CREATE; BigQuery may upsert instead.
-//     exportAllTables(config, data, onProgress): Promise<{ ok: bool, failedTables: string[] }>,
+//     // All-or-nothing: one table failing makes ok false and the caller must
+//     // re-run the whole export. Every table is still attempted, so one run
+//     // reports every problem. rowCounts is keyed by table for the tables that
+//     // succeeded; errors is keyed by table for those that failed, holding the
+//     // message from the final attempt. A connector-agnostic caller may read
+//     // only ok and failedTables.
+//     exportAllTables(config, data, onProgress):
+//         Promise<{ ok: bool, failedTables: string[], rowCounts: object, errors: object }>,
 //   }
 //
