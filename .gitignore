@@ -1,0 +1,19 @@
+# Build output.
+#
+# dist/ is generated entirely by build/build.py from src/ and build/template.html,
+# so it is reproducible and does not belong in the repo. Run the build to produce it:
+#
+#   cd build && python build.py
+#
+# Untracked 2026-09-25. Note that the previously committed bundles and zips remain
+# in earlier commits -- ignoring the folder stops future churn, it does not rewrite
+# history.
+dist/
+
+# IDE settings. JetBrains project files are per-developer; the module paths and
+# workspace.xml in particular differ on every machine.
+.idea/
+
+# Claude Code machine-local settings. Deliberately narrower than ignoring all of
+# .claude/ -- a shared project-level .claude/settings.json can still be committed.
+.claude/settings.local.json

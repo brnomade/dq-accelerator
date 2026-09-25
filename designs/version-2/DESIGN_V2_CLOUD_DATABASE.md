@@ -192,11 +192,13 @@ Headers: `Content-Type: application/x-amz-json-1.1`, `X-Amz-Target: AmazonAthena
 | Operation | X-Amz-Target | Body |
 |---|---|---|
 | Test connection | `AmazonAthena.ListWorkGroups` | `{}` |
-| Run DDL or SELECT | `AmazonAthena.StartQueryExecution` | `{ QueryString, QueryExecutionContext: { Database }, ResultConfiguration: { OutputLocation }, WorkGroup }` |
+| Run DDL or SELECT | `AmazonAthena.StartQueryExecution` | `{ QueryString, ResultConfiguration: { OutputLocation }, WorkGroup }` |
 | Poll query status | `AmazonAthena.GetQueryExecution` | `{ QueryExecutionId }` |
 | Fetch results page | `AmazonAthena.GetQueryResults` | `{ QueryExecutionId, NextToken? }` |
 
 Poll interval: 250 ms. Query timeout: 60 s per table.
+
+> **Amended 2026-09-25 (decision D1 in the plan).** `QueryExecutionContext` is deliberately omitted from every `StartQueryExecution` body. The first draft of this section included `QueryExecutionContext: { Database }`, but that cannot work for `CREATE DATABASE IF NOT EXISTS` in section 5.9 — Athena rejects a context naming a database that does not yet exist. Rather than special-casing that one statement, no statement sends a context and every statement fully qualifies its table as `{databaseName}.{table_name}`. All DDL and SELECT strings in sections 5.7, 5.8 and 5.9 are already written fully qualified, so this is a single code path with no call-site change.
 
 ### 5.5 S3 API calls
 

@@ -116,7 +116,9 @@ All panels render at App level (outside scroll container) to avoid `position:fix
 |---|---|
 | `10_constants.js` | `SCHEMA`, `SHEET_MAP`, `TABLE_GROUPS` -- single source of truth for all 18 tables |
 | `15_aws_sigv4.js` | `signAwsRequest(method, url, headers, body, credentials, region, service)` -- AWS Signature V4 signing for browser `fetch` via SubtleCrypto. Zero dependencies; numbered low so it sits below every consumer. V2 cloud database foundation |
+| `16_connector_base.js` | `ConnectorRegistry` map plus the `FieldDef` / `StepResult` / connector-interface type contracts as comments. Zero dependencies; must load before any connector file because registration runs at load time. V2 cloud database foundation |
 | `20_data_utils.js` | `buildLookups`, `getFkOptions`, `normalizeWhitespace`, misc data helpers |
+| `47_connector_athena.js` | `AthenaConnector` (registered as `ConnectorRegistry['athena']`). Implemented: `getConfigSchema`, `testConnection`, plus helpers `athenaApiCall`, `athenaQuery` (StartQueryExecution + poll to completion), `athenaGetResults` (paginated GetQueryResults). Stubbed pending plan tasks 3.6-3.8: `setupDatabase`, `importAllTables`, `exportAllTables`. All SQL must be fully qualified -- `QueryExecutionContext` is never sent |
 | `30_export_utils.js` | **Despite the name, this is the localStorage layer:** `STORAGE_KEY`, `saveToStorage`, `loadFromStorage`, `clearStorage`, plus `runHealthCheck` |
 | `40_storage.js` | **Despite the name, this is the CSV/file export layer:** `tableToCSV`, `exportSingleCSV`, `buildAllCSVsBlob`, `saveWithPicker`. (`loadStewardIdentity` lives in `71_master_version.js`, not here) |
 | `45_rule_sql_warnings.js` | `computeRuleSqlWarnings(sql, sample)` pure function; `RuleSqlWarningNotices` display component |

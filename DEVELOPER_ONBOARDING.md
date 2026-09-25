@@ -18,6 +18,7 @@ You need three things:
 |---|---|
 | **Python 3** (any recent version) | Used by the build script only; no packages required beyond stdlib |
 | **A modern browser** | Chrome recommended; open `dist/dq-accelerator.html` directly via `file://` |
+| **Run the build first** | `dist/` is gitignored, so a fresh clone contains no runnable app until you build one -- see step 4 below |
 | **Git** | Feature-branch workflow — see `CONTRIBUTING.md` |
 
 No Node.js, no npm, no package managers, no database, no server. That is intentional.
@@ -72,6 +73,8 @@ python build.py
 ```
 
 Output: `dist/dq-accelerator.html` (the runnable app) and a zip archive under `dist/`.
+
+`dist/` is gitignored, so this step is not optional on a fresh clone -- there is no committed bundle to open. The output is fully reproducible from `src/` and `build/template.html`, which is why it is not tracked.
 
 ### 5. Test in the browser
 
