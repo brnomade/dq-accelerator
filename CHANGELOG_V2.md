@@ -6,6 +6,48 @@ For v1 history see `CHANGELOG.md`.
 
 ---
 
+## build-20260925-1923 - Retired rows now survive an Athena round trip (decision D13)
+
+**Plan:** `plans/PLAN_V2_CLOUD_DATABASE.md` (Phase 3, task 3.7 amended; new decision D13)
+**Branch:** `fix/athena-select-quoting`
+
+### Changed
+- `src/47_connector_athena.js` - **`exportAllTables` now exports retired rows** (`retiring_timestamp` set) instead of filtering them out, by passing `includeSoftDeleted = true` to `athenaBuildTableCSV`.
+  - Previously the cloud database held live rows only, the literal reading of design section 5.8. Task 3.13's row-count check quantified what that cost on the live dataset: **47 rows across 6 tables** would not survive a round trip - 26 `data_quality_rule_allocation`, 14 `data_quality_rule`, 3 `data_owner`, 2 `critical_data_element`, 1 `stewardship`, 1 `data_patron`.
+  - The effect was that retirement became a **hard delete** once data had been through the cloud: a master exporting and re-importing silently discarded the retirement audit trail, contradicting the soft-delete semantics the cascade-retirement work is built on. Decided by the user after seeing the counts.
+  - **No DDL change and no `setupDatabase` re-run.** `retiring_timestamp` is already a `SCHEMA` column on all six affected tables, so it was already declared in the `CREATE EXTERNAL TABLE` DDL and already written as an empty CSV field for live rows. Only the row filter changed.
+  - **`rowCounts` now reports the local total rather than the live count.** Anything querying Athena directly - dashboards, ad-hoc SQL, future consumers - must filter on `retiring_timestamp IS NULL`.
+  - `athenaBuildTableCSV`'s third argument was already in place, mirroring `tableToCSV()`; this build is the first caller to use it.
+
+### Known divergence
+- **Design section 5.8 now contradicts the code** and needs amending to record D13. Flagged, not yet done.
+
+### Not changed
+- No UI, no user-facing behaviour. Phase 3 remains console-only; the screens are Phases 4 to 6. No user documentation update for this build.
+
+---
+
+## build-20260925-1845 - Fix: Athena import rejected with HTTP 400 (backtick identifiers in DML)
+
+**Plan:** `plans/PLAN_V2_CLOUD_DATABASE.md` (Phase 3, tasks 3.12 and 3.13; new decision D12)
+**Branch:** `fix/athena-select-quoting`
+
+### Fixed
+- `src/47_connector_athena.js` - **`importAllTables` now quotes identifiers with double quotes instead of backticks.** Every one of the 18 table imports failed with `HTTP 400 Bad Request` on `StartQueryExecution`, found by the task 3.12 browser test against live AWS.
+  - Cause: Athena runs DDL through Hive, which accepts backtick-quoted identifiers, but DML through Trino, which rejects them. The connector's four generated statements all used backticks, copied from the Hive DDL examples in the design, and `SELECT * FROM` is the only DML among them.
+  - The failure arrives as an HTTP 400 at submit time rather than as a `FAILED` query state, because Athena parses DML synchronously in `StartQueryExecution`. That is why it presented as a transport error rather than a query error.
+  - `CREATE DATABASE`, `CREATE EXTERNAL TABLE` and `DROP TABLE` are unchanged and keep their backticks - they are Hive DDL and all three are already proven against live AWS by tasks 3.11 and 3.13.
+  - Recorded as decision D12, which also states the standing rule: **any future DML added to this connector must use double quotes.**
+  - Why no earlier test caught it: task 3.10 exercised `athenaQuery` with `SELECT 1 AS one, 'abc' AS two`, which quotes no identifiers, and tasks 3.11 and 3.13 exercise DDL only. Task 3.12 is the first test to issue DML against a named table.
+
+### Changed
+- `plans/PLAN_V2_CLOUD_DATABASE.md` - decision D12 added. Task 3.13's console steps had a placeholder `getAppData()` that is not a real function; replaced with `loadFromStorage().data` (the global in `30_export_utils.js:13`, which returns `{ data, savedAt }`), with a note that it reads the last save rather than the live UI and must be re-fetched immediately before an export. Tasks 3.12 and 3.13 statuses updated with the results of this session's test run.
+
+### Not changed
+- No UI, no user-facing behaviour. Phase 3 is still console-only; the screens are Phases 4 to 6. No user documentation update for this build.
+
+---
+
 ## build-20260925-1803 - V2 Phase 3 complete (implementation): Athena export, and retry on both transfer directions
 
 **Plan:** `plans/PLAN_V2_CLOUD_DATABASE.md` (Phase 3, task 3.7; new decisions D8 to D11; new task 3.13)
